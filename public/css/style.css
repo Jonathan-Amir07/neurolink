@@ -1,0 +1,182 @@
+:root {
+    --bg-paper: #f9f7f1;
+    --ink-color: #2c3e50;
+    --accent-color: #e67e22;
+    --line-color: #8e959b;
+    --dot-color: rgba(44, 62, 80, 0.1);
+    --ruled-line: rgba(44, 62, 80, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-paper);
+    color: var(--ink-color);
+    background-image: radial-gradient(var(--dot-color) 1.5px, transparent 1.5px);
+    background-size: 25px 25px;
+    margin: 0;
+    min-height: 100vh;
+}
+
+header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--dot-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.auth-btn {
+    background: var(--ink-color);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.auth-btn:hover {
+    transform: scale(1.05);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+/* Glass Card */
+.card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+}
+
+/* Flashcards */
+.card-perspective {
+    perspective: 1000px;
+    width: 400px;
+    height: 300px;
+    cursor: pointer;
+}
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+.card-inner.flipped {
+    transform: rotateY(180deg);
+}
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    background-color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.card-back {
+    transform: rotateY(180deg);
+}
+
+/* Mind Map (Collapsible Tree) */
+.tree-branch {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.node-item {
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+}
+
+.node-card {
+    background: white;
+    border: 2px solid var(--ink-color);
+    border-radius: 12px;
+    padding: 10px 15px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+    cursor: pointer;
+    width: 200px;
+    position: relative;
+    text-align: left;
+}
+
+.children-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-left: 60px;
+    position: relative;
+}
+
+.children-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: var(--backbone-top, 25px);
+    bottom: var(--backbone-bottom, 25px);
+    width: 2px;
+    background: var(--line-color);
+}
+
+.parent-connector {
+    position: absolute;
+    right: -60px;
+    top: 50%;
+    width: 60px;
+    height: 2px;
+    background: var(--line-color);
+    transform: translateY(-50%);
+}
+
+.child-connector {
+    position: absolute;
+    left: -60px;
+    top: 50%;
+    width: 60px;
+    height: 2px;
+    background: var(--line-color);
+    transform: translateY(-50%);
+}
+
+.toggle-indicator {
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background: white;
+    border: 1px solid var(--ink-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}

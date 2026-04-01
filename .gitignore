@@ -1,0 +1,19 @@
+node_modules/
+.env
+.env.local
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+.vercel
+/tmp/
+/artifacts/
+/brain/
+# System generated files
+*.txt
+*.html
+# Excluding example files from repo if they are not needed
+# example*.html
