@@ -29,7 +29,10 @@ async function loadProjects() {
         card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <h3 style="margin: 0;">${project.title}</h3>
-                <span style="font-size: 0.8rem; color: #777;">${new Date(project.created_at).toLocaleDateString()}</span>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span style="font-size: 0.8rem; color: #777;">${new Date(project.created_at).toLocaleDateString()}</span>
+                    <button class="delete-btn" title="Delete Project" style="background: none; border: none; cursor: pointer; color: #ff5252; font-size: 1.1rem; padding: 0 0.5rem;">🗑️</button>
+                </div>
             </div>
             <p style="color: #666; font-size: 0.9rem; margin: 1rem 0;">${project.raw_input.substring(0, 80)}...</p>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
@@ -37,6 +40,21 @@ async function loadProjects() {
             </div>
         `;
         card.onclick = () => window.location.href = `/project.html?id=${project._id}`;
+        
+        // Handle delete separately
+        const deleteBtn = card.querySelector('.delete-btn');
+        deleteBtn.onclick = async (e) => {
+            e.stopPropagation(); // Don't trigger card click
+            if (!confirm('Are you sure you want to delete this project?')) return;
+            
+            const res = await fetch(`/api/projects/${project._id}`, { method: 'DELETE' });
+            if (res.ok) {
+                loadProjects();
+            } else {
+                alert('Delete failed.');
+            }
+        };
+
         list.appendChild(card);
     });
 }

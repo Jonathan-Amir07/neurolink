@@ -103,6 +103,17 @@ app.get('/api/projects/:id', async (req, res) => {
     }
 });
 
+app.delete('/api/projects/:id', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send();
+    try {
+        const project = await Project.findOneAndDelete({ _id: req.params.id, user: req.user.id });
+        if (!project) return res.status(404).send();
+        res.json({ message: 'Project deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/projects', async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send();
     try {

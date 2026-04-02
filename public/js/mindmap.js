@@ -22,7 +22,7 @@ function renderMindmapNode(nodeData, isRoot = false) {
     card.innerHTML = `
         <div class="node-header">
             <span>${nodeData.icon || '🧠'}</span>
-            <span>${nodeData.title}</span>
+            <span>${nodeData.title || nodeData.name || nodeData.topic || nodeData.label || 'Node'}</span>
         </div>
         <div class="node-desc">${nodeData.desc || ''}</div>
     `;
