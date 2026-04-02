@@ -12,8 +12,25 @@ const app = express();
 require('../utils/passport');
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI).then(() => console.log('MongoDB Connected'))
-  .catch(err => console.log('MongoDB Error:', err));
+mongoose.connect(process.env.MONGODB_URI, {
+  tlsAllowInvalidCertificates: true
+}).then(() => console.log('MongoDB Connected'))
+  .catch(err => {
+    console.error('MongoDB Initial Connection Error:', err);
+  });
+
+// Handle MongoDB disconnection/errors after initial connection
+mongoose.connection.on('error', err => {
+  console.error('MongoDB Runtime Error:', err);
+});
+
+// Prevention from crashing on unhandled errors
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+});
 
 // Middleware
 app.use(express.json());
