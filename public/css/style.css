@@ -1,11 +1,21 @@
 :root {
     --bg-paper: #f9f7f1;
-    --ink-color: #2c3e50;
     --accent-color: #e67e22;
     --line-color: #8e959b;
     --dot-color: rgba(44, 62, 80, 0.1);
     --ruled-line: rgba(44, 62, 80, 0.1);
     --glass-bg: rgba(255, 255, 255, 0.7);
+    /* TEMPLATE VARIABLES FROM EXAMPLE */
+    --paper-bg: #fdfdf5;
+    --sidebar-bg: #1e1e1e;
+    --text-ink: #2c3e50;
+    --ink-color: #2c3e50; /* Added this to fix missing variable */
+    --accent-red: #b22222;
+    --chalkboard-bg: #2d2d2d;
+    --chalk-white: #f5f5f5;
+    --chalk-comment: #88bd88;
+    --chalk-keyword: #ffda6a;
+    --shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 body {
@@ -179,4 +189,353 @@ header {
     align-items: center;
     justify-content: center;
     font-size: 14px;
+}
+/* Slides View */
+#slides-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 500px;
+    position: relative;
+}
+
+.slide-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 800px;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    border-left: 10px solid var(--accent-color);
+    overflow-y: auto;
+    word-wrap: break-word;
+    transition: all 0.3s ease;
+}
+
+.slide-title {
+    font-family: 'Permanent Marker', cursive;
+    color: var(--ink-color);
+    margin-bottom: 2rem;
+    font-size: 2rem;
+}
+
+.slide-bullets {
+    font-size: 1.3rem;
+    line-height: 1.6;
+}
+
+.slide-counter {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-weight: 800;
+    color: var(--line-color);
+}
+
+/* Infographic View */
+#infographic-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
+    padding: 2rem 0;
+}
+
+.paper-card {
+    background-color: #fffdf6;
+    padding: 30px 40px;
+    box-shadow: 5px 10px 20px rgba(0,0,0,0.1);
+    position: relative;
+    width: 90%;
+    max-width: 850px;
+    border-radius: 2px;
+    word-wrap: break-word;
+    transition: transform 0.3s ease;
+}
+
+.paper-card::before {
+    content: "";
+    position: absolute;
+    left: 30px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: rgba(231, 76, 60, 0.2);
+}
+
+.rot-left { transform: rotate(-1deg); }
+.rot-right { transform: rotate(1deg); }
+
+.tape {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    width: 100px;
+    height: 30px;
+    background-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    backdrop-filter: blur(2px);
+    transform: translateX(-50%) rotate(-2deg);
+}
+
+.section-title {
+    font-family: 'Permanent Marker', cursive;
+    color: var(--ink-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+/* ── NOTEBOOK ARCHITECT OVERHAUL (PER TEMPLATE) ── */
+
+.notebook-inner-layout {
+    display: flex;
+    height: 80vh;
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: #e0e0e0; /* Page outer background */
+    border: 1px solid var(--line-color);
+}
+
+.notebook-sidebar {
+    width: 320px;
+    background-color: var(--sidebar-bg);
+    color: white;
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    border-right: 6px solid #111;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.4);
+    z-index: 100;
+}
+
+.notebook-sidebar h1 {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+    text-align: center;
+    color: #00d4ff;
+    line-height: 1.2;
+}
+
+.toc-group {
+    margin-bottom: 20px;
+}
+
+.toc-title {
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+    font-family: 'Inter', sans-serif;
+}
+
+.toc-link {
+    display: block;
+    color: #ccc;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: 0.3s;
+    font-size: 1.05rem;
+    margin-bottom: 3px;
+    font-family: 'Patrick Hand', cursive;
+    cursor: pointer;
+}
+
+.toc-link:hover, .toc-link.active {
+    background-color: #333;
+    color: #00d4ff;
+    transform: translateX(8px);
+}
+
+.notebook-main {
+    flex-grow: 1;
+    overflow-y: scroll;
+    padding: 60px 40px;
+    background-image: radial-gradient(#ccc 1px, transparent 1px);
+    background-size: 30px 30px;
+    scroll-behavior: smooth;
+    font-family: 'Patrick Hand', cursive;
+}
+
+.notebook-page {
+    max-width: 850px;
+    margin: 0 auto 100px auto;
+    background: var(--paper-bg);
+    padding: 60px 80px;
+    position: relative;
+    box-shadow: var(--shadow);
+    border: 1px solid #ddd;
+    transform: rotate(-0.4deg);
+}
+
+.notebook-page:nth-child(even) {
+    transform: rotate(0.4deg);
+}
+
+/* Ruled Paper Effect */
+.ruled {
+    background-image: linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px);
+    background-size: 100% 1.8rem;
+    line-height: 1.8rem;
+}
+
+.tape-strip {
+    position: absolute;
+    width: 140px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.45);
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.08);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+/* CONTENT STYLING */
+.notebook-page h2 {
+    font-family: 'Permanent Marker', cursive;
+    color: #003366;
+    font-size: 2.4rem;
+    margin-bottom: 25px;
+    border-bottom: 4px double #003366;
+    display: inline-block;
+}
+
+.notebook-page h3 {
+    font-size: 1.8rem;
+    color: var(--accent-red);
+    margin: 40px 0 15px 0;
+    border-left: 6px solid var(--accent-red);
+    padding-left: 15px;
+    background-color: rgba(255, 255, 255, 0.6);
+    display: inline-block;
+    padding-right: 15px;
+}
+
+.notebook-page p, .notebook-page li {
+    margin-bottom: 12px;
+    font-size: 1.3rem;
+    text-align: justify;
+    line-height: 1.8rem;
+}
+
+/* COMPLEXITY BOX STYLING */
+.complexity-list {
+    list-style-type: none !important;
+    margin: 15px 0 30px 0 !important;
+    padding: 12px 18px !important;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-left: 5px solid var(--accent-red);
+    border-radius: 4px;
+    font-size: 1.25rem;
+    color: #111;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.complexity-list strong {
+    color: var(--accent-red);
+    display: inline-block;
+    min-width: 90px;
+}
+
+/* CHALKBOARD STYLE CODE BLOCKS */
+.chalkboard {
+    background-color: var(--chalkboard-bg);
+    color: var(--chalk-white);
+    padding: 25px;
+    border-radius: 12px;
+    margin: 25px 0;
+    position: relative;
+    border: 8px solid #5d5d5d;
+    box-shadow: inset 0 0 25px rgba(0,0,0,0.8);
+    overflow-x: auto;
+}
+
+.chalkboard::before {
+    content: "Implementation Reference";
+    display: block;
+    margin-bottom: 12px;
+    color: #00d4ff;
+    font-family: 'Patrick Hand', cursive;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border-bottom: 1px dashed #00d4ff;
+    padding-bottom: 4px;
+}
+
+.chalkboard pre {
+    font-family: 'Indie Flower', cursive;
+    font-size: 1.3rem;
+    line-height: 1.4;
+    margin: 0;
+    white-space: pre-wrap;
+    background: transparent;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+}
+
+/* Material Selection Styles */
+.selection-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.selection-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(0,0,0,0.03);
+    border-radius: 12px;
+    border: 1px dashed var(--line-color);
+}
+
+.selection-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.2s;
+}
+
+.selection-item:hover {
+    opacity: 0.8;
+}
+
+.selection-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-color);
+    cursor: pointer;
+}
+
+.select-all-btn {
+    font-size: 0.8rem;
+    color: var(--accent-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-weight: 600;
+    text-decoration: underline;
 }
