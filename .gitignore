@@ -12,8 +12,7 @@ build/
 /tmp/
 /artifacts/
 /brain/
-# System generated files
+# Exclude system generated files
 *.txt
-*.html
 # Excluding example files from repo if they are not needed
 # example*.html

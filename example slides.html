@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture: Analysis & Design of Algorithms</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Indie+Flower&family=Permanent+Marker&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #fffdf6;
+            --ink: #2c3e50;
+            --accent-red: #e74c3c;
+            --accent-blue: #3498db;
+            --chalkboard: #2d3436;
+            --chalk: #ecf0f1;
+            --grid-line: rgba(44, 62, 80, 0.08);
+            --transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background-color: #636e72; /* Desk surface */
+            font-family: 'Patrick Hand', cursive;
+            color: var(--ink);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Presentation Container */
+        #deck {
+            position: relative;
+            width: 90vw;
+            height: 85vh;
+            max-width: 1200px;
+            perspective: 1500px;
+        }
+
+        /* Individual Slide */
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: var(--paper);
+            padding: 4rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            border-radius: 4px;
+            display: none;
+            flex-direction: column;
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 30px 30px;
+            overflow-y: auto;
+            transform-origin: center;
+            transition: var(--transition);
+        }
+
+        .slide::before {
+            content: "";
+            position: absolute;
+            left: 40px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(231, 76, 60, 0.2);
+            z-index: 1;
+        }
+
+        .slide.active {
+            display: flex;
+            animation: slideIn 0.6s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px) rotateX(-5deg); }
+            to { opacity: 1; transform: translateY(0) rotateX(0deg); }
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: 'Permanent Marker', cursive;
+            margin-top: 0;
+        }
+
+        h1.main-title { font-size: 4rem; color: var(--accent-red); text-align: center; }
+        h2.slide-title { font-size: 2.5rem; color: var(--accent-blue); border-bottom: 3px solid var(--ink); margin-bottom: 2rem; }
+        p, li { font-size: 1.6rem; line-height: 1.4; margin-bottom: 1rem; }
+
+        /* Layout Elements */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .highlight-box {
+            background: rgba(52, 152, 219, 0.1);
+            border-left: 10px solid var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .important-callout {
+            border: 3px dashed var(--accent-red);
+            padding: 1.5rem;
+            background: white;
+            transform: rotate(-1deg);
+            margin: 2rem 0;
+        }
+
+        /* Chalkboard Code */
+        .code-block {
+            background-color: var(--chalkboard);
+            color: var(--chalk);
+            font-family: 'Indie Flower', cursive;
+            padding: 2rem;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            white-space: pre-wrap;
+            box-shadow: inset 0 0 10px #000;
+            position: relative;
+        }
+
+        /* Visuals/Diagrams */
+        .visual-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem 0;
+        }
+
+        .growth-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            height: 150px;
+            padding: 10px;
+            border-left: 2px solid var(--ink);
+            border-bottom: 2px solid var(--ink);
+        }
+
+        .bar { width: 40px; background: var(--accent-blue); }
+
+        /* Navigation Controls */
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-btn {
+            background: var(--paper);
+            border: 2px solid var(--ink);
+            font-family: 'Permanent Marker', cursive;
+            font-size: 1.2rem;
+            padding: 5px 20px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover { background: var(--accent-blue); color: white; transform: scale(1.1); }
+        .nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .counter {
+            color: white;
+            font-size: 1.2rem;
+            align-self: center;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1.3rem;
+        }
+        th, td { border: 2px solid var(--ink); padding: 12px; text-align: left; }
+        th { background: rgba(52, 152, 219, 0.2); }
+
+        /* Icons (SVG simulation) */
+        .icon { width: 50px; height: 50px; margin-bottom: 10px; }
+
+        @media (max-width: 768px) {
+            .slide { padding: 2rem; }
+            h1.main-title { font-size: 2.5rem; }
+            .content-grid { grid-template-columns: 1fr; }
+            p, li { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="deck">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <p style="font-size: 2rem; color: var(--accent-blue);">CS301: Computer Science Lecture</p>
+                <h1 class="main-title">Algorithms: Analysis & Design</h1>
+                <div class="important-callout" style="font-size: 1.5rem;">
+                    "A journey into the heart of computational efficiency."
+                </div>
+                <p>Instructor: AI Educator</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Agenda -->
+        <div class="slide">
+            <h2 class="slide-title">Roadmap for Today</h2>
+            <div class="content-grid">
+                <ul>
+                    <li><strong>I. Foundations:</strong> What is an algorithm?</li>
+                    <li><strong>II. Complexity:</strong> Space vs. Time</li>
+                    <li><strong>III. Brute Force:</strong> The simple approach</li>
+                    <li><strong>IV. Recurrences:</strong> The Master Theorem</li>
+                    <li><strong>V. Graphs:</strong> DFS vs. BFS</li>
+                </ul>
+                <div class="visual-container">
+                    <div style="padding: 20px; border: 2px solid var(--ink); border-radius: 50%; width: 250px; height: 250px; display: flex; align-items: center; justify-content: center; text-align: center; transform: rotate(5deg);">
+                        <p>Total Complexity: <br><strong>Big-O Mastery</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Ch1 Intro -->
+        <div class="slide">
+            <h2 class="slide-title">Chapter 1: The Algorithm</h2>
+            <div class="highlight-box">
+                <p><strong>Formal Definition:</strong> An unambiguous sequence of instructions for solving a problem in finite time.</p>
+            </div>
+            <div class="content-grid" style="margin-top: 2rem;">
+                <div>
+                    <h3>The "Recipe" Analogy</h3>
+                    <ul>
+                        <li><strong>Input:</strong> Flour, Eggs, Sugar</li>
+                        <li><strong>Steps:</strong> Mix, Bake, Cool</li>
+                        <li><strong>Output:</strong> A Cake!</li>
+                    </ul>
+                </div>
+                <div class="important-callout">
+                    <p><strong>Must-Have Traits:</strong></p>
+                    <p>✅ Precise Inputs/Outputs</p>
+                    <p>✅ Clear & Unambiguous</p>
+                    <p>✅ Language Independent</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Why Efficiency? -->
+        <div class="slide">
+            <h2 class="slide-title">1.3 Why Efficiency Matters?</h2>
+            <p>We live in a world of finite resources. Speed isn't just a "nice to have," it's critical.</p>
+            
+            <div class="content-grid">
+                <div class="highlight-box">
+                    <h3>Time (CPU)</h3>
+                    <p>How many operations are we executing?</p>
+                </div>
+                <div class="highlight-box" style="border-color: var(--accent-red);">
+                    <h3>Space (RAM)</h3>
+                    <p>How much memory are we using?</p>
+                </div>
+            </div>
+
+            <div class="important-callout" style="text-align: center;">
+                <p><strong>The Scale Problem:</strong> Sorting 1,000,000 items</p>
+                <p>Binary Search: <strong>21 steps</strong> vs. Sequential: <strong>1,000,000 steps</strong></p>
+            </div>
+        </div>
+
+        <!-- Slide 5: Fibonacci Trap -->
+        <div class="slide">
+            <h2 class="slide-title">Recursive vs Iterative</h2>
+            <p>Case Study: Calculating the n-th Fibonacci number.</p>
+            <div class="code-block">
+// Recursive (Slow) - O(2^n)
+int fib(int n) {
+    if (n <= 1) return n;
+    return fib(n-1) + fib(n-2);
+}
+            </div>
+            <div class="important-callout" style="background-color: #ffeaa7;">
+                <p><strong>The Reality Check:</strong></p>
+                <p>For $n=100$, the iterative version takes <strong>100 ns</strong>. The recursive version would take <strong>13 days</strong>!</p>
+            </div>
+        </div>
+
+        <!-- Slide 6: Complexity Intro -->
+        <div class="slide">
+            <h2 class="slide-title">Chapter 2: Complexity Bounds</h2>
+            <p>We use <strong>Asymptotic Analysis</strong> to focus on growth, ignoring machine-specific constants.</p>
+            
+            <table>
+                <tr><th>Notation</th><th>Meaning</th><th>Analogy</th></tr>
+                <tr><td><strong>$O(f(n))$</strong></td><td>Upper Bound (Worst Case)</td><td>"It won't take longer than..."</td></tr>
+                <tr><td><strong>$\Omega(f(n))$</strong></td><td>Lower Bound (Best Case)</td><td>"It will take at least..."</td></tr>
+                <tr><td><strong>$\Theta(f(n))$</strong></td><td>Tight Bound (Exact)</td><td>"It grows exactly like..."</td></tr>
+            </table>
+        </div>
+
+        <!-- Slide 7: Growth Ranking -->
+        <div class="slide">
+            <h2 class="slide-title">Growth Rate Rankings</h2>
+            <p>From "Lightning Fast" to "Practically Impossible":</p>
+            <div class="visual-container">
+                <div class="growth-chart">
+                    <div class="bar" style="height: 10px;" title="O(1)"></div>
+                    <div class="bar" style="height: 25px;" title="O(log n)"></div>
+                    <div class="bar" style="height: 45px;" title="O(n)"></div>
+                    <div class="bar" style="height: 70px;" title="O(n log n)"></div>
+                    <div class="bar" style="height: 100px; background: var(--accent-red);" title="O(n^2)"></div>
+                    <div class="bar" style="height: 140px; background: #000;" title="O(2^n)"></div>
+                </div>
+            </div>
+            <p style="text-align: center; font-size: 1.8rem;">
+                $O(1) < O(\log n) < O(n) < O(n \log n) < O(n^2) < O(2^n) < O(n!)$
+            </p>
+        </div>
+
+        <!-- Slide 8: Big O Rules -->
+        <div class="slide">
+            <h2 class="slide-title">The Laws of Big-O</h2>
+            <div class="content-grid">
+                <div>
+                    <p><strong>1. Drop Constants</strong></p>
+                    <div class="highlight-box">$O(3n^2 + 5) \rightarrow O(n^2)$</div>
+                    
+                    <p><strong>2. Sum Rule</strong></p>
+                    <div class="highlight-box">$O(n + n^2) \rightarrow O(n^2)$</div>
+                </div>
+                <div>
+                    <p><strong>3. Product Rule</strong></p>
+                    <div class="highlight-box">$O(n \cdot \log n) \rightarrow O(n \log n)$</div>
+                    <p><em>(Usually found in nested loops)</em></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Brute Force -->
+        <div class="slide">
+            <h2 class="slide-title">Chapter 3: Brute Force</h2>
+            <p>The "just do it" approach. Based directly on the problem statement.</p>
+            <div class="content-grid">
+                <div>
+                    <h3>Naive String Search</h3>
+                    <p>Check every index $i$ in Text $T$ for Pattern $P$.</p>
+                    <p><strong>Complexity:</strong> $O(n \cdot m)$</p>
+                </div>
+                <div class="code-block" style="font-size: 1rem;">
+for(i=0; i <= n-m; i++) {
+   j=0;
+   while(j < m && P[j] == T[i+j]) j++;
+   if(j == m) return i;
+}
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Exhaustive Search -->
+        <div class="slide">
+            <h2 class="slide-title">3.3 Exhaustive Search</h2>
+            <p>Checking every possible combination. Great for small $n$, lethal for large $n$.</p>
+            
+            <div class="content-grid">
+                <div class="important-callout">
+                    <h3>TSP Problem</h3>
+                    <p>Generate $(n-1)!$ permutations.</p>
+                    <p><strong>$O(n!)$</strong></p>
+                </div>
+                <div class="important-callout" style="border-color: var(--accent-blue);">
+                    <h3>Knapsack</h3>
+                    <p>Check all $2^n$ subsets.</p>
+                    <p><strong>$O(2^n)$</strong></p>
+                </div>
+            </div>
+            <p>💡 <em>Note: For $n=40$, Exhaustive Search might take longer than the age of the universe.</em></p>
+        </div>
+
+        <!-- Slide 11: Master Theorem -->
+        <div class="slide">
+            <h2 class="slide-title">Chapter 4: The Master Theorem</h2>
+            <p>The shortcut for solving recurrences of form $T(n) = aT(n/b) + \Theta(n^d)$.</p>
+            
+            <div class="highlight-box">
+                <p>Comparing $a$ and $b^d$:</p>
+                <ul>
+                    <li><strong>Case 1 ($a < b^d$):</strong> $T(n) = \Theta(n^d)$</li>
+                    <li><strong>Case 2 ($a = b^d$):</strong> $T(n) = \Theta(n^d \log n)$</li>
+                    <li><strong>Case 3 ($a > b^d$):</strong> $T(n) = \Theta(n^{\log_b a})$</li>
+                </ul>
+            </div>
+            
+            <p>Example: <strong>Merge Sort</strong> $\rightarrow T(n) = 2T(n/2) + n$</p>
+            <p>$a=2, b=2, d=1$. Since $2 = 2^1$, Result is <strong>$\Theta(n \log n)$</strong>.</p>
+        </div>
+
+        <!-- Slide 12: Graphs DFS -->
+        <div class="slide">
+            <h2 class="slide-title">Chapter 5: Graph Traversal (DFS)</h2>
+            <div class="content-grid">
+                <div>
+                    <h3>Depth First Search</h3>
+                    <ul>
+                        <li><strong>Motto:</strong> "Go deep as fast as possible."</li>
+                        <li><strong>Data Structure:</strong> Stack (Recursion)</li>
+                        <li><strong>Edges:</strong> Tree + Back edges</li>
+                    </ul>
+                </div>
+                <div class="visual-container">
+                    <!-- Simple SVG Node Diagram -->
+                    <svg viewBox="0 0 100 60" width="100%">
+                        <circle cx="50" cy="10" r="5" fill="var(--accent-red)"/>
+                        <circle cx="30" cy="30" r="5" fill="var(--ink)"/>
+                        <circle cx="70" cy="30" r="5" fill="var(--ink)"/>
+                        <circle cx="30" cy="50" r="5" fill="var(--ink)"/>
+                        <line x1="50" y1="10" x2="30" y2="30" stroke="var(--ink)" />
+                        <line x1="50" y1="10" x2="70" y2="30" stroke="var(--ink)" />
+                        <line x1="30" y1="30" x2="30" y2="50" stroke="var(--accent-red)" stroke-width="2"/>
+                        <text x="50" y="60" text-anchor="middle" font-size="5">Exploring deep...</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Graphs BFS -->
+        <div class="slide">
+            <h2 class="slide-title">Graph Traversal (BFS)</h2>
+            <div class="content-grid">
+                <div class="visual-container">
+                     <svg viewBox="0 0 100 60" width="100%">
+                        <circle cx="50" cy="10" r="5" fill="var(--accent-blue)"/>
+                        <circle cx="20" cy="30" r="5" fill="var(--accent-blue)"/>
+                        <circle cx="50" cy="30" r="5" fill="var(--accent-blue)"/>
+                        <circle cx="80" cy="30" r="5" fill="var(--accent-blue)"/>
+                        <line x1="50" y1="10" x2="20" y2="30" stroke="var(--accent-blue)" />
+                        <line x1="50" y1="10" x2="50" y2="30" stroke="var(--accent-blue)" />
+                        <line x1="50" y1="10" x2="80" y2="30" stroke="var(--accent-blue)" />
+                    </svg>
+                </div>
+                <div>
+                    <h3>Breadth First Search</h3>
+                    <ul>
+                        <li><strong>Motto:</strong> "Look at all neighbors first."</li>
+                        <li><strong>Data Structure:</strong> Queue</li>
+                        <li><strong>Key Use:</strong> Finding the <strong>Shortest Path</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="important-callout">
+                Efficiency for both: <strong>$\Theta(V + E)$</strong> using Adjacency Lists.
+            </div>
+        </div>
+
+        <!-- Slide 14: Final Summary -->
+        <div class="slide">
+            <h2 class="slide-title">The Cheat Sheet</h2>
+            <table>
+                <tr><th>Algorithm</th><th>Best</th><th>Worst</th></tr>
+                <tr><td>Binary Search</td><td>$O(1)$</td><td>$O(\log n)$</td></tr>
+                <tr><td>Bubble Sort</td><td>$O(n)$</td><td>$O(n^2)$</td></tr>
+                <tr><td>Merge Sort</td><td>$O(n \log n)$</td><td>$O(n \log n)$</td></tr>
+                <tr><td>Knapsack (Ex)</td><td>$O(n)$</td><td>$O(2^n)$</td></tr>
+            </table>
+            <div style="text-align: center; margin-top: 3rem;">
+                <h3 style="color: var(--accent-red);">Questions?</h3>
+                <p>Email: algorithms@classroom.edu</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="controls">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← Prev</button>
+        <div class="counter" id="slideCounter">1 / 14</div>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const counter = document.getElementById('slideCounter');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            
+            counter.innerText = `${currentSlide + 1} / ${slides.length}`;
+            
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+
+            // Reset scroll position
+            slides[currentSlide].scrollTop = 0;
+        }
+
+        function changeSlide(direction) {
+            const nextIndex = currentSlide + direction;
+            if (nextIndex >= 0 && nextIndex < slides.length) {
+                currentSlide = nextIndex;
+                updateSlide();
+            }
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            }
+        });
+
+        // Touch support (Simple swipe)
+        let touchstartX = 0;
+        let touchendX = 0;
+        
+        document.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            handleGesture();
+        });
+
+        function handleGesture() {
+            if (touchendX < touchstartX - 50) changeSlide(1);
+            if (touchendX > touchstartX + 50) changeSlide(-1);
+        }
+
+        // Initialize
+        updateSlide();
+    </script>
+</body>
+</html>

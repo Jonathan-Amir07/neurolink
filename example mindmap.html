@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Algorithms Mind Map</title>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-paper: #f9f7f1;
+            --ink-color: #2c3e50;
+            --accent-color: #e67e22;
+            --line-color: #8e959b;
+            --dot-color: rgba(44, 62, 80, 0.1);
+            --line-width: 2px;
+            --gap-size: 60px; /* Distance between parent and child columns */
+        }
+
+        body {
+            font-family: 'Patrick Hand', cursive;
+            background-color: var(--bg-paper);
+            color: var(--ink-color);
+            background-image: radial-gradient(var(--dot-color) 1.5px, transparent 1.5px);
+            background-size: 25px 25px;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow: auto; 
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            left: 0;
+            background: rgba(249, 247, 241, 0.9);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            border-bottom: 1px solid var(--dot-color);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+        }
+
+        .legend {
+            font-size: 1.1rem;
+            color: #777;
+        }
+
+        .tree-viewport {
+            padding: 80px;
+            min-width: 100vw;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .tree-container {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center; 
+            min-width: max-content;
+        }
+
+        /* Each branch is a parent card and its set of children */
+        .tree-branch {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .node-item {
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .node-card {
+            background: white;
+            border: 2px solid var(--ink-color);
+            border-radius: 12px;
+            padding: 12px 18px;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 210px;
+            position: relative;
+            text-align: left;
+            user-select: none;
+            flex-shrink: 0;
+            z-index: 5;
+        }
+
+        .node-card:hover {
+            transform: scale(1.03);
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.15);
+            border-color: var(--accent-color);
+        }
+
+        .node-card.root {
+            background: #d5e8d4;
+            border-width: 3px;
+            width: 240px;
+        }
+
+        .node-card.category {
+            background: #fff2cc;
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 1.15rem;
+        }
+
+        .node-desc {
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 6px;
+            line-height: 1.3;
+            border-top: 1px dashed #ddd;
+            padding-top: 6px;
+        }
+
+        /* The vertical line backbone for children */
+        .children-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            padding-left: var(--gap-size);
+            position: relative;
+        }
+
+        /* Vertical line connector */
+        .children-container::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 25px; /* Half of first child branch height roughly */
+            bottom: 25px; /* Half of last child branch height roughly */
+            width: var(--line-width);
+            background: var(--line-color);
+            z-index: 0;
+        }
+
+        /* Line from Parent Card to the vertical backbone */
+        .parent-connector {
+            position: absolute;
+            right: calc(var(--gap-size) * -1);
+            top: 50%;
+            width: var(--gap-size);
+            height: var(--line-width);
+            background: var(--line-color);
+            z-index: 0;
+            transform: translateY(-50%);
+        }
+
+        /* Line from the vertical backbone to the Child Card */
+        .child-connector {
+            position: absolute;
+            left: calc(var(--gap-size) * -1);
+            top: 50%;
+            width: var(--gap-size);
+            height: var(--line-width);
+            background: var(--line-color);
+            z-index: 0;
+            transform: translateY(-50%);
+        }
+
+        /* Logic to clip vertical lines for first and last children */
+        /* We'll handle this dynamically in JS or with specific classes if needed, 
+           but the ::before on children-container is the most stable backbone. */
+
+        .toggle-indicator {
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: white;
+            border: 2px solid var(--ink-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 20;
+            transition: all 0.2s;
+        }
+        
+        .node-card:hover .toggle-indicator {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Algorithm Analysis & Design</h1>
+        <p class="legend">Click nodes to extend the branches to the right side.</p>
+    </header>
+
+    <div class="tree-viewport">
+        <div id="tree-root" class="tree-container">
+            <!-- Rendered by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        const mindMapData = {
+            title: "Algorithms Analysis & Design",
+            icon: "🧠",
+            desc: "The fundamental study of solving problems efficiently.",
+            children: [
+                {
+                    title: "Algorithm Basics",
+                    icon: "📜",
+                    desc: "Core definitions and building blocks of logic.",
+                    children: [
+                        { title: "Definition", icon: "📖", desc: "A finite set of instructions for solving a task." },
+                        { title: "Qualities of Good Algorithms", icon: "⭐", desc: "Focuses on correctness, clarity, and efficiency." },
+                        { title: "Problem vs Instance", icon: "🎯", desc: "General question vs a specific set of input data." }
+                    ]
+                },
+                {
+                    title: "Complexity Analysis",
+                    icon: "⚖️",
+                    desc: "Measuring resource consumption of programs.",
+                    children: [
+                        {
+                            title: "Time Complexity", icon: "⏱️", desc: "How execution time grows with input size.",
+                            children: [
+                                { title: "Basic Operation Counting", icon: "🔢", desc: "Identifying the most frequent inner step." },
+                                { title: "Order Counting T(n)", icon: "📈", desc: "Mathematical function for step counts." },
+                                { title: "Asymptotic Analysis", icon: "🌌", desc: "Judging behavior as input approaches infinity." }
+                            ]
+                        },
+                        { title: "Space Complexity", icon: "💾", desc: "Memory requirements of the algorithm." },
+                        {
+                            title: "Asymptotic Bounds", icon: "🛡️", desc: "Formal notations for growth limits.",
+                            children: [
+                                { title: "Big O (Upper Bound)", icon: "⬆️", desc: "Worst-case scenario performance limit." },
+                                { title: "Omega (Lower Bound)", icon: "⬇️", desc: "Best-case efficiency guarantee." },
+                                { title: "Theta (Tight Bound)", icon: "↔️", desc: "Average or exact growth rate." }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    title: "Growth Rates",
+                    icon: "🚀",
+                    desc: "Categorizing algorithms by their speed profile.",
+                    children: [
+                        { title: "Constant O(1)", icon: "⚓", desc: "Time stays the same regardless of input size." },
+                        { title: "Logarithmic O(log n)", icon: "🪵", desc: "Efficiency found in binary search trees." },
+                        { title: "Linear O(n)", icon: "📏", desc: "Time grows proportionally with data size." },
+                        { title: "Quadratic O(n²)", icon: "🔲", desc: "Common in nested loops like simple sorts." },
+                        { title: "Exponential O(2ⁿ)", icon: "🦠", desc: "Doubles with every new element; very slow." },
+                        { title: "Factorial O(n!)", icon: "💥", desc: "Extremely inefficient, seen in brute-force TSP." }
+                    ]
+                },
+                {
+                    title: "Recurrence Relations",
+                    icon: "🔄",
+                    desc: "Mathematical tools for recursive algorithm analysis.",
+                    children: [
+                        { title: "Iteration Method", icon: "🔁", desc: "Expanding recurrence until a pattern emerges." },
+                        { title: "Induction Method", icon: "🏗️", desc: "Proving bounds using mathematical induction." },
+                        { 
+                            title: "Master Theorem", icon: "🎓", desc: "Quick formulas for divide & conquer relations.",
+                            children: [
+                                { title: "Dividing Functions", icon: "➗", desc: "Handles subproblems of size n/b." },
+                                { title: "Decreasing Functions", icon: "➖", desc: "Handles subproblems of size n-b." }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    title: "Design Strategies",
+                    icon: "🎨",
+                    desc: "Standard blueprints for algorithm construction.",
+                    children: [
+                        {
+                            title: "Brute Force", icon: "🔨", desc: "Straightforward approach exploring all possibilities.",
+                            children: [
+                                { title: "Selection Sort", icon: "🗃️", desc: "Finding minimums repeatedly in a list." },
+                                { title: "Bubble Sort", icon: "🫧", desc: "Swapping adjacent elements to bubble up values." },
+                                { title: "Sequential Search", icon: "🔦", desc: "Checking every item one by one." },
+                                { title: "String Matching", icon: "🔎", desc: "Simple pattern matching character by character." },
+                                { title: "Exhaustive Search", icon: "🗺️", desc: "TSP and Knapsack via trial of all paths." }
+                            ]
+                        },
+                        {
+                            title: "Divide and Conquer", icon: "⚔️", desc: "Breaking problems into smaller independent parts.",
+                            children: [
+                                { title: "Merge Sort", icon: "🧩", desc: "Splitting, sorting, and merging sub-lists." },
+                                { title: "Binary Search", icon: "🌓", desc: "Halving search space in sorted arrays." },
+                                { title: "Strassen Multiplication", icon: "✖️", desc: "Efficient sub-matrix recursive multiplication." },
+                                { title: "Closest Pair Problem", icon: "📍", desc: "Finding nearest points in a 2D plane." }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    title: "Graph Traversal",
+                    icon: "🕸️",
+                    desc: "Systematic ways to visit every node in a network.",
+                    children: [
+                        {
+                            title: "Depth-First Search (DFS)", icon: "⛏️", desc: "Exploring as far as possible along branches.",
+                            children: [
+                                { title: "Stack-based", icon: "📚", desc: "LIFO implementation or recursion." },
+                                { title: "Connectivity Apps", icon: "🔗", desc: "Finding components and cycles." }
+                            ]
+                        },
+                        {
+                            title: "Breadth-First Search (BFS)", icon: "📡", desc: "Exploring neighbors layer by layer.",
+                            children: [
+                                { title: "Queue-based", icon: "🚶", desc: "FIFO implementation for level-order visit." },
+                                { title: "Shortest Path", icon: "🛤️", desc: "Guarantees minimum steps in unweighted graphs." }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        /**
+         * Recursively renders the tree structure.
+         */
+        function renderNode(nodeData, isRoot = false) {
+            const branch = document.createElement('div');
+            branch.className = 'tree-branch';
+
+            const nodeItem = document.createElement('div');
+            nodeItem.className = 'node-item';
+
+            // Connection line into this node (from its parent's backbone)
+            if (!isRoot) {
+                const childConn = document.createElement('div');
+                childConn.className = 'child-connector';
+                nodeItem.appendChild(childConn);
+            }
+
+            const card = document.createElement('div');
+            card.className = `node-card ${isRoot ? 'root' : (nodeData.children ? 'category' : 'leaf')}`;
+            card.innerHTML = `
+                <div class="node-header">
+                    <span>${nodeData.icon}</span>
+                    <span>${nodeData.title}</span>
+                </div>
+                <div class="node-desc">${nodeData.desc}</div>
+            `;
+
+            nodeItem.appendChild(card);
+
+            if (nodeData.children && nodeData.children.length > 0) {
+                // Add expand indicator
+                const indicator = document.createElement('div');
+                indicator.className = 'toggle-indicator';
+                indicator.innerText = '+'; 
+                card.appendChild(indicator);
+
+                // Add outgoing parent connector (hidden until expanded)
+                const parentConn = document.createElement('div');
+                parentConn.className = 'parent-connector hidden';
+                nodeItem.appendChild(parentConn);
+
+                // Add container for children (hidden until expanded)
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = 'children-container hidden';
+                
+                nodeData.children.forEach(child => {
+                    childrenContainer.appendChild(renderNode(child));
+                });
+
+                branch.appendChild(nodeItem);
+                branch.appendChild(childrenContainer);
+
+                // Interaction Logic
+                card.onclick = (e) => {
+                    e.stopPropagation();
+                    const isNowHidden = childrenContainer.classList.toggle('hidden');
+                    parentConn.classList.toggle('hidden');
+                    indicator.innerText = isNowHidden ? '+' : '−';
+                    
+                    // Update the backbone line height to match current visible children
+                    updateBackbone(childrenContainer);
+                };
+            } else {
+                branch.appendChild(nodeItem);
+            }
+
+            return branch;
+        }
+
+        /**
+         * Adjusts the vertical backbone height to perfectly connect first and last visible children.
+         */
+        function updateBackbone(container) {
+            if (container.classList.contains('hidden')) return;
+
+            const children = Array.from(container.children).filter(c => c.classList.contains('tree-branch'));
+            if (children.length > 0) {
+                const firstChild = children[0];
+                const lastChild = children[children.length - 1];
+                
+                // Calculate distance between the centers of first and last child node-items
+                const firstNode = firstChild.querySelector('.node-item');
+                const lastNode = lastChild.querySelector('.node-item');
+                
+                if (firstNode && lastNode) {
+                    const topOffset = firstNode.offsetTop + (firstNode.offsetHeight / 2);
+                    const bottomOffset = container.offsetHeight - (lastNode.offsetTop + (lastNode.offsetHeight / 2));
+                    
+                    // Use a dynamic style property to set the backbone span
+                    container.style.setProperty('--backbone-top', `${topOffset}px`);
+                    container.style.setProperty('--backbone-bottom', `${bottomOffset}px`);
+                }
+            }
+        }
+
+        // Add dynamic backbone styling via a style tag injected into head
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .children-container::before {
+                top: var(--backbone-top, 25px) !important;
+                bottom: var(--backbone-bottom, 25px) !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        const treeRootContainer = document.getElementById('tree-root');
+        treeRootContainer.appendChild(renderNode(mindMapData, true));
+    </script>
+</body>
+</html>

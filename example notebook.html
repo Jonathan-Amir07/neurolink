@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWE 212 | Algorithms Analysis and Design</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Indie+Flower&family=Permanent+Marker&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper-bg: #fdfdf5;
+            --sidebar-bg: #1e1e1e;
+            --text-ink: #2c3e50;
+            --accent-red: #b22222;
+            --chalkboard-bg: #2d2d2d;
+            --chalk-white: #f5f5f5;
+            --chalk-comment: #88bd88;
+            --chalk-keyword: #ffda6a;
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #e0e0e0;
+            font-family: 'Patrick Hand', cursive;
+            color: var(--text-ink);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR NAVIGATION */
+        nav#sidebar {
+            width: 320px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            padding: 40px 25px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            border-right: 6px solid #111;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.4);
+            z-index: 100;
+        }
+
+        #sidebar h1 {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 1.8rem;
+            margin-bottom: 35px;
+            text-align: center;
+            color: #00d4ff;
+            line-height: 1.2;
+        }
+
+        .toc-group {
+            margin-bottom: 30px;
+        }
+
+        .toc-title {
+            font-size: 0.9rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+
+        .toc-link {
+            display: block;
+            color: #ccc;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: 0.3s;
+            font-size: 1.15rem;
+            margin-bottom: 5px;
+        }
+
+        .toc-link:hover {
+            background-color: #333;
+            color: #00d4ff;
+            transform: translateX(10px);
+        }
+
+        /* MAIN CONTENT AREA */
+        main#content {
+            flex-grow: 1;
+            overflow-y: scroll;
+            padding: 60px 40px;
+            background-image: radial-gradient(#ccc 1px, transparent 1px);
+            background-size: 30px 30px;
+            scroll-behavior: smooth;
+        }
+
+        .notebook-page {
+            max-width: 950px;
+            margin: 0 auto 100px auto;
+            background: var(--paper-bg);
+            padding: 80px;
+            position: relative;
+            box-shadow: var(--shadow);
+            border: 1px solid #ddd;
+            transform: rotate(-0.5deg);
+        }
+
+        .notebook-page:nth-child(even) {
+            transform: rotate(0.6deg);
+        }
+
+        /* Ruled Paper Effect */
+        .ruled {
+            background-image: linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px);
+            background-size: 100% 1.8rem;
+            line-height: 1.8rem;
+        }
+
+        .tape-strip {
+            position: absolute;
+            width: 160px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.45);
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+
+        /* CONTENT STYLING */
+        h2 {
+            font-family: 'Permanent Marker', cursive;
+            color: #003366;
+            font-size: 2.8rem;
+            margin-bottom: 30px;
+            border-bottom: 4px double #003366;
+            display: inline-block;
+        }
+
+        h3 {
+            font-size: 2rem;
+            color: var(--accent-red);
+            margin: 50px 0 20px 0;
+            border-left: 6px solid var(--accent-red);
+            padding-left: 20px;
+            background-color: rgba(255, 255, 255, 0.6);
+            display: inline-block;
+            padding-right: 20px;
+        }
+
+        p, li {
+            margin-bottom: 15px;
+            font-size: 1.35rem;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin-left: 40px;
+            margin-bottom: 25px;
+        }
+
+        /* COMPLEXITY BOX STYLING */
+        .complexity-list {
+            list-style-type: none;
+            margin: 15px 0 30px 0;
+            padding: 15px 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-left: 5px solid var(--accent-red);
+            border-radius: 4px;
+            font-size: 1.3rem;
+            color: #111;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-left: 0;
+        }
+
+        .complexity-list li {
+            margin-bottom: 8px;
+        }
+
+        .complexity-list strong {
+            color: var(--accent-red);
+            display: inline-block;
+            min-width: 100px;
+        }
+
+        /* TABLES */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 1.25rem;
+            background: rgba(255,255,255,0.8);
+        }
+
+        th, td {
+            border: 2px solid #aaa;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #ddd;
+            color: #003366;
+            font-family: 'Permanent Marker', cursive;
+            font-size: 1.4rem;
+        }
+
+        /* CHALKBOARD STYLE CODE BLOCKS */
+        .chalkboard {
+            background-color: var(--chalkboard-bg);
+            color: var(--chalk-white);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            position: relative;
+            border: 10px solid #5d5d5d;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+            overflow-x: auto;
+        }
+
+        .chalkboard::before {
+            content: "C++ Implementation";
+            display: block;
+            margin-bottom: 15px;
+            color: #00d4ff;
+            font-family: 'Patrick Hand', cursive;
+            font-weight: bold;
+            font-size: 1.3rem;
+            border-bottom: 1px dashed #00d4ff;
+            padding-bottom: 5px;
+        }
+
+        pre {
+            font-family: 'Indie Flower', cursive;
+            font-size: 1.35rem;
+            line-height: 1.4;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        .comment { color: var(--chalk-comment); font-style: italic; }
+        .keyword { color: var(--chalk-keyword); }
+        .type { color: #87cefa; }
+
+        .quiz-box {
+            background: #fff3cd;
+            border: 2px dashed #ffeeba;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .answer-box {
+            background: #d4edda;
+            border: 2px dashed #c3e6cb;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media print {
+            nav#sidebar { display: none; }
+            main#content { overflow: visible; padding: 0; background: none; }
+            .notebook-page { box-shadow: none; border: none; transform: none !important; margin: 0; page-break-after: always; }
+            .tape-strip { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav id="sidebar">
+        <h1>SWE 212 NOTES</h1>
+        
+        <div class="toc-group">
+            <div class="toc-title">1. Foundations</div>
+            <a href="#ch1" class="toc-link">Intro & Efficiency</a>
+            <a href="#ch2" class="toc-link">Complexity Bounds</a>
+        </div>
+
+        <div class="toc-group">
+            <div class="toc-title">2. Mathematical Analysis</div>
+            <a href="#ch3" class="toc-link">Master Theorem</a>
+            <a href="#math-algos" class="toc-link">Math Algorithms</a>
+        </div>
+
+        <div class="toc-group">
+            <div class="toc-title">3. Algorithms</div>
+            <a href="#search-sort" class="toc-link">Search & Sort</a>
+            <a href="#brute-force" class="toc-link">Brute Force & Graphs</a>
+        </div>
+
+        <div class="toc-group">
+            <div class="toc-title">4. Reference</div>
+            <a href="#glossary" class="toc-link">Glossary</a>
+            <a href="#quiz" class="toc-link">Practice Quiz</a>
+        </div>
+    </nav>
+
+    <main id="content">
+
+        <!-- Chapter 1 & 2: Introduction and Bounds -->
+        <section id="ch1" class="notebook-page ruled">
+            <div class="tape-strip"></div>
+            <h2>1. Introduction & Efficiency</h2>
+            <p>An algorithm is a sequence of unambiguous instructions for solving a problem, designed to obtain a required output for any legitimate input in a finite amount of time. It can be viewed as a function <em>f</em> that maps input X to output Y.</p>
+            
+            <h3>Qualities of a Good Algorithm</h3>
+            <ul>
+                <li><strong>Precision:</strong> Input and output should be defined precisely.</li>
+                <li><strong>Unambiguity:</strong> Each step should be clear.</li>
+                <li><strong>Effectiveness:</strong> It should be the most effective way to solve the problem among alternatives.</li>
+                <li><strong>Language Independence:</strong> It should not include specific computer code but be written so it can be implemented in various programming languages.</li>
+            </ul>
+
+            <h3>Complexity Analysis</h3>
+            <ul>
+                <li><strong>Time Complexity:</strong> The amount of computer time required to run an algorithm. It depends on machine speed, input size (n), and the number of operations.</li>
+                <li><strong>Space Complexity:</strong> The extra space used by the algorithm beyond the space allocated for the input.</li>
+            </ul>
+
+            <h2 id="ch2" style="margin-top: 40px;">2. Complexity Bounds</h2>
+            <table>
+                <tr>
+                    <th>Type of Bound</th>
+                    <th>Notation</th>
+                    <th>Definition & Meaning</th>
+                </tr>
+                <tr>
+                    <td>Upper Bound</td>
+                    <td>Big O (O)</td>
+                    <td>T(n) &le; c &middot; f(n). Describes <strong>worst-case</strong> behavior.</td>
+                </tr>
+                <tr>
+                    <td>Lower Bound</td>
+                    <td>Omega (&Omega;)</td>
+                    <td>T(n) &ge; c &middot; f(n). Describes <strong>best-case</strong> behavior.</td>
+                </tr>
+                <tr>
+                    <td>Tight Bound</td>
+                    <td>Theta (&Theta;)</td>
+                    <td>c<sub>1</sub>f(n) &le; T(n) &le; c<sub>2</sub>f(n). Used for "Exact" algorithms where cost is independent of data values.</td>
+                </tr>
+            </table>
+
+            <h3>Common Growth Rates (Slowest to Fastest)</h3>
+            <ul class="complexity-list">
+                <li><strong>O(1)</strong> Constant (e.g., accessing an array element)</li>
+                <li><strong>O(log n)</strong> Logarithmic (e.g., Binary Search)</li>
+                <li><strong>O(n)</strong> Linear (e.g., Linear Search)</li>
+                <li><strong>O(n log n)</strong> Linearithmic (e.g., Merge Sort)</li>
+                <li><strong>O(n<sup>2</sup>)</strong> Quadratic (e.g., Bubble/Selection Sort)</li>
+                <li><strong>O(n<sup>3</sup>)</strong> Cubic (e.g., Matrix Multiplication)</li>
+                <li><strong>O(2<sup>n</sup>)</strong> Exponential (e.g., Recursive Fibonacci)</li>
+                <li><strong>O(n!)</strong> Factorial (e.g., TSP Brute Force)</li>
+            </ul>
+        </section>
+
+        <!-- Chapter 3: Master Theorem -->
+        <section id="ch3" class="notebook-page ruled">
+            <div class="tape-strip"></div>
+            <h2>3. Recurrence Relations</h2>
+            <p>Recurrences arise when an algorithm contains recursive calls. The Master Theorem provides a cookbook method for solving them.</p>
+
+            <h3>Master Theorem for Dividing Functions</h3>
+            <p>For a recurrence: <strong>T(n) = aT(n/b) + f(n)</strong>, where f(n) = &Theta;(n<sup>d</sup>)</p>
+            <ul class="complexity-list">
+                <li><strong>Case 1:</strong> If a &lt; b<sup>d</sup>, then T(n) = &Theta;(n<sup>d</sup>)</li>
+                <li><strong>Case 2:</strong> If a = b<sup>d</sup>, then T(n) = &Theta;(n<sup>d</sup> log<sub>b</sub> n)</li>
+                <li><strong>Case 3:</strong> If a &gt; b<sup>d</sup>, then T(n) = &Theta;(n<sup>log<sub>b</sub> a</sup>)</li>
+            </ul>
+
+            <h3>Master Theorem for Decreasing Functions</h3>
+            <p>For a recurrence: <strong>T(n) = aT(n-b) + f(n)</strong>, where f(n) = &Theta;(n<sup>d</sup>)</p>
+            <ul class="complexity-list">
+                <li><strong>Case 1:</strong> If a &lt; 1, then T(n) = &Theta;(f(n))</li>
+                <li><strong>Case 2:</strong> If a = 1, then T(n) = &Theta;(n &middot; f(n)) or &Theta;(n<sup>d+1</sup>)</li>
+                <li><strong>Case 3:</strong> If a &gt; 1, then T(n) = &Theta;(a<sup>n/b</sup> &middot; f(n))</li>
+            </ul>
+        </section>
+
+        <!-- Mathematical Algorithms -->
+        <section id="math-algos" class="notebook-page ruled">
+            <div class="tape-strip"></div>
+            <h2>Math Implementations</h2>
+
+            <h3>Greatest Common Divisor (Euclid)</h3>
+            <div class="chalkboard">
+<pre>
+<span class="comment">// Iterative Implementation</span>
+<span class="type">unsigned int</span> GCD_Iterative(<span class="type">unsigned int</span> m, <span class="type">unsigned int</span> n) {
+    <span class="type">unsigned int</span> r;
+    <span class="keyword">while</span> (n &gt; 0) {
+        r = m % n;
+        m = n;
+        n = r;
+    }
+    <span class="keyword">return</span> m;
+}
+
+<span class="comment">// Recursive Implementation</span>
+<span class="type">unsigned int</span> gcd(<span class="type">unsigned int</span> m, <span class="type">unsigned int</span> n) {
+    <span class="keyword">if</span> (n == 0) <span class="keyword">return</span> m;
+    <span class="keyword">else return</span> gcd(n, m % n);
+}
+</pre>
+            </div>
+
+            <h3>Prime Numbers (Sieve of Eratosthenes)</h3>
+            <div class="chalkboard">
+<pre>
+<span class="comment">// Improved Implementation (Loop count reduced)</span>
+<span class="type">void</span> Sieve(<span class="type">unsigned int</span> n) {
+    <span class="type">int</span> Cnt = 0;
+    <span class="type">unsigned int</span> *Arr = <span class="keyword">new</span> <span class="type">unsigned int</span>[n + 1];
+    Arr[0] = Arr[1] = 0;
+    <span class="keyword">for</span> (<span class="type">int</span> i = 2; i &lt;= n; i++) Arr[i] = 1;
+    <span class="keyword">for</span> (<span class="type">int</span> i = 2; i &lt;= n / 2; i++) {
+        <span class="keyword">if</span> (!Arr[i]) <span class="keyword">continue</span>;
+        <span class="keyword">for</span> (<span class="type">int</span> j = 2; j &lt;= n / i; j++) {
+            Arr[i * j] = 0;
+            Cnt++;
+        }
+    }
+    <span class="keyword">for</span> (<span class="type">int</span> i = 1; i &lt;= n; i++) 
+        <span class="keyword">if</span> (Arr[i]) cout &lt;&lt; i &lt;&lt; <span class="string">" "</span>;
+    cout &lt;&lt; endl &lt;&lt; <span class="string">"The loop count: "</span> &lt;&lt; Cnt &lt;&lt; endl;
+}
+</pre>
+            </div>
+
+            <h3>Matrix Multiplication & Fibonacci</h3>
+            <ul class="complexity-list">
+                <li><strong>Matrix Mult:</strong> Efficiency: O(n<sup>3</sup>)</li>
+                <li><strong>Fibonacci (Iterative):</strong> Efficiency: O(n)</li>
+                <li><strong>Fibonacci (Recursive):</strong> Efficiency: O(2<sup>n/2</sup>)</li>
+            </ul>
+            <div class="chalkboard">
+<pre>
+<span class="comment">// Basic Matrix Multiplication</span>
+<span class="type">void</span> MatrixMult(<span class="type">int</span> n, <span class="type">double</span> A[][Dimen2], <span class="type">double</span> B[][Dimen2], <span class="type">double</span> C[][Dimen2]) {
+    <span class="keyword">for</span> (<span class="type">int</span> i = 0; i &lt; n; i++)
+        <span class="keyword">for</span> (<span class="type">int</span> j = 0; j &lt; n; j++) {
+            C[i][j] = 0.0;
+            <span class="keyword">for</span> (<span class="type">int</span> k = 0; k &lt; n; k++)
+                C[i][j] = C[i][j] + A[i][k] * B[k][j];
+        }
+}
+
+<span class="comment">// Iterative Fibonacci (Dynamic Programming)</span>
+<span class="type">int</span> Fib2(<span class="type">int</span> n) {
+    <span class="type">int</span> *f = <span class="keyword">new</span> <span class="type">int</span>[n + 1];
+    f[0] = 0;
+    <span class="keyword">if</span> (n &gt; 0) {
+        f[1] = 1;
+        <span class="keyword">for</span> (<span class="type">int</span> i = 2; i &lt;= n; i++)
+            f[i] = f[i - 1] + f[i - 2];
+    }
+    <span class="keyword">return</span> f[n];
+}
+
+<span class="comment">// Recursive Fibonacci (Divide and Conquer)</span>
+<span class="type">int</span> Fib(<span class="type">int</span> n) {
+    <span class="keyword">if</span> (n &lt;= 1) <span class="keyword">return</span> n;
+    <span class="keyword">return</span> Fib(n - 1) + Fib(n - 2);
+}
+</pre>
+            </div>
+        </section>
+
+        <!-- Searching & Sorting -->
+        <section id="search-sort" class="notebook-page ruled">
+            <div class="tape-strip"></div>
+            <h2>Search & Sort Implementations</h2>
+
+            <h3>Searching Algorithms</h3>
+            <ul class="complexity-list">
+                <li><strong>Sequential Search:</strong> Worst: O(n) | Best: &Omega;(1)</li>
+                <li><strong>Binary Search:</strong> Efficiency: O(log n)</li>
+            </ul>
+            <div class="chalkboard">
+<pre>
+<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType&gt;
+<span class="type">void</span> seqSearch(<span class="type">int</span> n, DataType *S, DataType x, <span class="type">int</span>& location) {
+    location = 1;
+    <span class="keyword">while</span> (location &lt;= n && S[location] != x)
+        location++;
+    <span class="keyword">if</span> (location &gt; n)
+        location = 0;
+}
+
+<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType&gt;
+<span class="type">void</span> binSearch(<span class="type">int</span> n, DataType *S, DataType x, <span class="type">int</span>& location) {
+    <span class="type">int</span> low = 0, high = n - 1, mid;
+    location = 0;
+    <span class="keyword">while</span> (low &lt;= high && location == 0) {
+        mid = (low + high) / 2;
+        <span class="keyword">if</span> (x == S[mid]) location = mid + 1;
+        <span class="keyword">else if</span> (x &lt; S[mid]) high = mid - 1;
+        <span class="keyword">else</span> low = mid + 1;
+    }
+}
+</pre>
+            </div>
+
+            <h3>Sorting Algorithms</h3>
+            <ul class="complexity-list">
+                <li><strong>Exchange Sort:</strong> Efficiency: O(n<sup>2</sup>)</li>
+                <li><strong>Merge Sort:</strong> Efficiency: &Theta;(n log n)</li>
+            </ul>
+            <div class="chalkboard">
+<pre>
+<span class="comment">// Exchange Sort</span>
+<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType&gt;
+<span class="type">void</span> ExchangeSort(<span class="type">int</span> n, DataType *S) {
+    DataType tmp;
+    <span class="keyword">for</span> (<span class="type">int</span> i = 0; i &lt; n; i++)
+        <span class="keyword">for</span> (<span class="type">int</span> j = i + 1; j &lt; n; j++)
+            <span class="keyword">if</span> (S[j] &lt; S[i]) {
+                tmp = S[j];
+                S[j] = S[i];
+                S[i] = tmp;
+            }
+}
+
+<span class="comment">// Merge Sort (Divide and Conquer)</span>
+<span class="keyword">template</span> &lt;<span class="keyword">typename</span> ElementType&gt;
+<span class="type">void</span> mergesort(ElementType *a, ElementType *b, <span class="type">int</span> low, <span class="type">int</span> high) {
+    <span class="keyword">if</span> (low &lt; high) {
+        <span class="type">int</span> Mid = (low + high) / 2;
+        mergesort(a, b, low, Mid);
+        mergesort(a, b, Mid + 1, high);
+        merge(a, b, low, Mid, high);
+    }
+}
+
+<span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType&gt;
+<span class="type">void</span> merge(DataType *a, DataType *b, <span class="type">int</span> low, <span class="type">int</span> Mid, <span class="type">int</span> high) {
+    <span class="type">int</span> i = low, x = low, y = Mid + 1;
+    <span class="keyword">while</span> ((x &lt;= Mid) && (y &lt;= high)) {
+        <span class="keyword">if</span> (a[x] &lt;= a[y]) { b[i] = a[x]; x++; }
+        <span class="keyword">else</span> { b[i] = a[y]; y++; }
+        i++;
+    }
+    <span class="keyword">if</span> (x &gt; Mid) <span class="keyword">for</span> (<span class="type">int</span> k = y; k &lt;= high; k++) { b[i] = a[k]; i++; }
+    <span class="keyword">else</span> <span class="keyword">for</span> (<span class="type">int</span> k = x; k &lt;= Mid; k++) { b[i] = a[k]; i++; }
+    <span class="keyword">for</span> (<span class="type">int</span> k = low; k &lt;= high; k++) a[k] = b[k];
+}
+</pre>
+            </div>
+        </section>
+
+        <!-- Brute Force & Graph Traversal -->
+        <section id="brute-force" class="notebook-page ruled">
+            <div class="tape-strip"></div>
+            <h2>Brute Force & Graphs</h2>
+
+            <h3>Brute Force / Exhaustive Search</h3>
+            <ul class="complexity-list">
+                <li><strong>Naive String Matching:</strong> Efficiency: O(nm)</li>
+                <li><strong>Closest Pair (Brute Force):</strong> Efficiency: &Theta;(n<sup>2</sup>)</li>
+            </ul>
+            <div class="chalkboard">
+<pre>
+<span class="comment">// Naive String Matching</span>
+<span class="type">int</span> NaiveStringMatch(string T, string P) {
+    <span class="type">int</span> i, j;
+    <span class="keyword">for</span> (i = 0; i &lt;= T.length() - P.length(); i++) {
+        j = 0;
+        <span class="keyword">while</span> ((j &lt; P.length()) && (P[j] == T[i + j])) {
+            j++;
+        }
+        <span class="keyword">if</span> (j == P.length()) <span class="keyword">return</span> i;
+    }
+    <span class="keyword">return</span> -1;
+}
+
+<span class="comment">// Closest Pair</span>
+<span class="type">double</span> ClosestPairMod(MyPT *Ar, <span class="type">int</span> size, <span class="type">int</span>& Pair1, <span class="type">int</span>& Pair2) {
+    <span class="type">double</span> d = 2.0e10, Dx, Dy;
+    <span class="keyword">for</span> (<span class="type">int</span> i = 0; i &lt; size; i++) {
+        <span class="keyword">for</span> (<span class="type">int</span> j = i + 1; j &lt; size; j++) {
+            Dx = (<span class="type">double</span>)Ar[i].x - Ar[j].x;
+            Dy = (<span class="type">double</span>)Ar[i].y - Ar[j].y;
+            <span class="type">double</span> dist = sqrt((Dx * Dx) + (Dy * Dy));
+            <span class="keyword">if</span> (d &gt; dist) {
+                d = dist;
+                Pair1 = i;
+                Pair2 = j;
+            }
+        }
+    }
+    <span class="keyword">return</span> d;
+}
+</pre>
+            </div>
+
+            <h3>Graph Traversal</h3>
+            <ul class="complexity-list">
+                <li><strong>DFS & BFS:</strong> &Theta;(V<sup>2</sup>) for matrix, &Theta;(|V| + |E|) for adjacency list.</li>
+            </ul>
+            <div class="chalkboard">
+<pre>
+<span class="comment">// Depth First Search (DFS)</span>
+<span class="type">void</span> DirectedUnweightedGraph::DFSRec(<span class="type">int</span> vertex, vector&lt;<span class="type">bool</span>&gt;& visited) {
+    <span class="keyword">if</span> (visited[vertex]) <span class="keyword">return</span>;
+    cout &lt;&lt; vertex &lt;&lt; <span class="string">" "</span>;
+    visited[vertex] = <span class="keyword">true</span>;
+    <span class="keyword">for</span> (<span class="type">int</span> i = 0; i &lt; adjacencyList[vertex].size(); i++) {
+        <span class="type">int</span> dest = adjacencyList[vertex][i];
+        <span class="keyword">if</span> (!visited[dest]) DFSRec(dest, visited);
+    }
+}
+
+<span class="comment">// Breadth First Search (BFS)</span>
+<span class="type">void</span> DirectedUnweightedGraph::BFS() {
+    vector&lt;<span class="type">bool</span>&gt; visited(numberOfVertices, <span class="keyword">false</span>);
+    queue&lt;<span class="type">int</span>&gt; q;
+    q.push(0); <span class="comment">// Start at vertex 0</span>
+    visited[0] = <span class="keyword">true</span>;
+    <span class="keyword">while</span> (!q.empty()) {
+        <span class="type">int</span> vertex = q.front();
+        q.pop();
+        cout &lt;&lt; vertex &lt;&lt; <span class="string">" "</span>;
+        <span class="keyword">for</span> (<span class="type">int</span> i = 0; i &lt; adjacencyList[vertex].size(); i++) {
+            <span class="type">int</span> dest = adjacencyList[vertex][i];
+            <span class="keyword">if</span> (!visited[dest]) {
+                q.push(dest);
+                visited[dest] = <span class="keyword">true</span>;
+            }
+        }
+    }
+}
+</pre>
+            </div>
+        </section>
+
+        <!-- Glossary and Quiz -->
+        <section id="glossary" class="notebook-page ruled">
+            <div class="tape-strip"></div>
+            <h2>Glossary of Key Terms</h2>
+            <ul>
+                <li><strong>Adjacency Matrix:</strong> A 2D array used to represent a graph where A[i][j] = 1 if there is an edge between i and j.</li>
+                <li><strong>Backtracking:</strong> A method of searching for a solution by exploring paths and returning when a dead end is reached (used in DFS).</li>
+                <li><strong>Basic Operation:</strong> The most frequent operation in an algorithm (e.g., comparison in sorting) used for asymptotic analysis.</li>
+                <li><strong>Brute Force:</strong> A straightforward approach based directly on the problem statement.</li>
+                <li><strong>Divide and Conquer:</strong> A strategy that breaks a problem into sub-problems, solves them recursively, and combines the results.</li>
+                <li><strong>Exhaustive Search:</strong> A brute force solution for combinatorial problems (permutations, subsets).</li>
+                <li><strong>Hamiltonian Circuit:</strong> A path that visits every vertex in a graph exactly once and returns to the start.</li>
+                <li><strong>Knapsack Problem:</strong> Given weights and values of items, find the most valuable subset that fits in a weight limit W.</li>
+                <li><strong>Traveling Salesman Problem (TSP):</strong> Finding the shortest tour through n cities.</li>
+            </ul>
+
+            <h2 id="quiz" style="margin-top: 50px;">Practice Quiz</h2>
+            
+            <div class="quiz-box">
+                <h3>Questions:</h3>
+                <ol>
+                    <li>What is the worst-case complexity of Binary Search?</li>
+                    <li>True or False: Big-O notation is used to describe the lower bound of an algorithm.</li>
+                    <li>Which data structure is used for Breadth-First Search (BFS)?</li>
+                    <li>What is the recurrence relation for Merge Sort?</li>
+                    <li>In the Master Theorem for dividing functions, what is the complexity if a &gt; b<sup>d</sup>?</li>
+                    <li>How many permutations are there in an exhaustive search for a TSP with n cities?</li>
+                    <li>What is the basic operation in the Sieve of Eratosthenes?</li>
+                    <li>What is the difference between O(n) and &Theta;(n)?</li>
+                </ol>
+            </div>
+
+            <div class="answer-box">
+                <h3>Answers:</h3>
+                <ul>
+                    <li><strong>A1:</strong> O(log<sub>2</sub> n)</li>
+                    <li><strong>A2:</strong> False. Big-O is for the upper bound (worst case); Omega (&Omega;) is for the lower bound.</li>
+                    <li><strong>A3:</strong> A Queue.</li>
+                    <li><strong>A4:</strong> W(n) = 2W(n/2) + n - 1</li>
+                    <li><strong>A5:</strong> T(n) = &Theta;(n<sup>log<sub>b</sub> a</sup>)</li>
+                    <li><strong>A6:</strong> (n-1)! or (n-1)! / 2</li>
+                    <li><strong>A7:</strong> Marking composite numbers (setting an array index to 0).</li>
+                    <li><strong>A8:</strong> O(n) is an upper bound (the algorithm takes at most n time); &Theta;(n) is a tight bound (the algorithm takes exactly proportional to n time regardless of data).</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('.toc-link').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

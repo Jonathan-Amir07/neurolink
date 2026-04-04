@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithms Infographic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Indie+Flower&family=Permanent+Marker&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper-bg: #fffdf6;
+            --ink-color: #2c3e50;
+            --accent-red: #e74c3c;
+            --accent-blue: #3498db;
+            --chalkboard-bg: #282c34;
+            --chalk-text: #ecf0f1;
+            --ruled-line: rgba(44, 62, 80, 0.1);
+            --desk-bg: #636e72;
+            --tape-color: rgba(255, 255, 255, 0.4);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background-color: var(--desk-bg);
+            font-family: 'Patrick Hand', cursive;
+            color: var(--ink-color);
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        /* Infographic Main Container */
+        .infographic-board {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 50px;
+            position: relative;
+        }
+
+        /* Connecting Timeline Line */
+        .infographic-board::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background: rgba(44, 62, 80, 0.3);
+            border-left: 2px dashed rgba(255, 255, 255, 0.2);
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        /* Paper Card Styles */
+        .paper-card {
+            background-color: var(--paper-bg);
+            padding: 40px 50px 40px 70px;
+            box-shadow: 5px 10px 30px rgba(0,0,0,0.4);
+            position: relative;
+            background-image: linear-gradient(var(--ruled-line) 1px, transparent 1px);
+            background-size: 100% 28px;
+            line-height: 28px;
+            width: 100%;
+            border-radius: 2px;
+            z-index: 1;
+        }
+
+        .paper-card::before {
+            content: "";
+            position: absolute;
+            left: 50px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: rgba(231, 76, 60, 0.4);
+        }
+
+        /* Sticky Tape Effect */
+        .tape {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            width: 120px;
+            height: 35px;
+            background-color: var(--tape-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            backdrop-filter: blur(2px);
+            transform: translateX(-50%) rotate(-2deg);
+            z-index: 2;
+        }
+
+        /* Rotations for organic feel */
+        .rot-left { transform: rotate(-1.5deg); }
+        .rot-right { transform: rotate(1.5deg); }
+        .rot-slight-left { transform: rotate(-0.5deg); }
+        .rot-slight-right { transform: rotate(0.5deg); }
+
+        /* Typography */
+        h1.main-title {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 3.5rem;
+            color: var(--paper-bg);
+            text-align: center;
+            text-shadow: 3px 3px 0 var(--ink-color);
+            margin: 0 0 10px 0;
+            z-index: 1;
+            transform: rotate(-2deg);
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: #b2bec3;
+            text-align: center;
+            z-index: 1;
+            background: var(--ink-color);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+        h2.section-title {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 2rem;
+            color: var(--accent-red);
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 3px solid var(--ink-color);
+            display: inline-block;
+            width: 100%;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            color: var(--accent-blue);
+            margin: 15px 0 5px 0;
+            line-height: 1.2;
+        }
+
+        /* Layout Grids */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+
+        /* Visual Blocks & Shapes */
+        .box {
+            border: 2px solid var(--ink-color);
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.6);
+            transition: 0.2s;
+        }
+
+        .box:hover { transform: translateY(-3px); box-shadow: 3px 3px 0 var(--ink-color); }
+
+        .circle-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--ink-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 10px auto;
+            border: 3px solid var(--accent-blue);
+        }
+
+        .math-text {
+            font-family: 'Indie Flower', cursive;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight {
+            background: rgba(241, 196, 15, 0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* Arrows & Connectors */
+        .arrow-down {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--accent-red);
+            margin: 10px 0;
+            line-height: 1;
+        }
+
+        .growth-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to right, #2ecc71, #f1c40f, #e74c3c);
+            padding: 10px;
+            border-radius: 20px;
+            color: white;
+            font-family: 'Indie Flower', cursive;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            border: 2px solid var(--ink-color);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .growth-bar span {
+            background: rgba(0,0,0,0.6);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        /* Comparison Table */
+        .vs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border: 2px solid var(--ink-color);
+        }
+        .vs-table th { background: var(--accent-blue); color: white; border: 2px solid var(--ink-color); padding: 8px; font-family: 'Permanent Marker', cursive; font-size: 1.2rem;}
+        .vs-table td { border: 2px solid var(--ink-color); padding: 8px; text-align: center; font-size: 1.2rem;}
+
+        /* Chalkboard Section */
+        .chalkboard {
+            background-color: var(--chalkboard-bg);
+            color: var(--chalk-text);
+            font-family: 'Indie Flower', cursive;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: inset 0 0 20px black, 0 10px 20px rgba(0,0,0,0.5);
+            border: 8px solid #4b4b4b;
+            position: relative;
+            z-index: 1;
+            width: 105%;
+            left: -2.5%;
+            transform: rotate(-1deg);
+        }
+
+        .chalkboard h2 {
+            color: #f1c40f;
+            border-bottom: 2px dashed rgba(255,255,255,0.3);
+            text-align: center;
+            font-family: 'Permanent Marker', cursive;
+            margin-top: 0;
+        }
+
+        .chalk-list {
+            list-style: none;
+            padding: 0;
+            font-size: 1.3rem;
+        }
+        .chalk-list li { margin: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
+        .chalk-list span.complex { color: #e74c3c; float: right; }
+        .chalk-list span.fast { color: #2ecc71; float: right; }
+        .chalk-list span.med { color: #f1c40f; float: right; }
+
+        /* Relationships / Flow block */
+        .flow-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            background: rgba(52, 152, 219, 0.1);
+            border: 2px dashed var(--accent-blue);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+            .paper-card { padding: 30px 20px 30px 50px; }
+            .growth-bar { flex-direction: column; gap: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="infographic-board">
+        
+        <!-- HEADER -->
+        <h1 class="main-title">ALGORITHMS</h1>
+        <div class="tagline">Visual Analysis & Design Cheat Sheet</div>
+
+        <!-- SECTION 1: FOUNDATIONS -->
+        <div class="paper-card rot-left">
+            <div class="tape"></div>
+            <h2 class="section-title">1. The Algorithm Recipe</h2>
+            <p style="text-align: center; font-size: 1.3rem;">A sequence of unambiguous instructions solving a problem in finite time.</p>
+            
+            <div class="grid-4">
+                <div class="box">
+                    <div class="circle-icon">🎯</div>
+                    <strong>Precise</strong><br>Exact IO
+                </div>
+                <div class="box">
+                    <div class="circle-icon">👓</div>
+                    <strong>Clear</strong><br>Unambiguous
+                </div>
+                <div class="box">
+                    <div class="circle-icon">⚡</div>
+                    <strong>Effective</strong><br>Efficient
+                </div>
+                <div class="box">
+                    <div class="circle-icon">🌐</div>
+                    <strong>Independent</strong><br>Any Code
+                </div>
+            </div>
+
+            <div class="flow-box">
+                <div style="text-align:center;">
+                    <h3>Why Efficiency Matters?</h3>
+                    <span class="highlight">⏱️ Time (CPU)</span> &nbsp; vs &nbsp; <span class="highlight">💾 Space (Memory)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: COMPLEXITY -->
+        <div class="paper-card rot-right">
+            <div class="tape" style="transform: translateX(-50%) rotate(3deg);"></div>
+            <h2 class="section-title">2. Asymptotic Bounds (The Big 3)</h2>
+            
+            <div class="grid-3">
+                <div class="box" style="border-color: var(--accent-red);">
+                    <h3 style="color: var(--accent-red); font-size: 2.5rem; margin:0;">O</h3>
+                    <strong>Big-O</strong>
+                    <hr>
+                    <span class="highlight">Upper Bound</span><br>
+                    Worst Case scenario.<br>Grows <em>at most</em> as fast.
+                </div>
+                <div class="box" style="border-color: #27ae60;">
+                    <h3 style="color: #27ae60; font-size: 2.5rem; margin:0;">&Theta;</h3>
+                    <strong>Big-Theta</strong>
+                    <hr>
+                    <span class="highlight">Tight Bound</span><br>
+                    Exact Case scenario.<br>Grows <em>exactly</em> as fast.
+                </div>
+                <div class="box" style="border-color: var(--accent-blue);">
+                    <h3 style="color: var(--accent-blue;); font-size: 2.5rem; margin:0;">&Omega;</h3>
+                    <strong>Big-Omega</strong>
+                    <hr>
+                    <span class="highlight">Lower Bound</span><br>
+                    Best Case scenario.<br>Grows <em>at least</em> as fast.
+                </div>
+            </div>
+
+            <h3 style="text-align: center; margin-top: 30px;">Complexity Growth Rate (Fastest to Slowest)</h3>
+            <div class="growth-bar">
+                <span>O(1)</span> ➔ 
+                <span>O(log n)</span> ➔ 
+                <span>O(n)</span> ➔ 
+                <span>O(n log n)</span> ➔ 
+                <span>O(n<sup>2</sup>)</span> ➔ 
+                <span>O(2<sup>n</sup>)</span> ➔ 
+                <span>O(n!)</span>
+            </div>
+        </div>
+
+        <!-- SECTION 3: STRATEGIES & RECURRENCES -->
+        <div class="paper-card rot-slight-left">
+            <div class="tape"></div>
+            <h2 class="section-title">3. Strategies & Solving</h2>
+            
+            <div class="grid-2">
+                <!-- Brute Force -->
+                <div>
+                    <h3>🔨 Brute Force / Exhaustive</h3>
+                    <p>Straightforward, tests <em>everything</em>. Reliable but often dangerously slow.</p>
+                    <div class="box" style="background: rgba(231, 76, 60, 0.1); border-color: var(--accent-red);">
+                        <strong>Combinatorial Nightmares:</strong>
+                        <ul style="text-align: left; margin: 5px 0; padding-left: 20px;">
+                            <li>Traveling Salesman: <span class="math-text">O(n!)</span></li>
+                            <li>Knapsack Problem: <span class="math-text">O(2<sup>n</sup>)</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Master Theorem -->
+                <div>
+                    <h3>📐 The Master Theorem</h3>
+                    <p>Cheat code for dividing recurrences:<br> <span class="math-text">T(n) = aT(n/b) + f(n)</span></p>
+                    <div class="box">
+                        Compare <strong style="color:var(--accent-red)">a</strong> vs <strong style="color:var(--accent-blue)">b<sup>d</sup></strong>
+                        <div style="text-align: left; padding-left: 10px;">
+                            <span class="math-text">a &lt; b<sup>d</sup> ➔ &Theta;(n<sup>d</sup>)</span><br>
+                            <span class="math-text">a = b<sup>d</sup> ➔ &Theta;(n<sup>d</sup> log n)</span><br>
+                            <span class="math-text">a &gt; b<sup>d</sup> ➔ &Theta;(n<sup>log<sub>b</sub> a</sup>)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: GRAPHS -->
+        <div class="paper-card rot-slight-right">
+            <div class="tape" style="transform: translateX(-50%) rotate(1deg);"></div>
+            <h2 class="section-title">4. Graph Traversal: DFS vs BFS</h2>
+            
+            <table class="vs-table">
+                <tr>
+                    <th style="width: 50%;">DFS (Depth First Search)</th>
+                    <th style="width: 50%;">BFS (Breadth First Search)</th>
+                </tr>
+                <tr>
+                    <td><div class="arrow-down">⬇️</div><br><strong>Go Deep!</strong> explores path to leaf before backtracking.</td>
+                    <td><div class="arrow-down" style="transform: rotate(-90deg);">⬅️➡️</div><br><strong>Go Wide!</strong> explores all neighbors before going deeper.</td>
+                </tr>
+                <tr>
+                    <td><span class="highlight">Uses a STACK</span></td>
+                    <td><span class="highlight">Uses a QUEUE</span></td>
+                </tr>
+                <tr>
+                    <td>Best for: Mazes, Acyclicity</td>
+                    <td>Best for: <strong>Shortest Path</strong></td>
+                </tr>
+                <tr style="background: rgba(44, 62, 80, 0.1);">
+                    <td colspan="2"><strong>Efficiency:</strong> Both are <span class="math-text">&Theta;(V + E)</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- SECTION 5: CHALKBOARD CHEAT SHEET -->
+        <div class="chalkboard">
+            <h2>Appendix: Quick Cheat Sheet</h2>
+            
+            <div class="grid-2">
+                <div>
+                    <h3 style="color: white; border-bottom: 1px solid #7f8c8d;">Search & Sort</h3>
+                    <ul class="chalk-list">
+                        <li>Sequential Search <span class="med">O(n)</span></li>
+                        <li>Binary Search <span class="fast">O(log n)</span></li>
+                        <li>Bubble/Exchange Sort <span class="complex">O(n<sup>2</sup>)</span></li>
+                        <li>Naïve String Match <span class="complex">O(n*m)</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color: white; border-bottom: 1px solid #7f8c8d;">Math Rules</h3>
+                    <ul class="chalk-list" style="font-size: 1.1rem;">
+                        <li>Sum 1 to n ≈ <span class="complex">&Theta;(n<sup>2</sup>)</span></li>
+                        <li>Limit f(n)/g(n) = 0 ➔ <span class="fast">f = O(g)</span></li>
+                        <li>Limit f(n)/g(n) = c ➔ <span class="med">f = &Theta;(g)</span></li>
+                        <li>Limit f(n)/g(n) = ∞ ➔ <span class="complex">f = &Omega;(g)</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithms Active Recall Flashcards</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Indie+Flower&family=Permanent+Marker&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper-bg: #fffdf6;
+            --ink-color: #2c3e50;
+            --accent-red: #e74c3c;
+            --accent-blue: #3498db;
+            --sidebar-bg: #2d3436;
+            --ruled-line: rgba(44, 62, 80, 0.1);
+            --card-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Patrick Hand', cursive;
+            background-color: #dfe6e9;
+            color: var(--ink-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+
+        .sidebar h1 {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 1.6rem;
+            color: var(--accent-blue);
+            margin-bottom: 30px;
+            text-align: center;
+            transform: rotate(-2deg);
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #b2bec3;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .filter-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid #636e72;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: rgba(52, 152, 219, 0.2);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .stats {
+            margin-top: auto;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* Main Area */
+        .main-stage {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        .progress-container {
+            position: absolute;
+            top: 20px;
+            width: 60%;
+            height: 8px;
+            background: #cbd5e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-blue);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Flashcard Container */
+        .card-perspective {
+            perspective: 1000px;
+            width: 500px;
+            height: 350px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background-color: var(--paper-bg);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: linear-gradient(var(--ruled-line) 1px, transparent 1px);
+            background-size: 100% 28px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .card-face::after {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(231, 76, 60, 0.2);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        .diff-tag {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 0.8rem;
+            padding: 2px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .diff-basic { background: #d1fae5; color: #065f46; }
+        .diff-intermediate { background: #fef3c7; color: #92400e; }
+        .diff-advanced { background: #fee2e2; color: #991b1b; }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+            color: var(--accent-red);
+            font-family: 'Permanent Marker', cursive;
+        }
+
+        .card-text {
+            font-size: 1.3rem;
+            line-height: 1.4;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 15px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Navigation Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-family: inherit;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            background: #f8fafc;
+        }
+
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .shuffle-btn {
+            background: #a29bfe;
+            color: white;
+        }
+
+        /* Keyboard Shortcuts Help */
+        .shortcuts {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: #636e72;
+            text-align: right;
+        }
+
+        /* Code highlight in answer */
+        .code-snippet {
+            font-family: 'Indie Flower', cursive;
+            background: #f1f5f9;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        ul.answer-list {
+            text-align: left;
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        @media (max-width: 800px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; }
+            .card-perspective { width: 90%; max-width: 400px; height: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h1>Active Recall</h1>
+        
+        <div class="filter-group">
+            <label>Chapter Focus</label>
+            <button class="filter-btn active" onclick="filterByChapter('All')">All Chapters</button>
+            <button class="filter-btn" onclick="filterByChapter(1)">Ch 1: Foundations</button>
+            <button class="filter-btn" onclick="filterByChapter(2)">Ch 2: Complexity</button>
+            <button class="filter-btn" onclick="filterByChapter(3)">Ch 3: Brute Force</button>
+            <button class="filter-btn" onclick="filterByChapter(4)">Ch 4: Recurrences</button>
+            <button class="filter-btn" onclick="filterByChapter(5)">Ch 5: Graphs</button>
+        </div>
+
+        <div class="stats">
+            <div>Current Deck: <span id="deck-size">0</span> cards</div>
+            <div>Progress: <span id="progress-text">0 / 0</span></div>
+        </div>
+    </aside>
+
+    <main class="main-stage">
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div class="card-perspective" onclick="flipCard()">
+            <div id="card-inner" class="card-inner">
+                <!-- Front Side -->
+                <div class="card-face card-front" id="card-front">
+                    <span id="diff-tag" class="diff-tag"></span>
+                    <div class="card-icon" id="card-icon">🧠</div>
+                    <div class="card-text" id="question-text">Loading flashcards...</div>
+                    <div class="hint">Click to flip</div>
+                </div>
+                <!-- Back Side -->
+                <div class="card-face card-back" id="card-back">
+                    <div class="card-title">Answer</div>
+                    <div class="card-text" id="answer-text">...</div>
+                    <div class="hint">Click to flip back</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="nav-btn" onclick="prevCard()">← Back</button>
+            <button class="nav-btn shuffle-btn" onclick="shuffleCurrentDeck()">Shuffle 🔀</button>
+            <button class="nav-btn btn-primary" onclick="nextCard()">Next →</button>
+        </div>
+
+        <div class="shortcuts">
+            Space: Flip | Right Arrow: Next | Left Arrow: Back
+        </div>
+    </main>
+
+    <script>
+        const cards = [
+            // CH 1
+            { ch: 1, type: "Definition", diff: "basic", q: "What is the formal definition of an algorithm?", a: "A sequence of unambiguous instructions for solving a problem, yielding a required output for any legitimate input in a finite amount of time.", icon: "📜" },
+            { ch: 1, type: "Fact", diff: "basic", q: "Which 9th-century mathematician is the term 'Algorithm' named after?", a: "Al-Khowarizmi.", icon: "👤" },
+            { ch: 1, type: "Qualities", diff: "intermediate", q: "List 4 qualities of a good algorithm.", a: "<ul class='answer-list'><li>Precision (Defined inputs/outputs)</li><li>Clarity (Unambiguous steps)</li><li>Effectiveness (Efficient)</li><li>Language Independence</li></ul>", icon: "💎" },
+            { ch: 1, type: "Comparison", diff: "advanced", q: "Compare the Recursive vs Iterative Fibonacci for $n=100$.", a: "Iterative: $O(n)$, takes ~100ns. <br>Recursive: $O(2^n)$, would take ~13 days!", icon: "⚖️" },
+            
+            // CH 2
+            { ch: 2, type: "Concept", diff: "basic", q: "What is the difference between Time and Space complexity?", a: "Time complexity: CPU cycles taken to run.<br>Space complexity: Extra memory used beyond input allocation.", icon: "⏱️" },
+            { ch: 2, type: "Bound", diff: "basic", q: "What does Big-O notation ($O(f(n))$) represent?", a: "The Worst Case / Upper Bound. The growth rate grows <b>at most</b> as fast as $f(n)$.", icon: "📈" },
+            { ch: 2, type: "Bound", diff: "intermediate", q: "What does Big-Theta notation ($\Theta(f(n))$) represent?", a: "The Tight/Exact Bound. The growth rate is <b>exactly</b> the same as $f(n)$.", icon: "🎯" },
+            { ch: 2, type: "Rule", diff: "intermediate", q: "Explain the 'Sum Rule' in Big-O analysis.", a: "If an algorithm does $f$ then $g$, the total complexity is the dominant term: $O(f+g) = \text{max}(O(f), O(g))$.", icon: "➕" },
+            { ch: 2, type: "Ranking", diff: "advanced", q: "Rank these growth rates: $O(n^2), O(n \log n), O(2^n), O(n!)$", a: "$O(n \log n) < O(n^2) < O(2^n) < O(n!)$", icon: "🔢" },
+            
+            // CH 3
+            { ch: 3, type: "Definition", diff: "basic", q: "Define the 'Brute Force' approach.", a: "A straightforward approach based directly on the problem statement and definitions.", icon: "🔨" },
+            { ch: 3, type: "Complexity", diff: "intermediate", q: "What is the complexity of Naïve String Matching for text $n$ and pattern $m$?", a: "Worst Case: $O(n \cdot m)$.", icon: "🧵" },
+            { ch: 3, type: "Exhaustive", diff: "advanced", q: "What is the complexity class of the Traveling Salesman Problem (TSP) using exhaustive search?", a: "Factorial: $O(n!)$.", icon: "🌍" },
+            { ch: 3, type: "Exhaustive", diff: "intermediate", q: "What is the complexity of the Knapsack Problem via exhaustive search?", a: "Exponential: $O(2^n)$.", icon: "🎒" },
+
+            // CH 4
+            { ch: 4, type: "Methods", diff: "basic", q: "Name 3 primary methods for solving recurrence relations.", a: "1. Iteration Method<br>2. Induction (Substitution) Method<br>3. Master Theorem", icon: "🔄" },
+            { ch: 4, type: "Master Theorem", diff: "intermediate", q: "In Master Theorem, what is the result if $a = b^d$?", a: "$T(n) = \Theta(n^d \log n)$.", icon: "🎓" },
+            { ch: 4, type: "Master Theorem", diff: "advanced", q: "Solve $T(n) = T(n-1) + n$ using Decreasing Master Theorem.", a: "Case 2 applies ($a=1$). <br>Result: $O(n \cdot n) = O(n^2)$.", icon: "🧪" },
+            
+            // CH 5
+            { ch: 5, type: "Structure", diff: "basic", q: "Which data structure is used to implement BFS?", a: "A Queue (FIFO).", icon: "🚶" },
+            { ch: 5, type: "Structure", diff: "basic", q: "Which data structure is used for DFS?", a: "A Stack (LIFO) or Recursion.", icon: "🕳️" },
+            { ch: 5, type: "Application", diff: "intermediate", q: "Which traversal is used to find the shortest path in unweighted graphs?", a: "BFS (Breadth First Search).", icon: "🗺️" },
+            { ch: 5, type: "Efficiency", diff: "intermediate", q: "What is the efficiency of DFS/BFS using an Adjacency List?", a: "$\Theta(V + E)$.", icon: "⚡" },
+
+            // Formulas
+            { ch: "All", type: "Math", diff: "advanced", q: "What is the closed-form sum of $\sum_{i=1}^{n} i$?", a: "$\frac{n(n+1)}{2}$, which is $\Theta(n^2)$.", icon: "📐" }
+        ];
+
+        let currentDeck = [...cards];
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        function updateCard() {
+            const card = currentDeck[currentIndex];
+            const inner = document.getElementById('card-inner');
+            const frontText = document.getElementById('question-text');
+            const backText = document.getElementById('answer-text');
+            const diffTag = document.getElementById('diff-tag');
+            const cardIcon = document.getElementById('card-icon');
+            
+            // Reset flip before changing content
+            inner.classList.remove('flipped');
+            isFlipped = false;
+
+            setTimeout(() => {
+                frontText.innerHTML = card.q;
+                backText.innerHTML = card.a;
+                cardIcon.innerHTML = card.icon;
+                diffTag.innerHTML = card.diff;
+                diffTag.className = `diff-tag diff-${card.diff}`;
+                
+                // Update Progress
+                const total = currentDeck.length;
+                const current = currentIndex + 1;
+                document.getElementById('progress-text').innerText = `${current} / ${total}`;
+                document.getElementById('deck-size').innerText = total;
+                document.getElementById('progress-bar').style.width = `${(current / total) * 100}%`;
+            }, 150);
+        }
+
+        function flipCard() {
+            const inner = document.getElementById('card-inner');
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                inner.classList.add('flipped');
+            } else {
+                inner.classList.remove('flipped');
+            }
+        }
+
+        function nextCard() {
+            if (currentIndex < currentDeck.length - 1) {
+                currentIndex++;
+                updateCard();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        function shuffleCurrentDeck() {
+            for (let i = currentDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentDeck[i], currentDeck[j]] = [currentDeck[j], currentDeck[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+        }
+
+        function filterByChapter(chapter) {
+            // UI update
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (chapter === 'All') {
+                currentDeck = [...cards];
+            } else {
+                currentDeck = cards.filter(c => c.ch === chapter || c.ch === 'All');
+            }
+            currentIndex = 0;
+            updateCard();
+        }
+
+        // Keyboard Controls
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                flipCard();
+            } else if (e.code === 'ArrowRight') {
+                nextCard();
+            } else if (e.code === 'ArrowLeft') {
+                prevCard();
+            }
+        });
+
+        // Initialize
+        window.onload = () => {
+            updateCard();
+        };
+    </script>
+</body>
+</html>
