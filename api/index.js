@@ -34,10 +34,12 @@ process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception:', err);
 });
 
-// Middleware
+// Middleware - shifted static below auth for safety
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, '..')));
+
+// Health Check (for debugging 404s)
+app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
 
 // Sessions
 app.use(session({
@@ -85,6 +87,9 @@ app.get('/auth/logout', (req, res) => {
         res.redirect('/');
     });
 });
+
+// Static files (moved down)
+app.use(express.static(path.join(__dirname, '..')));
 
 // ── Project Routes ────────────────────────────────────────────────────────────
 
