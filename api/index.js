@@ -39,11 +39,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Clean URLs
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../public/index.html')));
-app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, '../public/dashboard.html')));
-app.get('/project', (req, res) => res.sendFile(path.join(__dirname, '../public/project.html')));
-
 // Sessions
 app.use(session({
     secret: process.env.SESSION_SECRET || 'academic secret',
