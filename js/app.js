@@ -61,8 +61,18 @@ async function loadProjects() {
 
 // Global initialization
 document.addEventListener('DOMContentLoaded', async () => {
-    await checkAuth();
-    if (window.location.pathname.includes('dashboard.html')) {
+    const user = await checkAuth();
+    
+    const path = window.location.pathname;
+    
+    // Redirect logged-in users from Landing Page to Dashboard
+    if (user && (path === '/' || path === '/index.html' || path === '/index')) {
+        window.location.href = '/dashboard';
+        return;
+    }
+
+    // Load projects if on dashboard (handle clean URLs)
+    if (path.includes('dashboard')) {
         loadProjects();
     }
 });
