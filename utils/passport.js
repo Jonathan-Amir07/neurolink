@@ -9,22 +9,31 @@ passport.use(new GoogleStrategy({
     proxy: true
   },
   async (accessToken, refreshToken, profile, done) => {
+    // Safely parse profile information
     const newUser = {
       googleId: profile.id,
-      displayName: profile.displayName,
-      email: profile.emails[0].value,
-      image: profile.photos[0].value
+      displayName: profile.displayName || 'Google User',
+      email: profile.emails && profile.emails[0] ? profile.emails[0].value : '',
+      image: profile.photos && profile.photos[0] ? profile.photos[0].value : ''
     };
 
+    if (!newUser.email) {
+      console.error('[Passport] No email found in Google profile');
+      return done(new Error('Email is required for authentication but was not provided by Google.'));
+    }
+
     try {
+      console.log(`[Passport] Attempting login for: ${newUser.email}`);
       let user = await User.findOne({ googleId: profile.id });
       if (user) {
+        console.log(`[Passport] Found existing user: ${user._id}`);
         return done(null, user);
       }
       user = await User.create(newUser);
+      console.log(`[Passport] Created new user: ${user._id}`);
       done(null, user);
     } catch (err) {
-      console.error(err);
+      console.error('[Passport] Database error during login:', err.message);
       done(err);
     }
   }

@@ -228,4 +228,14 @@ if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error('SERVER ERROR:', err.stack);
+    res.status(500).json({ 
+        error: 'Internal Server Error', 
+        message: err.message,
+        stack: process.env.NODE_ENV === 'production' ? null : err.stack
+    });
+});
+
 module.exports = app;
