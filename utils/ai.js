@@ -16,26 +16,28 @@ async function callAI(prompt, retries = 1) {
     for (let i = 0; i <= retries; i++) {
         const currentModel = MODEL_VARIANTS[i % MODEL_VARIANTS.length];
         try {
-            console.log(`[AI] Attempting call with model: ${currentModel}`);
+            console.log(`[AI] Dispatching to: ${currentModel}`);
             const model = genAI.getGenerativeModel({ 
                 model: currentModel,
-                generationConfig: { maxOutputTokens: 2048, temperature: 0.7 } 
+                generationConfig: { maxOutputTokens: 1500, temperature: 0.7 } 
             });
 
-            // Add an internal timeout to the fetch call if possible, 
-            // but for now, we rely on the parallel structure in index.js
             const result = await model.generateContent(prompt);
             const response = await result.response;
-            const text = response.text();
+            let text = response.text().trim();
 
-            const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/\{[\s\S]*\}/);
+            // Handle potential markdown block wrapper
+            if (text.startsWith('```json')) text = text.replace(/^```json/, '');
+            if (text.endsWith('```')) text = text.replace(/```$/, '');
+            
+            // Further find JSON object
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
-                const cleanedJson = (jsonMatch[1] || jsonMatch[0]).trim();
-                return JSON.parse(cleanedJson);
+                return JSON.parse(jsonMatch[0].trim());
             }
-            throw new Error("No JSON found in AI response text.");
+            throw new Error("No JSON object found in response.");
         } catch (error) {
-            console.error(`[AI] Attempt ${i + 1} failed for ${currentModel}:`, error.message);
+            console.error(`[AI] Attempt ${i + 1} failed (${currentModel}):`, error.message);
             if (i === retries) return null;
             await new Promise(r => setTimeout(r, 500));
         }
@@ -43,23 +45,23 @@ async function callAI(prompt, retries = 1) {
 }
 
 async function generateNotebook(text) {
-    const prompt = `You are an AI Study Architect. Transform the content into a structured study notebook.
+    const prompt = `You are an AI Study Architect. Transform the provided content into a structured study notebook.
 CONTENT REQUIREMENTS:
-- Create 3-5 comprehensive chapters.
-- Each chapter must have exactly 5 sections: 1. Overview, 2. Deep Dive, 3. Step-by-Step, 4. Key Takeaways, 5. Quick Quiz.
+- Create 1-2 highly detailed chapters.
+- Each chapter MUST have exactly 4 sections: 1. Overview, 2. Core Explanation, 3. Key Concepts, 4. Summary & Quiz.
+- Focus on conceptual clarity and pedagogical structure.
 OUTPUT FORMAT:
 Return ONLY a valid JSON object: {"notebook": "html_content"}.
 Use this HTML structure for every chapter:
 <section class="notebook-page ruled">
     <h2>Chapter Number. Chapter Title</h2>
     <div class="notebook-section"><h3>1. Overview</h3><p>...</p></div>
-    <div class="notebook-section"><h3>2. Deep Dive</h3><p>...</p></div>
-    <div class="notebook-section"><h3>3. Step-by-Step</h3><p>...</p></div>
-    <div class="notebook-section"><h3>4. Key Takeaways</h3><p>...</p></div>
-    <div class="notebook-section"><h3>5. Quick Quiz</h3><p>...</p></div>
+    <div class="notebook-section"><h3>2. Core Explanation</h3><p>...</p></div>
+    <div class="notebook-section"><h3>3. Key Concepts</h3><p>...</p></div>
+    <div class="notebook-section"><h3>4. Summary & Quiz</h3><p>...</p></div>
 </section>
 
-Content: ${text.substring(0, 4000)}`;
+Content: ${text.substring(0, 3500)}`;
     return await callAI(prompt);
 }
 
