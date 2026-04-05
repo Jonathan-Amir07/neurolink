@@ -177,18 +177,25 @@ app.post('/api/projects', parseUpload, async (req, res) => {
         });
 
         // ── AI generation ──────────────────────────────────────────────────
-        const hasKey = process.env.GOOGLE_API_KEY && process.env.GOOGLE_API_KEY !== 'your_gemini_api_key';
+        const apiKey = process.env.GOOGLE_API_KEY;
+        const hasKey = apiKey && apiKey !== '' && apiKey !== 'your_gemini_api_key';
 
-        if (hasKey) {
-            console.log(`[AI] Generating: ${selectedTypes.join(', ')}`);
-            const generators = {
-                notebook:    generateNotebook,
-                mindmap:     generateMindmap,
-                flashcards:  generateFlashcards,
-                slides:      generateSlides,
-                infographic: generateInfographic
-            };
+        if (!hasKey) {
+            console.error('[AI] Generation failed: GOOGLE_API_KEY is missing or invalid');
+            return res.status(400).json({ 
+                error: 'Google API Key is missing. Please add GOOGLE_API_KEY to your Vercel Environment Variables.' 
+            });
+        }
 
+        const generators = {
+            notebook:    generateNotebook,
+            mindmap:     generateMindmap,
+            flashcards:  generateFlashcards,
+            slides:      generateSlides,
+            infographic: generateInfographic
+        };
+
+        try {
             console.log(`[AI] Dispatching parallel requests for: ${selectedTypes.join(', ')}`);
             const tStart = Date.now();
             
@@ -214,16 +221,18 @@ app.post('/api/projects', parseUpload, async (req, res) => {
 
             project.outputs = results;
             console.log(`[AI] Total generation time: ${Date.now() - tStart}ms — ${results.length}/${selectedTypes.length} materials saved`);
-        } else {
-            console.warn('[AI] SKIPPED: No valid GOOGLE_API_KEY');
+
+            await project.save();
+            res.json(project);
+
+        } catch (err) {
+            console.error('[AI Inner Catch]', err);
+            res.status(500).json({ error: 'Failed to generate study materials: ' + err.message });
         }
 
-        await project.save();
-        res.json(project);
-
     } catch (err) {
-        console.error('[POST /api/projects]', err);
-        res.status(500).json({ error: err.message });
+        console.error('[POST /api/projects Outer Catch]', err);
+        res.status(500).json({ error: 'Server error: ' + err.message });
     }
 });
 

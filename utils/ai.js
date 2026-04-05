@@ -3,11 +3,10 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // Use models confirmed available from your API key
 const MODEL_VARIANTS = [
     "gemini-1.5-flash",
-    "gemini-1.5-pro",
-    "gemini-1.5-flash-8b"
+    "gemini-1.5-pro"
 ];
 
-async function callAI(prompt, retries = 2) {
+async function callAI(prompt, retries = 1) {
     if (!process.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY === 'your_gemini_api_key') {
         console.error('[AI] No valid GOOGLE_API_KEY configured');
         return null;
@@ -18,12 +17,17 @@ async function callAI(prompt, retries = 2) {
         const currentModel = MODEL_VARIANTS[i % MODEL_VARIANTS.length];
         try {
             console.log(`[AI] Attempting call with model: ${currentModel}`);
-            const model = genAI.getGenerativeModel({ model: currentModel });
+            const model = genAI.getGenerativeModel({ 
+                model: currentModel,
+                generationConfig: { maxOutputTokens: 2048, temperature: 0.7 } 
+            });
+
+            // Add an internal timeout to the fetch call if possible, 
+            // but for now, we rely on the parallel structure in index.js
             const result = await model.generateContent(prompt);
             const response = await result.response;
             const text = response.text();
 
-            // Robustly extract JSON — strip markdown fences
             const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 const cleanedJson = (jsonMatch[1] || jsonMatch[0]).trim();
@@ -33,52 +37,29 @@ async function callAI(prompt, retries = 2) {
         } catch (error) {
             console.error(`[AI] Attempt ${i + 1} failed for ${currentModel}:`, error.message);
             if (i === retries) return null;
-            // Wait briefly before retrying
             await new Promise(r => setTimeout(r, 500));
         }
     }
 }
 
 async function generateNotebook(text) {
-    const prompt = `You are an AI Study Architect, Curriculum Engineer, and Technical Educator.
-Your task is to transform any topic into a deeply structured study notebook that explains the subject thoroughly and clearly.
-
-CONTENT GENERATION REQUIREMENTS:
-- Explain the topic in depth. Do NOT produce short summaries.
-- Create comprehensive explanations similar to a university-level textbook.
-- Focus on: conceptual clarity, step-by-step explanations, detailed breakdowns, logical progression of ideas, and practical understanding.
-- Break the topic into logical chapters. Each chapter must cover ONE core concept.
-
-CHAPTER STRUCTURE REQUIREMENT:
-Each chapter must contain these 10 specific sections:
-1. Introduction, 2. Core Concept Explanation, 3. Technical Breakdown, 4. Step-by-Step Mechanism, 5. Diagrams/Visuals (Markdown Tables), 6. Code/Pseudocode, 7. Real-World Applications, 8. Common Mistakes, 9. Comparison, 10. Summary.
-
+    const prompt = `You are an AI Study Architect. Transform the content into a structured study notebook.
+CONTENT REQUIREMENTS:
+- Create 3-5 comprehensive chapters.
+- Each chapter must have exactly 5 sections: 1. Overview, 2. Deep Dive, 3. Step-by-Step, 4. Key Takeaways, 5. Quick Quiz.
 OUTPUT FORMAT:
 Return ONLY a valid JSON object: {"notebook": "html_content"}.
-The html_content must use the following EXACT structure for EVERY chapter:
-
+Use this HTML structure for every chapter:
 <section class="notebook-page ruled">
-    <div class="tape-strip"></div>
     <h2>Chapter Number. Chapter Title</h2>
-    
-    <!-- Each of the 10 sections should be a <div> with an <h3> -->
-    <div class="notebook-section">
-        <h3>1. Introduction</h3>
-        <p>Content...</p>
-    </div>
-    
-    <!-- Code blocks should use this structure -->
-    <div class="chalkboard">
-        <pre><code>...code...</code></pre>
-    </div>
-    
-    <!-- Complexity or key-point lists should use this -->
-    <ul class="complexity-list">
-        <li><strong>Term:</strong> Description</li>
-    </ul>
+    <div class="notebook-section"><h3>1. Overview</h3><p>...</p></div>
+    <div class="notebook-section"><h3>2. Deep Dive</h3><p>...</p></div>
+    <div class="notebook-section"><h3>3. Step-by-Step</h3><p>...</p></div>
+    <div class="notebook-section"><h3>4. Key Takeaways</h3><p>...</p></div>
+    <div class="notebook-section"><h3>5. Quick Quiz</h3><p>...</p></div>
 </section>
 
-Content to transform: ${text}`;
+Content: ${text.substring(0, 4000)}`;
     return await callAI(prompt);
 }
 
