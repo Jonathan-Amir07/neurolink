@@ -2,9 +2,8 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Use models confirmed available from your API key
 const MODEL_VARIANTS = [
-    "models/gemini-2.5-flash",
-    "models/gemini-2.0-flash",
-    "models/gemini-1.5-flash"
+    "gemini-1.5-flash",
+    "gemini-1.5-pro"
 ];
 
 async function callAI(prompt, retries = 3) {

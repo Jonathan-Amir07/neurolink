@@ -180,7 +180,7 @@ app.post('/api/projects', parseUpload, async (req, res) => {
         const hasKey = process.env.GOOGLE_API_KEY && process.env.GOOGLE_API_KEY !== 'your_gemini_api_key';
 
         if (hasKey) {
-            console.log(`[AI] Generating: ${selectedTypes.join(', ')}`);
+            console.log(`[AI] Generating concurrently: ${selectedTypes.join(', ')}`);
             const generators = {
                 notebook:    generateNotebook,
                 mindmap:     generateMindmap,
@@ -189,26 +189,26 @@ app.post('/api/projects', parseUpload, async (req, res) => {
                 infographic: generateInfographic
             };
 
-            const results = [];
-            for (const type of selectedTypes) {
-                if (!generators[type]) continue;
-                console.log(`[AI] → ${type}…`);
+            const promises = selectedTypes.map(async (type) => {
+                if (!generators[type]) return null;
                 const t0 = Date.now();
                 try {
                     const data = await generators[type](content);
                     if (data && data[type]) {
-                        results.push({ type, content: data[type] });
                         console.log(`[AI] ✓ ${type} in ${Date.now() - t0}ms`);
-                    } else {
-                        console.warn(`[AI] ✗ ${type} returned null`);
+                        return { type, content: data[type] };
                     }
+                    console.warn(`[AI] ✗ ${type} returned null`);
+                    return null;
                 } catch (aiErr) {
                     console.error(`[AI] ✗ ${type} threw:`, aiErr.message);
+                    return null;
                 }
-            }
+            });
 
-            project.outputs = results;
-            console.log(`[AI] Done — ${results.length}/${selectedTypes.length} materials saved`);
+            const settledResults = await Promise.all(promises);
+            project.outputs = settledResults.filter(r => r !== null);
+            console.log(`[AI] Done — ${project.outputs.length}/${selectedTypes.length} materials saved`);
         } else {
             console.warn('[AI] SKIPPED: No valid GOOGLE_API_KEY');
         }
