@@ -3,16 +3,21 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // Use models confirmed available from your API key
 const MODEL_VARIANTS = [
     "gemini-1.5-flash",
-    "gemini-1.5-pro"
+    "gemini-1.5-pro",
+    "gemini-1.5-flash-8b"
 ];
 
-async function callAI(prompt, retries = 3) {
-    if (!process.env.GOOGLE_API_KEY) return null;
+async function callAI(prompt, retries = 2) {
+    if (!process.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY === 'your_gemini_api_key') {
+        console.error('[AI] No valid GOOGLE_API_KEY configured');
+        return null;
+    }
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
     for (let i = 0; i <= retries; i++) {
         const currentModel = MODEL_VARIANTS[i % MODEL_VARIANTS.length];
         try {
+            console.log(`[AI] Attempting call with model: ${currentModel}`);
             const model = genAI.getGenerativeModel({ model: currentModel });
             const result = await model.generateContent(prompt);
             const response = await result.response;
@@ -24,11 +29,12 @@ async function callAI(prompt, retries = 3) {
                 const cleanedJson = (jsonMatch[1] || jsonMatch[0]).trim();
                 return JSON.parse(cleanedJson);
             }
-            throw new Error("No JSON found in AI response");
+            throw new Error("No JSON found in AI response text.");
         } catch (error) {
-            console.error(`AI Attempt ${i + 1} failed for ${currentModel}:`, error.message);
+            console.error(`[AI] Attempt ${i + 1} failed for ${currentModel}:`, error.message);
             if (i === retries) return null;
-            await new Promise(r => setTimeout(r, i * 1000 + 1000));
+            // Wait briefly before retrying
+            await new Promise(r => setTimeout(r, 500));
         }
     }
 }

@@ -180,7 +180,7 @@ app.post('/api/projects', parseUpload, async (req, res) => {
         const hasKey = process.env.GOOGLE_API_KEY && process.env.GOOGLE_API_KEY !== 'your_gemini_api_key';
 
         if (hasKey) {
-            console.log(`[AI] Generating concurrently: ${selectedTypes.join(', ')}`);
+            console.log(`[AI] Generating: ${selectedTypes.join(', ')}`);
             const generators = {
                 notebook:    generateNotebook,
                 mindmap:     generateMindmap,
@@ -189,26 +189,31 @@ app.post('/api/projects', parseUpload, async (req, res) => {
                 infographic: generateInfographic
             };
 
-            const promises = selectedTypes.map(async (type) => {
+            console.log(`[AI] Dispatching parallel requests for: ${selectedTypes.join(', ')}`);
+            const tStart = Date.now();
+            
+            // Map each type to a promise
+            const generationPromises = selectedTypes.map(async (type) => {
                 if (!generators[type]) return null;
-                const t0 = Date.now();
                 try {
                     const data = await generators[type](content);
                     if (data && data[type]) {
-                        console.log(`[AI] ✓ ${type} in ${Date.now() - t0}ms`);
                         return { type, content: data[type] };
                     }
-                    console.warn(`[AI] ✗ ${type} returned null`);
-                    return null;
-                } catch (aiErr) {
-                    console.error(`[AI] ✗ ${type} threw:`, aiErr.message);
-                    return null;
+                } catch (err) {
+                    console.error(`[AI] Error in ${type}:`, err.message);
                 }
+                return null;
             });
 
-            const settledResults = await Promise.all(promises);
-            project.outputs = settledResults.filter(r => r !== null);
-            console.log(`[AI] Done — ${project.outputs.length}/${selectedTypes.length} materials saved`);
+            // Run in parallel
+            const settleResults = await Promise.allSettled(generationPromises);
+            const results = settleResults
+                .filter(r => r.status === 'fulfilled' && r.value !== null)
+                .map(r => r.value);
+
+            project.outputs = results;
+            console.log(`[AI] Total generation time: ${Date.now() - tStart}ms — ${results.length}/${selectedTypes.length} materials saved`);
         } else {
             console.warn('[AI] SKIPPED: No valid GOOGLE_API_KEY');
         }
