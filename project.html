@@ -118,17 +118,26 @@
             const id = params.get('id');
             if (!id) return;
 
-            const res = await fetch(`/api/projects/${id}`);
-            if (res.ok) {
-                currentProject = await res.json();
-                document.getElementById('project-title-header').innerText = currentProject.title;
-                switchTab('notebook');
+            try {
+                const res = await fetch(`/api/projects/${id}`);
+                if (res.ok) {
+                    currentProject = await res.json();
+                    document.getElementById('project-title-header').innerText = currentProject.title;
+                    switchTab('notebook');
+                } else {
+                    document.getElementById('project-title-header').innerText = "Project Not Found (404)";
+                    console.error("Failed to fetch project");
+                }
+            } catch (error) {
+                console.error("Error fetching project:", error);
+                document.getElementById('project-title-header').innerText = "Connection Error";
             }
         }
 
         function switchTab(type) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${type}')"]`);
+            if (activeBtn) activeBtn.classList.add('active');
 
             const views = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic'];
             views.forEach(v => {
@@ -140,6 +149,10 @@
         }
 
         function renderContent(type) {
+            if (!currentProject) {
+                document.getElementById(`${type}-view`).innerHTML = `<div class="card">Project data not loaded.</div>`;
+                return;
+            }
             const output = currentProject.outputs.find(o => o.type === type);
             if (!output) {
                 document.getElementById(`${type}-view`).innerHTML = `<div class="card">No ${type} generated yet. Make sure to trigger AI generation.</div>`;
