@@ -1,14 +1,15 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Use models confirmed available from your API key
+// Model priority: standard SDK names first (work across all environments),
+// full-path names as fallback (confirmed working locally).
 const MODEL_VARIANTS = [
-    "models/gemini-2.5-flash",
-    "models/gemini-2.0-flash",
     "gemini-1.5-flash",
-    "gemini-1.5-pro"
+    "gemini-1.5-pro",
+    "models/gemini-2.5-flash",
+    "models/gemini-2.0-flash"
 ];
 
-async function callAI(prompt, retries = 1, maxTokens = 2000) {
+async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2000) {
     if (!process.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY === 'your_gemini_api_key') {
         console.error('[AI] No valid GOOGLE_API_KEY configured');
         return null;
