@@ -54,12 +54,15 @@
     </header>
 
     <main class="container">
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('notebook')">Notebook</button>
-            <button class="tab-btn" onclick="switchTab('mindmap')">Mind Map</button>
-            <button class="tab-btn" onclick="switchTab('flashcards')">Flashcards</button>
-            <button class="tab-btn" onclick="switchTab('slides')">Slides</button>
-            <button class="tab-btn" onclick="switchTab('infographic')">Infographic</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--dot-color); margin-bottom: 2rem; padding-bottom: 0.5rem;">
+            <div class="tabs" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
+                <button class="tab-btn active" onclick="switchTab('notebook')">Notebook</button>
+                <button class="tab-btn" onclick="switchTab('mindmap')">Mind Map</button>
+                <button class="tab-btn" onclick="switchTab('flashcards')">Flashcards</button>
+                <button class="tab-btn" onclick="switchTab('slides')">Slides</button>
+                <button class="tab-btn" onclick="switchTab('infographic')">Infographic</button>
+            </div>
+            <button id="regen-btn" class="auth-btn" onclick="regenerateCurrentTab()" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; background-color: var(--accent-color);">↺ Regenerate Tab</button>
         </div>
 
             <div id="notebook-view" class="hidden">
@@ -112,6 +115,7 @@
     <script src="js/infographic.js"></script>
     <script>
         let currentProject = null;
+        let activeTab = 'notebook';
 
         async function init() {
             const params = new URLSearchParams(window.location.search);
@@ -135,6 +139,7 @@
         }
 
         function switchTab(type) {
+            activeTab = type;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${type}')"]`);
             if (activeBtn) activeBtn.classList.add('active');
@@ -155,7 +160,12 @@
             }
             const output = currentProject.outputs.find(o => o.type === type);
             if (!output) {
-                document.getElementById(`${type}-view`).innerHTML = `<div class="card">No ${type} generated yet. Make sure to trigger AI generation.</div>`;
+                document.getElementById(`${type}-view`).innerHTML = `
+                    <div class="card" style="text-align: center; margin-top: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">No ${type} generated yet.</h3>
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 1.5rem;">There might have been a timeout or generation error.</p>
+                        <button class="auth-btn" style="background-color: var(--accent-color);" onclick="regenerateCurrentTab()">✨ Generate Now</button>
+                    </div>`;
                 return;
             }
 
@@ -219,6 +229,37 @@
                 initSlides(output.content);
             } else if (type === 'infographic') {
                 initInfographic(output.content);
+            }
+        }
+
+        async function regenerateCurrentTab() {
+            if (!currentProject) return;
+
+            const btn = document.getElementById('regen-btn');
+            const originalText = btn.innerText;
+            btn.innerText = 'Generating... ⏳';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/projects/${currentProject._id}/regenerate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: activeTab })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    currentProject = data.project;
+                    renderContent(activeTab); // Re-render the tab with new data
+                } else {
+                    const err = await res.json().catch(()=>({}));
+                    alert(err.error || 'Regeneration failed');
+                }
+            } catch (error) {
+                alert('Connection error');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
         }
 

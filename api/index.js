@@ -128,6 +128,48 @@ app.delete('/api/projects/:id', async (req, res) => {
     }
 });
 
+app.post('/api/projects/:id/regenerate', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send();
+    try {
+        const project = await Project.findOne({ _id: req.params.id, user: req.user.id });
+        if (!project) return res.status(404).send();
+
+        const { type } = req.body;
+        const validTypes = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic'];
+        if (!validTypes.includes(type)) return res.status(400).json({ error: 'Invalid type' });
+
+        const generators = {
+            notebook:    generateNotebook,
+            mindmap:     generateMindmap,
+            flashcards:  generateFlashcards,
+            slides:      generateSlides,
+            infographic: generateInfographic
+        };
+
+        if (!generators[type]) return res.status(400).json({ error: 'Generator not found' });
+        
+        console.log(`[AI] Regenerating ${type} for project ${project._id}...`);
+        
+        const data = await generators[type](project.raw_input || '');
+        
+        if (data && data[type]) {
+            const existingIndex = project.outputs.findIndex(o => o.type === type);
+            if (existingIndex !== -1) {
+                project.outputs[existingIndex].content = data[type]; // Overwrite existing
+            } else {
+                project.outputs.push({ type, content: data[type] }); // Append new
+            }
+            await project.save();
+            return res.json({ success: true, project });
+        } else {
+            return res.status(500).json({ error: `Generation returned empty for ${type}.` });
+        }
+    } catch (err) {
+        console.error(`[AI] Regeneration error:`, err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // POST /api/projects — accepts multipart/form-data (text field or file)
 app.post('/api/projects', parseUpload, async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send();
