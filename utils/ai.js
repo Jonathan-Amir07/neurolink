@@ -73,7 +73,7 @@ Use this HTML structure for every chapter:
 </section>
 
 Content: ${text.substring(0, 3500)}`;
-    return await callAI(prompt, 1, 4000); // Higher token limit for notebooks
+    return await callAI(prompt, MODEL_VARIANTS.length - 1, 4000); // Use all retries, higher token limit
 }
 
 async function generateMindmap(text) {
@@ -88,8 +88,8 @@ Guidelines:
 - Use relevant emojis for icons
 - Keep desc fields concise (one sentence)
 
-Content: ${text}`;
-    return await callAI(prompt);
+Content: ${text.substring(0, 3500)}`;
+    return await callAI(prompt, MODEL_VARIANTS.length - 1, 2500);
 }
 
 async function generateFlashcards(text) {
@@ -119,8 +119,8 @@ Guidelines:
 - 3-5 bullet points per slide
 - Keep bullets short and scannable
 
-Content: ${text}`;
-    return await callAI(prompt);
+Content: ${text.substring(0, 3500)}`;
+    return await callAI(prompt, MODEL_VARIANTS.length - 1, 2500);
 }
 
 async function generateInfographic(text) {
@@ -134,9 +134,10 @@ Guidelines:
 - Each section covers one core concept
 - Content should be scannable, not dense prose
 
-Content: ${text}`;
-    return await callAI(prompt);
+Content: ${text.substring(0, 3500)}`;
+    return await callAI(prompt, MODEL_VARIANTS.length - 1, 2000);
 }
+
 
 async function generateStudyMaterials(text, selectedTypes = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic']) {
     const generators = { notebook: generateNotebook, mindmap: generateMindmap, flashcards: generateFlashcards, slides: generateSlides, infographic: generateInfographic };
