@@ -2,11 +2,13 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Use models confirmed available from your API key
 const MODEL_VARIANTS = [
+    "models/gemini-2.5-flash",
+    "models/gemini-2.0-flash",
     "gemini-1.5-flash",
     "gemini-1.5-pro"
 ];
 
-async function callAI(prompt, retries = 1) {
+async function callAI(prompt, retries = 1, maxTokens = 2000) {
     if (!process.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY === 'your_gemini_api_key') {
         console.error('[AI] No valid GOOGLE_API_KEY configured');
         return null;
@@ -16,10 +18,10 @@ async function callAI(prompt, retries = 1) {
     for (let i = 0; i <= retries; i++) {
         const currentModel = MODEL_VARIANTS[i % MODEL_VARIANTS.length];
         try {
-            console.log(`[AI] Dispatching to: ${currentModel}`);
+            console.log(`[AI] Dispatching to: ${currentModel} (maxTokens: ${maxTokens})`);
             const model = genAI.getGenerativeModel({ 
                 model: currentModel,
-                generationConfig: { maxOutputTokens: 1500, temperature: 0.7 } 
+                generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } 
             });
 
             const result = await model.generateContent(prompt);
@@ -27,19 +29,27 @@ async function callAI(prompt, retries = 1) {
             let text = response.text().trim();
 
             // Handle potential markdown block wrapper
-            if (text.startsWith('```json')) text = text.replace(/^```json/, '');
-            if (text.endsWith('```')) text = text.replace(/```$/, '');
+            text = text.replace(/^```json/, '').replace(/```$/, '').trim();
             
-            // Further find JSON object
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                return JSON.parse(jsonMatch[0].trim());
+            // Robust JSON extraction
+            const start = text.indexOf('{');
+            const end = text.lastIndexOf('}');
+            if (start !== -1 && end !== -1 && end > start) {
+                const jsonStr = text.substring(start, end + 1);
+                try {
+                    return JSON.parse(jsonStr);
+                } catch (parseErr) {
+                    console.warn(`[AI] JSON parse attempt 1 failed: ${parseErr.message}. Attempting to clean string...`);
+                    // Final fallback: try to strip any control characters or invalid whitespace
+                    const cleaned = jsonStr.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
+                    return JSON.parse(cleaned);
+                }
             }
-            throw new Error("No JSON object found in response.");
+            throw new Error("No valid JSON object found in AI response.");
         } catch (error) {
             console.error(`[AI] Attempt ${i + 1} failed (${currentModel}):`, error.message);
             if (i === retries) return null;
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 1000)); // Increased wait between retries
         }
     }
 }
@@ -62,7 +72,7 @@ Use this HTML structure for every chapter:
 </section>
 
 Content: ${text.substring(0, 3500)}`;
-    return await callAI(prompt);
+    return await callAI(prompt, 1, 4000); // Higher token limit for notebooks
 }
 
 async function generateMindmap(text) {

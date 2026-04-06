@@ -196,31 +196,29 @@ app.post('/api/projects', parseUpload, async (req, res) => {
         };
 
         try {
-            console.log(`[AI] Dispatching parallel requests for: ${selectedTypes.join(', ')}`);
+            console.log(`[AI] Dispatching sequential requests for: ${selectedTypes.join(', ')}`);
             const tStart = Date.now();
-            
-            // Map each type to a promise
-            const generationPromises = selectedTypes.map(async (type) => {
-                if (!generators[type]) return null;
+            const results = [];
+
+            for (const type of selectedTypes) {
+                if (!generators[type]) continue;
+                
                 try {
+                    const cStart = Date.now();
                     const data = await generators[type](content);
                     if (data && data[type]) {
-                        return { type, content: data[type] };
+                        results.push({ type, content: data[type] });
+                        console.log(`[AI] ✅ ${type} generated in ${Date.now() - cStart}ms`);
+                    } else {
+                        console.warn(`[AI] ⚠️ ${type} failed: No data returned`);
                     }
                 } catch (err) {
-                    console.error(`[AI] Error in ${type}:`, err.message);
+                    console.error(`[AI] ❌ Error in ${type}:`, err.message);
                 }
-                return null;
-            });
-
-            // Run in parallel
-            const settleResults = await Promise.allSettled(generationPromises);
-            const results = settleResults
-                .filter(r => r.status === 'fulfilled' && r.value !== null)
-                .map(r => r.value);
+            }
 
             project.outputs = results;
-            console.log(`[AI] Total generation time: ${Date.now() - tStart}ms — ${results.length}/${selectedTypes.length} materials saved`);
+            console.log(`[AI] TOTAL generation time: ${Date.now() - tStart}ms — ${results.length}/${selectedTypes.length} materials saved`);
 
             await project.save();
             res.json(project);
