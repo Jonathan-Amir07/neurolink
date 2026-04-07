@@ -159,7 +159,7 @@
                     <div class="file-drop-zone" id="drop-zone" onclick="document.getElementById('file-upload').click()">
                         <span class="drop-icon">📄</span>
                         Drag &amp; drop a <strong>.txt</strong> or <strong>.pdf</strong> file here,<br>or <u>click to browse</u>
-                        <input type="file" id="file-upload" accept=".txt,.pdf"
+                        <input type="file" id="file-upload" accept=".txt,.pdf" multiple
                             style="display:none" onchange="onFileSelected(this)">
                     </div>
                     <div class="file-selected-name" id="file-name"></div>
@@ -200,8 +200,14 @@
         }
 
         function onFileSelected(input) {
-            const file = input.files[0];
-            document.getElementById('file-name').textContent = file ? `✅ ${file.name}` : '';
+            const files = input.files;
+            if (!files || files.length === 0) {
+                document.getElementById('file-name').textContent = '';
+            } else if (files.length === 1) {
+                document.getElementById('file-name').textContent = `✅ ${files[0].name}`;
+            } else {
+                document.getElementById('file-name').textContent = `✅ ${files.length} files selected`;
+            }
         }
 
         // Drag-and-drop support
@@ -211,14 +217,22 @@
         dropZone.addEventListener('drop', e => {
             e.preventDefault();
             dropZone.classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if (file && (file.name.endsWith('.txt') || file.name.endsWith('.pdf'))) {
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
                 const dt = new DataTransfer();
-                dt.items.add(file);
+                let validCount = 0;
+                for (let i = 0; i < files.length; i++) {
+                    const f = files[i];
+                    if (f.name.endsWith('.txt') || f.name.endsWith('.pdf')) {
+                        dt.items.add(f);
+                        validCount++;
+                    }
+                }
                 document.getElementById('file-upload').files = dt.files;
-                document.getElementById('file-name').textContent = `✅ ${file.name}`;
-            } else {
-                alert('Only .txt and .pdf files are supported.');
+                onFileSelected(document.getElementById('file-upload'));
+                if (validCount < files.length) {
+                    alert('Some files were skipped. Only .txt and .pdf are supported.');
+                }
             }
         });
 
@@ -257,8 +271,10 @@
 
             if (activeMode === 'file') {
                 const fileInput = document.getElementById('file-upload');
-                if (!fileInput.files[0]) { alert('Please select a file to upload.'); return; }
-                formData.append('file', fileInput.files[0]);
+                if (!fileInput.files.length) { alert('Please select at least one file to upload.'); return; }
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    formData.append('files', fileInput.files[i]);
+                }
             } else {
                 const content = document.getElementById('content').value.trim();
                 if (!content) { alert('Please paste some content.'); return; }

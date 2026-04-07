@@ -54,9 +54,10 @@ app.use(passport.session());
 
 // ── Multer wrapper — fixes Express 5 compatibility (req.body always defined) ──
 function parseUpload(req, res, next) {
-    upload.single('file')(req, res, (err) => {
-        // Always guarantee req.body is an object even if multer skips parsing
+    upload.array('files', 10)(req, res, (err) => {
+        // Always guarantee req.body and req.files are initialized
         req.body = req.body || {};
+        req.files = req.files || [];
         if (err instanceof multer.MulterError) {
             return res.status(400).json({ error: 'File upload error: ' + err.message });
         }
@@ -200,35 +201,46 @@ app.post('/api/projects', parseUpload, async (req, res) => {
 
         if (!title) return res.status(400).json({ error: 'Title is required' });
 
-        // ── Extract content from text field or uploaded file ───────────────
-        let content = (req.body.content || '').trim();
+        // ── Extract content from multiple files or text area ───────────────
+        let contentChunks = [];
+        
+        // Add manual text if provided
+        const textContent = (req.body.content || '').trim();
+        if (textContent) contentChunks.push(textContent);
 
-        if (req.file) {
-            const isPdf = (req.file.mimetype === 'application/pdf') ||
-                          req.file.originalname.toLowerCase().endsWith('.pdf');
-            if (isPdf) {
-                try {
-                    const pdfData = await pdfParse(req.file.buffer);
-                    content = pdfData.text.trim();
-                    console.log(`[Upload] PDF parsed — ${content.length} chars`);
-                } catch (pdfErr) {
-                    return res.status(400).json({ error: 'Could not read PDF: ' + pdfErr.message });
+        // Process all uploaded files
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const isPdf = (file.mimetype === 'application/pdf') ||
+                              file.originalname.toLowerCase().endsWith('.pdf');
+                if (isPdf) {
+                    try {
+                        const pdfData = await pdfParse(file.buffer);
+                        const text = pdfData.text.trim();
+                        if (text) contentChunks.push(`[File: ${file.originalname}]\n${text}`);
+                        console.log(`[Upload] PDF parsed: ${file.originalname} — ${text.length} chars`);
+                    } catch (pdfErr) {
+                        console.error(`[Upload] Failed to parse PDF ${file.originalname}:`, pdfErr.message);
+                    }
+                } else {
+                    const text = file.buffer.toString('utf-8').trim();
+                    if (text) contentChunks.push(`[File: ${file.originalname}]\n${text}`);
+                    console.log(`[Upload] Text file read: ${file.originalname} — ${text.length} chars`);
                 }
-            } else {
-                content = req.file.buffer.toString('utf-8').trim();
-                console.log(`[Upload] Text file read — ${content.length} chars`);
             }
         }
 
+        const content = contentChunks.join('\n\n---\n\n');
+
         if (!content) {
-            return res.status(400).json({ error: 'No content provided. Paste text or upload a file.' });
+            return res.status(400).json({ error: 'No content provided. Paste text or upload files.' });
         }
 
         // ── Create project record ──────────────────────────────────────────
         const project = new Project({
             user: req.user.id,
             title,
-            raw_input: content.substring(0, 5000)
+            raw_input: content.substring(0, 500000) // Support up to 500k chars (~125k tokens)
         });
 
         // ── AI generation ──────────────────────────────────────────────────

@@ -105,7 +105,7 @@ Use this HTML structure for every chapter (IMPORTANT: Use single quotes ' for at
 
 Ensure the HTML content is a valid string, escaping any internal double quotes if they occur within text (though single quotes are preferred).
 
-Content: ${text.substring(0, 3500)}`;
+Content: ${text}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 5000); // 5k tokens for notebook content
 }
 
@@ -121,7 +121,7 @@ Guidelines:
 - Use relevant emojis for icons
 - Keep desc fields concise (one sentence)
 
-Content: ${text.substring(0, 3500)}`;
+Content: ${text}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 2500);
 }
 
@@ -136,7 +136,7 @@ Guidelines:
 - Keep answers concise (1-3 sentences)
 - Cover the most important concepts
 
-Content: ${text.substring(0, 3500)}`;
+Content: ${text}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 2500);
 }
 
@@ -153,7 +153,7 @@ Guidelines:
 - Keep bullets short and scannable
 - Avoid double quotes " inside bullet points if possible—use single quotes '
 
-Content: ${text.substring(0, 3500)}`;
+Content: ${text}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 4000);
 }
 
@@ -168,7 +168,7 @@ Guidelines:
 - Each section covers one core concept
 - Content should be scannable, not dense prose
 
-Content: ${text.substring(0, 3500)}`;
+Content: ${text}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 2000);
 }
 
