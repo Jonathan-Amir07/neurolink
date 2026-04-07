@@ -12,6 +12,42 @@ const MODEL_VARIANTS = [
 // Cache the index of the last known-working model to skip failed ones on subsequent calls
 let workingModelIndex = 0;
 
+// ── Smart Context Preparation ─────────────────────────────────────────────────
+// Gemini free-tier safe limit: ~100k characters (≈25k tokens)
+// We proportionally sample from each file section to fit under this ceiling
+const INPUT_CHAR_LIMITS = {
+    notebook:    80000,   // Needs most detail
+    mindmap:     60000,   // Structural overview
+    flashcards:  60000,   // Q&A pairs
+    slides:      60000,   // Key points
+    infographic: 40000    // Short summaries
+};
+
+/**
+ * Extracts up to `maxChars` characters from the text.
+ * If the text has [File: ...] markers (from multi-file uploads),
+ * it proportionally samples from each section so every file is represented.
+ */
+function prepareContext(text, maxChars) {
+    if (!text) return '';
+    if (text.length <= maxChars) return text;
+
+    // Detect file sections created by backend aggregation
+    const fileSections = text.split(/\n\n---\n\n/);
+    if (fileSections.length <= 1) {
+        // Single source — just truncate at a sentence boundary
+        const truncated = text.substring(0, maxChars);
+        const lastPeriod = truncated.lastIndexOf('.');
+        return lastPeriod > maxChars * 0.9 ? truncated.substring(0, lastPeriod + 1) : truncated;
+    }
+
+    // Multiple files — give each file an equal share of the budget
+    const perFileLimit = Math.floor(maxChars / fileSections.length);
+    return fileSections
+        .map(section => section.substring(0, perFileLimit))
+        .join('\n\n---\n\n');
+}
+
 async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2000) {
     if (!process.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY === 'your_gemini_api_key') {
         console.error('[AI] No valid GOOGLE_API_KEY configured');
@@ -105,8 +141,8 @@ Use this HTML structure for every chapter (IMPORTANT: Use single quotes ' for at
 
 Ensure the HTML content is a valid string, escaping any internal double quotes if they occur within text (though single quotes are preferred).
 
-Content: ${text}`;
-    return await callAI(prompt, MODEL_VARIANTS.length - 1, 5000); // 5k tokens for notebook content
+Content: ${prepareContext(text, INPUT_CHAR_LIMITS.notebook)}`;
+    return await callAI(prompt, MODEL_VARIANTS.length - 1, 5000);
 }
 
 async function generateMindmap(text) {
@@ -121,7 +157,7 @@ Guidelines:
 - Use relevant emojis for icons
 - Keep desc fields concise (one sentence)
 
-Content: ${text}`;
+Content: ${prepareContext(text, INPUT_CHAR_LIMITS.mindmap)}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 2500);
 }
 
@@ -136,7 +172,7 @@ Guidelines:
 - Keep answers concise (1-3 sentences)
 - Cover the most important concepts
 
-Content: ${text}`;
+Content: ${prepareContext(text, INPUT_CHAR_LIMITS.flashcards)}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 2500);
 }
 
@@ -153,9 +189,10 @@ Guidelines:
 - Keep bullets short and scannable
 - Avoid double quotes " inside bullet points if possible—use single quotes '
 
-Content: ${text}`;
+Content: ${prepareContext(text, INPUT_CHAR_LIMITS.slides)}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 4000);
 }
+
 
 async function generateInfographic(text) {
     const prompt = `Create infographic sections from the following academic content.
@@ -168,7 +205,7 @@ Guidelines:
 - Each section covers one core concept
 - Content should be scannable, not dense prose
 
-Content: ${text}`;
+Content: ${prepareContext(text, INPUT_CHAR_LIMITS.infographic)}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 2000);
 }
 
