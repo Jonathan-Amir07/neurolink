@@ -54,12 +54,22 @@ async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2
                     console.log(`[AI] ✅ Success with: ${currentModel}`);
                     return parsed;
                 } catch (parseErr) {
-                    console.warn(`[AI] JSON parse failed: ${parseErr.message}`);
+                    console.warn(`[AI] JSON parse failed: ${parseErr.message}. Cleaning...`);
                     // Second attempt: aggressive cleaning
-                    const cleaned = jsonStr.replace(/[\n\r\t]/g, ' ').replace(/\\n/g, ' ');
-                    const parsed = JSON.parse(cleaned);
-                    workingModelIndex = modelIndex;
-                    return parsed;
+                    const cleaned = jsonStr
+                        .replace(/[\u0000-\u001F\u007F-\u009F]/g, "") // Remove control chars
+                        .replace(/\n/g, " ") // Flatten newlines
+                        .replace(/\r/g, " ")
+                        .replace(/\\"/g, '"') // In case AI double-escaped
+                        .replace(/\\'/g, "'");
+                    try {
+                        const parsed = JSON.parse(cleaned);
+                        workingModelIndex = modelIndex;
+                        return parsed;
+                    } catch (finalErr) {
+                        console.error("[AI] Final JSON parse failed after cleaning.");
+                        throw finalErr;
+                    }
                 }
             }
             throw new Error("No valid JSON object found in AI response.");
@@ -80,17 +90,19 @@ CONTENT REQUIREMENTS:
 - Focus on conceptual clarity and pedagogical structure.
 OUTPUT FORMAT:
 Return ONLY a valid JSON object: {"notebook": "html_content"}.
-Use this HTML structure for every chapter:
-<section class="notebook-page ruled">
+Use this HTML structure for every chapter (IMPORTANT: Use single quotes ' for attributes to prevent JSON errors):
+<section class='notebook-page ruled'>
     <h2>Chapter Number. Chapter Title</h2>
-    <div class="notebook-section"><h3>1. Overview</h3><p>...</p></div>
-    <div class="notebook-section"><h3>2. Core Explanation</h3><p>...</p></div>
-    <div class="notebook-section"><h3>3. Key Concepts</h3><p>...</p></div>
-    <div class="notebook-section"><h3>4. Summary & Quiz</h3><p>...</p></div>
+    <div class='notebook-section'><h3>1. Overview</h3><p>...</p></div>
+    <div class='notebook-section'><h3>2. Core Explanation</h3><p>...</p></div>
+    <div class='notebook-section'><h3>3. Key Concepts</h3><p>...</p></div>
+    <div class='notebook-section'><h3>4. Summary & Quiz</h3><p>...</p></div>
 </section>
 
+Ensure the HTML content is a valid string, escaping any internal double quotes if they occur within text (though single quotes are preferred).
+
 Content: ${text.substring(0, 3500)}`;
-    return await callAI(prompt, MODEL_VARIANTS.length - 1, 4000); // Use all retries, higher token limit
+    return await callAI(prompt, MODEL_VARIANTS.length - 1, 8000); // 8k tokens for notebook content
 }
 
 async function generateMindmap(text) {
@@ -135,9 +147,10 @@ Guidelines:
 - Last slide: summary/key takeaways
 - 3-5 bullet points per slide
 - Keep bullets short and scannable
+- Avoid double quotes " inside bullet points if possible—use single quotes '
 
 Content: ${text.substring(0, 3500)}`;
-    return await callAI(prompt, MODEL_VARIANTS.length - 1, 2500);
+    return await callAI(prompt, MODEL_VARIANTS.length - 1, 4000);
 }
 
 async function generateInfographic(text) {

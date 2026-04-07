@@ -152,9 +152,15 @@ app.post('/api/projects/:id/regenerate', async (req, res) => {
 
         if (!generators[type]) return res.status(400).json({ error: 'Generator not found' });
         
-        console.log(`[AI] Regenerating ${type} for project ${project._id}...`);
+        const inputContent = (project.raw_input || '').trim();
+        console.log(`[AI] Regenerating ${type} for project ${project._id}. Content length: ${inputContent.length} chars.`);
         
-        const data = await generators[type](project.raw_input || '');
+        if (!inputContent) {
+            console.warn(`[AI] ⚠️ Cannot regenerate ${type}: project.raw_input is empty.`);
+            return res.status(400).json({ error: 'No content in project to regenerate from.' });
+        }
+
+        const data = await generators[type](inputContent);
         
         if (data && data[type]) {
             const existingIndex = project.outputs.findIndex(o => o.type === type);
