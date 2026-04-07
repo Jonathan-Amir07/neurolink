@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const session = require('express-session');
-const { MongoStore } = require('connect-mongo');
+const MongoStore = require('connect-mongo').default || require('connect-mongo').MongoStore || require('connect-mongo');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const path = require('path');
@@ -81,15 +81,19 @@ app.get('/api/user', (req, res) => {
     res.status(401).json({ error: 'Not authenticated' });
 });
 
-app.get('/auth/logout', (req, res) => {
+app.get('/auth/logout', (req, res, next) => {
     req.logout((err) => {
         if (err) return next(err);
         res.redirect('/');
     });
 });
 
-// Static files (moved down)
-app.use(express.static(path.join(__dirname, '..')));
+// Static files — only serve safe frontend directories
+app.use(express.static(path.join(__dirname, '..'), {
+    index: 'index.html',
+    dotfiles: 'deny',
+    extensions: ['html', 'css', 'js', 'png', 'jpg', 'svg', 'ico', 'woff', 'woff2']
+}));
 
 // ── Project Routes ────────────────────────────────────────────────────────────
 
@@ -276,13 +280,7 @@ app.post('/api/projects', parseUpload, async (req, res) => {
     }
 });
 
-// Server listener (skip on Vercel)
-if (process.env.NODE_ENV !== 'production') {
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
-
-// Global Error Handler
+// Global Error Handler (must be registered before listen in Express 5)
 app.use((err, req, res, next) => {
     console.error('SERVER ERROR:', err.stack);
     res.status(500).json({ 
@@ -291,5 +289,11 @@ app.use((err, req, res, next) => {
         stack: process.env.NODE_ENV === 'production' ? null : err.stack
     });
 });
+
+// Server listener (skip on Vercel)
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+}
 
 module.exports = app;

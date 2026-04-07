@@ -1,7 +1,18 @@
 function initMindMap(data) {
     const root = document.getElementById('tree-root');
+    if (!root) return;
     root.innerHTML = '';
+
+    if (!data || typeof data !== 'object') {
+        root.innerHTML = '<div class="empty-state-card"><h3>No mind map available</h3><p>Click "Regenerate Tab" to generate a mind map.</p></div>';
+        return;
+    }
+
     root.appendChild(renderMindmapNode(data, true));
+
+    // Auto-expand root level
+    const rootCard = root.querySelector('.node-card.root');
+    if (rootCard) rootCard.click();
 }
 
 function renderMindmapNode(nodeData, isRoot = false) {
@@ -18,13 +29,13 @@ function renderMindmapNode(nodeData, isRoot = false) {
     }
 
     const card = document.createElement('div');
-    card.className = `node-card ${isRoot ? 'root' : (nodeData.children ? 'category' : 'leaf')}`;
+    card.className = `node-card ${isRoot ? 'root' : (nodeData.children && nodeData.children.length > 0 ? 'category' : 'leaf')}`;
     card.innerHTML = `
         <div class="node-header">
             <span>${nodeData.icon || '🧠'}</span>
             <span>${nodeData.title || nodeData.name || nodeData.topic || nodeData.label || 'Node'}</span>
         </div>
-        <div class="node-desc">${nodeData.desc || ''}</div>
+        <div class="node-desc">${nodeData.desc || nodeData.description || ''}</div>
     `;
 
     nodeItem.appendChild(card);
@@ -54,7 +65,10 @@ function renderMindmapNode(nodeData, isRoot = false) {
             const isNowHidden = childrenContainer.classList.toggle('hidden');
             parentConn.classList.toggle('hidden');
             indicator.innerText = isNowHidden ? '+' : '−';
-            updateBackbone(childrenContainer);
+            if (!isNowHidden) {
+                // Small delay to let DOM render before measuring
+                requestAnimationFrame(() => updateBackbone(childrenContainer));
+            }
         };
     } else {
         branch.appendChild(nodeItem);

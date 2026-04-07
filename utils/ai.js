@@ -9,6 +9,9 @@ const MODEL_VARIANTS = [
     "models/gemini-2.0-flash"
 ];
 
+// Cache the index of the last known-working model to skip failed ones on subsequent calls
+let workingModelIndex = 0;
+
 async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2000) {
     if (!process.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY === 'your_gemini_api_key') {
         console.error('[AI] No valid GOOGLE_API_KEY configured');
@@ -16,10 +19,14 @@ async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2
     }
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
+    // Try starting from the last known-working model
+    const startIndex = workingModelIndex;
+
     for (let i = 0; i <= retries; i++) {
-        const currentModel = MODEL_VARIANTS[i % MODEL_VARIANTS.length];
+        const modelIndex = (startIndex + i) % MODEL_VARIANTS.length;
+        const currentModel = MODEL_VARIANTS[modelIndex];
         try {
-            console.log(`[AI] Dispatching to: ${currentModel} (maxTokens: ${maxTokens})`);
+            console.log(`[AI] Trying model: ${currentModel} (maxTokens: ${maxTokens})`);
             const model = genAI.getGenerativeModel({ 
                 model: currentModel,
                 generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } 
@@ -29,28 +36,38 @@ async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2
             const response = await result.response;
             let text = response.text().trim();
 
-            // Handle potential markdown block wrapper
-            text = text.replace(/^```json/, '').replace(/```$/, '').trim();
-            
-            // Robust JSON extraction
+            // Strip markdown code fences
+            text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+
+            // Robust JSON extraction — find outermost { }
             const start = text.indexOf('{');
             const end = text.lastIndexOf('}');
             if (start !== -1 && end !== -1 && end > start) {
-                const jsonStr = text.substring(start, end + 1);
+                let jsonStr = text.substring(start, end + 1);
+                // Clean control characters that break JSON.parse
+                jsonStr = jsonStr.replace(/[\u0000-\u0009\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
+                // Fix common AI mistakes: trailing commas before } or ]
+                jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
                 try {
-                    return JSON.parse(jsonStr);
+                    const parsed = JSON.parse(jsonStr);
+                    workingModelIndex = modelIndex;
+                    console.log(`[AI] ✅ Success with: ${currentModel}`);
+                    return parsed;
                 } catch (parseErr) {
-                    console.warn(`[AI] JSON parse attempt 1 failed: ${parseErr.message}. Attempting to clean string...`);
-                    // Final fallback: try to strip any control characters or invalid whitespace
-                    const cleaned = jsonStr.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
-                    return JSON.parse(cleaned);
+                    console.warn(`[AI] JSON parse failed: ${parseErr.message}`);
+                    // Second attempt: aggressive cleaning
+                    const cleaned = jsonStr.replace(/[\n\r\t]/g, ' ').replace(/\\n/g, ' ');
+                    const parsed = JSON.parse(cleaned);
+                    workingModelIndex = modelIndex;
+                    return parsed;
                 }
             }
             throw new Error("No valid JSON object found in AI response.");
         } catch (error) {
-            console.error(`[AI] Attempt ${i + 1} failed (${currentModel}):`, error.message);
+            console.error(`[AI] ❌ ${currentModel} failed:`, error.message);
             if (i === retries) return null;
-            await new Promise(r => setTimeout(r, 1000)); // Increased wait between retries
+            // Exponential backoff: 300ms, 600ms, 1200ms...
+            await new Promise(r => setTimeout(r, 300 * Math.pow(2, i)));
         }
     }
 }
@@ -103,8 +120,8 @@ Guidelines:
 - Keep answers concise (1-3 sentences)
 - Cover the most important concepts
 
-Content: ${text}`;
-    return await callAI(prompt);
+Content: ${text.substring(0, 3500)}`;
+    return await callAI(prompt, MODEL_VARIANTS.length - 1, 2500);
 }
 
 async function generateSlides(text) {

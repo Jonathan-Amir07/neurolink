@@ -1,22 +1,28 @@
+/* ── DESIGN SYSTEM / CSS VARIABLES ── */
 :root {
     --bg-paper: #f9f7f1;
     --accent-color: #e67e22;
+    --accent-hover: #d35400;
     --line-color: #8e959b;
     --dot-color: rgba(44, 62, 80, 0.1);
     --ruled-line: rgba(44, 62, 80, 0.1);
     --glass-bg: rgba(255, 255, 255, 0.7);
-    /* TEMPLATE VARIABLES FROM EXAMPLE */
     --paper-bg: #fdfdf5;
     --sidebar-bg: #1e1e1e;
     --text-ink: #2c3e50;
-    --ink-color: #2c3e50; /* Added this to fix missing variable */
+    --ink-color: #2c3e50;
     --accent-red: #b22222;
     --chalkboard-bg: #2d2d2d;
     --chalk-white: #f5f5f5;
     --chalk-comment: #88bd88;
     --chalk-keyword: #ffda6a;
     --shadow: 0 4px 15px rgba(0,0,0,0.1);
+    --radius: 16px;
+    --transition: 0.25s ease;
 }
+
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
     font-family: 'Inter', sans-serif;
@@ -26,11 +32,14 @@ body {
     background-size: 25px 25px;
     margin: 0;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
 }
 
+/* ── HEADER ── */
 header {
     background: var(--glass-bg);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     padding: 1rem 2rem;
     border-bottom: 1px solid var(--dot-color);
     display: flex;
@@ -41,6 +50,7 @@ header {
     z-index: 1000;
 }
 
+/* ── BUTTONS ── */
 .auth-btn {
     background: var(--ink-color);
     color: white;
@@ -48,35 +58,111 @@ header {
     border-radius: 8px;
     text-decoration: none;
     font-weight: 600;
-    transition: transform 0.2s;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all var(--transition);
 }
 
 .auth-btn:hover {
-    transform: scale(1.05);
+    transform: scale(1.04);
+    box-shadow: 0 4px 15px rgba(44, 62, 80, 0.2);
 }
 
+/* ── LAYOUT ── */
 .container {
     max-width: 1200px;
     margin: 2rem auto;
     padding: 0 1rem;
 }
 
-/* Glass Card */
+/* ── GLASS CARD ── */
 .card {
     background: var(--glass-bg);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 16px;
+    border-radius: var(--radius);
     padding: 2rem;
     box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+    transition: all var(--transition);
 }
 
-/* Flashcards */
+/* ── BADGES ── */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: rgba(44, 62, 80, 0.08);
+    color: var(--ink-color);
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    transition: all var(--transition);
+}
+
+.badge:hover {
+    background: rgba(230, 126, 34, 0.15);
+    color: var(--accent-color);
+}
+
+/* ── SKELETON LOADING ── */
+.skeleton-card {
+    background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius);
+    height: 140px;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── FLASHCARDS ── */
 .card-perspective {
     perspective: 1000px;
-    width: 400px;
+    width: 420px;
     height: 300px;
     cursor: pointer;
+    max-width: 95vw;
 }
 
 .card-inner {
@@ -105,13 +191,46 @@ header {
     align-items: center;
     justify-content: center;
     border: 1px solid rgba(0,0,0,0.05);
+    transition: box-shadow var(--transition);
+}
+
+.card-face:hover {
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
 }
 
 .card-back {
     transform: rotateY(180deg);
 }
 
-/* Mind Map (Collapsible Tree) */
+/* Flashcard Counter */
+.flashcard-counter {
+    text-align: center;
+    font-weight: 700;
+    color: var(--accent-color);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    font-family: 'Patrick Hand', cursive;
+}
+
+/* Flashcard Progress Bar */
+.flashcard-progress-bar {
+    width: 420px;
+    max-width: 95vw;
+    height: 4px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.flashcard-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color), #d35400);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+}
+
+/* ── MIND MAP ── */
 .tree-branch {
     display: flex;
     align-items: center;
@@ -135,6 +254,45 @@ header {
     width: 200px;
     position: relative;
     text-align: left;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.node-card:hover {
+    transform: scale(1.03);
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.15);
+    border-color: var(--accent-color);
+}
+
+.node-card.root {
+    background: #d5e8d4;
+    border-width: 3px;
+    width: 240px;
+}
+
+.node-card.category {
+    background: #fff2cc;
+}
+
+.node-card.leaf {
+    background: #fff;
+}
+
+.node-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.node-desc {
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 5px;
+    line-height: 1.3;
+    border-top: 1px dashed #ddd;
+    padding-top: 5px;
 }
 
 .children-container {
@@ -189,8 +347,17 @@ header {
     align-items: center;
     justify-content: center;
     font-size: 14px;
+    z-index: 20;
+    transition: all 0.2s;
 }
-/* Slides View */
+
+.node-card:hover .toggle-indicator {
+    background-color: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+/* ── SLIDES ── */
 #slides-container {
     display: flex;
     justify-content: center;
@@ -201,7 +368,7 @@ header {
 
 .slide-card {
     background: white;
-    padding: 2rem;
+    padding: 2.5rem;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     width: 90%;
@@ -226,7 +393,12 @@ header {
 
 .slide-bullets {
     font-size: 1.3rem;
-    line-height: 1.6;
+    line-height: 1.8;
+    padding-left: 1.2rem;
+}
+
+.slide-bullets li {
+    margin-bottom: 0.5rem;
 }
 
 .slide-counter {
@@ -235,9 +407,28 @@ header {
     right: 20px;
     font-weight: 800;
     color: var(--line-color);
+    font-size: 0.9rem;
 }
 
-/* Infographic View */
+/* Slide Progress Bar */
+.slide-progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 0 0 12px 0;
+}
+
+.slide-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color), #d35400);
+    transition: width 0.4s ease;
+    border-radius: 0 0 0 12px;
+}
+
+/* ── INFOGRAPHIC ── */
 #infographic-container {
     display: flex;
     flex-direction: column;
@@ -255,7 +446,12 @@ header {
     max-width: 850px;
     border-radius: 2px;
     word-wrap: break-word;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+.paper-card:hover {
+    transform: rotate(0deg) !important;
+    box-shadow: 8px 14px 30px rgba(0,0,0,0.15);
 }
 
 .paper-card::before {
@@ -291,19 +487,25 @@ header {
     margin-bottom: 15px;
 }
 
-/* ── NOTEBOOK ARCHITECT OVERHAUL (PER TEMPLATE) ── */
+.infographic-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #444;
+}
 
+/* ── NOTEBOOK LAYOUT ── */
 .notebook-inner-layout {
     display: flex;
     height: 80vh;
-    border-radius: 16px;
+    border-radius: var(--radius);
     overflow: hidden;
-    background-color: #e0e0e0; /* Page outer background */
+    background-color: #e0e0e0;
     border: 1px solid var(--line-color);
 }
 
 .notebook-sidebar {
     width: 320px;
+    min-width: 280px;
     background-color: var(--sidebar-bg);
     color: white;
     padding: 30px 20px;
@@ -345,7 +547,7 @@ header {
     text-decoration: none;
     padding: 8px 12px;
     border-radius: 6px;
-    transition: 0.3s;
+    transition: all 0.3s;
     font-size: 1.05rem;
     margin-bottom: 3px;
     font-family: 'Patrick Hand', cursive;
@@ -404,7 +606,7 @@ header {
     z-index: 10;
 }
 
-/* CONTENT STYLING */
+/* NOTEBOOK CONTENT STYLING */
 .notebook-page h2 {
     font-family: 'Permanent Marker', cursive;
     color: #003366;
@@ -432,6 +634,11 @@ header {
     line-height: 1.8rem;
 }
 
+.notebook-page ul, .notebook-page ol {
+    margin-left: 30px;
+    margin-bottom: 20px;
+}
+
 /* COMPLEXITY BOX STYLING */
 .complexity-list {
     list-style-type: none !important;
@@ -449,6 +656,28 @@ header {
     color: var(--accent-red);
     display: inline-block;
     min-width: 90px;
+}
+
+/* TABLES */
+.notebook-page table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 1.1rem;
+    background: rgba(255,255,255,0.8);
+}
+
+.notebook-page th, .notebook-page td {
+    border: 2px solid #aaa;
+    padding: 10px;
+    text-align: left;
+}
+
+.notebook-page th {
+    background-color: #ddd;
+    color: #003366;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.2rem;
 }
 
 /* CHALKBOARD STYLE CODE BLOCKS */
@@ -488,7 +717,24 @@ header {
     box-shadow: none;
 }
 
-/* Material Selection Styles */
+/* Quiz boxes (from example) */
+.quiz-box {
+    background: #fff3cd;
+    border: 2px dashed #ffeeba;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.answer-box {
+    background: #d4edda;
+    border: 2px dashed #c3e6cb;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+/* ── MATERIAL SELECTION (Dashboard Modal) ── */
 .selection-title-row {
     display: flex;
     justify-content: space-between;
@@ -538,4 +784,102 @@ header {
     padding: 0;
     font-weight: 600;
     text-decoration: underline;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state-card {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--glass-bg);
+    border-radius: var(--radius);
+    border: 1px dashed var(--line-color);
+}
+
+.empty-state-card h3 {
+    margin-bottom: 0.5rem;
+    color: var(--ink-color);
+    font-size: 1.2rem;
+}
+
+.empty-state-card p {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+    header { padding: 0.8rem 1rem; }
+    .container { padding: 0 0.75rem; margin: 1rem auto; }
+    
+    .notebook-inner-layout {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .notebook-sidebar {
+        width: 100%;
+        min-width: 100%;
+        max-height: 200px;
+        border-right: none;
+        border-bottom: 4px solid #111;
+    }
+    
+    .notebook-main {
+        padding: 30px 20px;
+    }
+    
+    .notebook-page {
+        padding: 30px 25px;
+        transform: none !important;
+    }
+    
+    .card-perspective {
+        width: 320px;
+    }
+    
+    .flashcard-progress-bar {
+        width: 320px;
+    }
+
+    .slide-card {
+        padding: 1.5rem;
+        min-height: 300px;
+    }
+
+    .slide-title { font-size: 1.5rem; }
+    .slide-bullets { font-size: 1.1rem; }
+    
+    .paper-card {
+        padding: 20px 25px;
+        width: 95%;
+    }
+
+    .selection-group {
+        grid-template-columns: 1fr;
+    }
+
+    .node-card { width: 160px; font-size: 0.85rem; }
+    .children-container { padding-left: 40px; gap: 15px; }
+    .parent-connector, .child-connector { width: 40px; }
+    .parent-connector { right: -40px; }
+    .child-connector { left: -40px; }
+}
+
+@media (max-width: 480px) {
+    .card-perspective { width: 280px; }
+    .flashcard-progress-bar { width: 280px; }
+    .notebook-sidebar { max-height: 160px; }
+}
+
+/* ── UTILITY ── */
+.hidden { display: none !important; }
+
+/* ── PRINT ── */
+@media print {
+    header { display: none; }
+    .notebook-sidebar { display: none; }
+    .notebook-main { overflow: visible; padding: 0; background: none; }
+    .notebook-page { box-shadow: none; border: none; transform: none !important; margin: 0; page-break-after: always; }
+    .tape-strip { display: none; }
 }
