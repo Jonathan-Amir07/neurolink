@@ -3,9 +3,9 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // Model priority: standard SDK names first (work across all environments),
 // full-path names as fallback (confirmed working locally).
 const MODEL_VARIANTS = [
-    "gemini-1.5-flash",
-    "gemini-1.5-pro",
     "models/gemini-2.5-flash",
+    "models/gemini-flash-latest",
+    "models/gemini-2.5-pro",
     "models/gemini-2.0-flash"
 ];
 
@@ -29,7 +29,11 @@ async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2
             console.log(`[AI] Trying model: ${currentModel} (maxTokens: ${maxTokens})`);
             const model = genAI.getGenerativeModel({ 
                 model: currentModel,
-                generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 } 
+                generationConfig: { 
+                    maxOutputTokens: maxTokens, 
+                    temperature: 0.7,
+                    responseMimeType: "application/json"
+                } 
             });
 
             const result = await model.generateContent(prompt);
@@ -102,7 +106,7 @@ Use this HTML structure for every chapter (IMPORTANT: Use single quotes ' for at
 Ensure the HTML content is a valid string, escaping any internal double quotes if they occur within text (though single quotes are preferred).
 
 Content: ${text.substring(0, 3500)}`;
-    return await callAI(prompt, MODEL_VARIANTS.length - 1, 8000); // 8k tokens for notebook content
+    return await callAI(prompt, MODEL_VARIANTS.length - 1, 5000); // 5k tokens for notebook content
 }
 
 async function generateMindmap(text) {

@@ -172,7 +172,10 @@ app.post('/api/projects/:id/regenerate', async (req, res) => {
             await project.save();
             return res.json({ success: true, project });
         } else {
-            return res.status(500).json({ error: `Generation returned empty for ${type}.` });
+            console.error(`[AI] ⚠️ Regeneration failed for ${type} (Returned null). This is typically caused by Gemini API Rate Limits or unreadable output.`);
+            return res.status(500).json({ 
+                error: `AI could not generate the ${type}. Usually, this means the Gemini API is rate-limiting you or the content is too long. Please wait 1 minute and try again!` 
+            });
         }
     } catch (err) {
         console.error(`[AI] Regeneration error:`, err);
