@@ -808,100 +808,70 @@ header {
     margin-bottom: 0.5rem;
 }
 
-/* ── APPEARANCE MENU ── */
-.appearance-wrapper {
-    position: relative;
+/* ── THEME SWITCHER ROW ── */
+.theme-switcher-row {
+    display: flex;
+    gap: 0.5rem;
     margin-right: 1.5rem;
-}
-
-.appearance-trigger {
     background: rgba(0,0,0,0.05);
-    border: 1px solid var(--dot-color);
-    padding: 0.5rem 1rem;
-    border-radius: 10px;
-    font-weight: 700;
-    color: var(--ink-color);
-    cursor: pointer;
-    transition: all var(--transition);
-    font-size: 0.9rem;
-}
-
-.appearance-trigger:hover {
-    background: rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-}
-
-.appearance-dropdown {
-    position: absolute;
-    top: calc(100% + 10px);
-    right: 0;
-    background: var(--paper-bg);
-    border: 1px solid var(--dot-color);
+    padding: 0.3rem;
     border-radius: 12px;
-    box-shadow: var(--shadow);
-    display: none;
-    flex-direction: column;
-    min-width: 180px;
-    z-index: 2000;
-    overflow: hidden;
-    animation: modalScaleUp 0.2s ease-out;
+    border: 1px solid var(--dot-color);
 }
 
-.appearance-dropdown.active {
-    display: flex;
-}
-
-.appearance-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0.8rem 1.2rem;
+.theme-switcher-btn {
     border: none;
     background: none;
     color: var(--ink-color);
-    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
     cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
-.appearance-item:hover {
+.theme-switcher-btn:hover {
     background: rgba(0,0,0,0.05);
-    padding-left: 1.5rem;
 }
 
-.appearance-item .theme-check {
-    margin-left: auto;
-    opacity: 0;
-    color: var(--accent-color);
-    font-weight: 900;
+.theme-switcher-btn.active {
+    background: var(--accent-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(var(--accent-color-rgb, 160, 82, 45), 0.3);
 }
 
-.appearance-item.active .theme-check {
-    opacity: 1;
+.theme-switcher-btn .btn-icon {
+    font-size: 1.1rem;
 }
 
-/* ── SELECTION GRID & CARDS (Notebook Style) ── */
+/* ── SELECTION GRID & CARDS ── */
 .selection-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-auto-flow: column;
-    grid-template-rows: repeat(3, auto);
     gap: 1rem;
     margin-bottom: 2rem;
-    position: relative;
-    padding: 0.5rem;
 }
 
-.selection-grid::after {
-    content: '';
-    position: absolute;
-    top: 0; bottom: 0;
-    left: calc(50% - 1px);
-    width: 2px;
-    background: var(--dot-color);
-    opacity: 0.5;
-    border-radius: 5px;
+.selection-card {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem;
+    background: var(--glass-bg);
+    border: 2px solid var(--dot-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all var(--transition);
+    text-align: left;
+    position: relative;
+}
+
+.selection-card:nth-child(5) {
+    grid-column: 1 / -1; /* Make the 5th item full width */
 }
 
 .selection-card {

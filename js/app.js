@@ -137,60 +137,33 @@ function renderThemeSwitcher() {
     const nav = document.getElementById('nav-links');
     if (!nav) return;
 
-    if (document.getElementById('appearance-menu')) return;
+    if (document.getElementById('theme-switcher-row')) return;
 
-    const wrapper = document.createElement('div');
-    wrapper.id = 'appearance-menu';
-    wrapper.className = 'appearance-wrapper';
-
-    const trigger = document.createElement('button');
-    trigger.className = 'appearance-trigger';
-    trigger.innerHTML = '🎨 Appearance <small>▼</small>';
-    
-    const dropdown = document.createElement('div');
-    dropdown.className = 'appearance-dropdown';
+    const row = document.createElement('div');
+    row.id = 'theme-switcher-row';
+    row.className = 'theme-switcher-row';
 
     Object.entries(THEMES).forEach(([id, info]) => {
-        const item = document.createElement('button');
-        item.className = 'appearance-item';
-        item.dataset.themeId = id;
-        item.innerHTML = `
-            <span class="theme-icon">${info.icon}</span>
-            <span class="theme-label">${info.name}</span>
-            <span class="theme-check">✓</span>
-        `;
-        item.onclick = (e) => {
+        const btn = document.createElement('button');
+        btn.className = 'theme-switcher-btn';
+        btn.dataset.themeId = id;
+        btn.innerHTML = `<span class="btn-icon">${info.icon}</span> ${info.name}`;
+        
+        btn.onclick = (e) => {
             e.stopPropagation();
             setTheme(id);
-            dropdown.classList.remove('active');
         };
-        dropdown.appendChild(item);
+        row.appendChild(btn);
     });
 
-    trigger.onclick = (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('active');
-    };
-
-    document.addEventListener('click', () => dropdown.classList.remove('active'));
-
-    wrapper.appendChild(trigger);
-    wrapper.appendChild(dropdown);
-    nav.prepend(wrapper);
+    nav.prepend(row);
+    updateThemeSwitcherUI(localStorage.getItem('neurolink-theme') || 'parchment');
 }
 
 function updateThemeSwitcherUI(activeTheme) {
-    const btns = document.querySelectorAll('#theme-switcher button');
+    const btns = document.querySelectorAll('.theme-switcher-btn');
     btns.forEach(btn => {
-        if (btn.dataset.themeId === activeTheme) {
-            btn.style.background = 'var(--accent-color)';
-            btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
-            btn.style.transform = 'scale(1.1)';
-        } else {
-            btn.style.background = 'none';
-            btn.style.boxShadow = 'none';
-            btn.style.transform = 'scale(1)';
-        }
+        btn.classList.toggle('active', btn.dataset.themeId === activeTheme);
     });
 }
 
