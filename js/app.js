@@ -82,7 +82,16 @@ async function loadProjects() {
                     ${outputBadges || '<span class="badge" style="opacity:0.5;">No outputs yet</span>'}
                 </div>
             `;
-            card.onclick = () => window.location.href = `/project.html?id=${project._id}`;
+            card.onclick = () => {
+                // Clear other selections
+                document.querySelectorAll('.project-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                
+                // Navigate after brief delay to show shimmer
+                setTimeout(() => {
+                    window.location.href = `/project.html?id=${project._id}`;
+                }, 400);
+            };
             
             const deleteBtn = card.querySelector('.delete-btn');
             deleteBtn.onclick = async (e) => {
@@ -128,25 +137,46 @@ function renderThemeSwitcher() {
     const nav = document.getElementById('nav-links');
     if (!nav) return;
 
-    // Check if switcher already exists
-    if (document.getElementById('theme-switcher')) return;
+    if (document.getElementById('appearance-menu')) return;
 
-    const switcher = document.createElement('div');
-    switcher.id = 'theme-switcher';
-    switcher.style.cssText = 'display: flex; gap: 0.5rem; margin-right: 1.5rem; background: rgba(0,0,0,0.05); padding: 0.25rem; border-radius: 20px;';
+    const wrapper = document.createElement('div');
+    wrapper.id = 'appearance-menu';
+    wrapper.className = 'appearance-wrapper';
+
+    const trigger = document.createElement('button');
+    trigger.className = 'appearance-trigger';
+    trigger.innerHTML = '🎨 Appearance <small>▼</small>';
     
+    const dropdown = document.createElement('div');
+    dropdown.className = 'appearance-dropdown';
+
     Object.entries(THEMES).forEach(([id, info]) => {
-        const btn = document.createElement('button');
-        btn.innerHTML = info.icon;
-        btn.title = info.name;
-        btn.dataset.themeId = id;
-        btn.style.cssText = 'border: none; background: none; cursor: pointer; padding: 0.4rem; border-radius: 50%; font-size: 1.1rem; transition: all 0.3s; line-height: 1;';
-        btn.onclick = () => setTheme(id);
-        switcher.appendChild(btn);
+        const item = document.createElement('button');
+        item.className = 'appearance-item';
+        item.dataset.themeId = id;
+        item.innerHTML = `
+            <span class="theme-icon">${info.icon}</span>
+            <span class="theme-label">${info.name}</span>
+            <span class="theme-check">✓</span>
+        `;
+        item.onclick = (e) => {
+            e.stopPropagation();
+            setTheme(id);
+            dropdown.classList.remove('active');
+        };
+        dropdown.appendChild(item);
     });
 
-    nav.prepend(switcher);
-    updateThemeSwitcherUI(localStorage.getItem('neurolink-theme') || 'parchment');
+    trigger.onclick = (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('active');
+    };
+
+    document.addEventListener('click', () => dropdown.classList.remove('active'));
+
+    wrapper.appendChild(trigger);
+    wrapper.appendChild(dropdown);
+    nav.prepend(wrapper);
 }
 
 function updateThemeSwitcherUI(activeTheme) {

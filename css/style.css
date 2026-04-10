@@ -1,52 +1,54 @@
 /* ── DESIGN SYSTEM / CSS VARIABLES ── */
 :root {
-    /* Parchment (Default) */
-    --bg-paper: #f9f7f1;
-    --accent-color: #e67e22;
-    --accent-hover: #d35400;
-    --line-color: #8e959b;
-    --dot-color: rgba(44, 62, 80, 0.1);
-    --ruled-line: rgba(44, 62, 80, 0.1);
-    --glass-bg: rgba(255, 255, 255, 0.7);
+    /* Parchment (Improved Default) */
+    --bg-paper: #f4ead5;
+    --accent-color: #a0522d;
+    --accent-hover: #8b4513;
+    --line-color: #7d6b5d;
+    --dot-color: rgba(61, 43, 31, 0.08);
+    --ruled-line: rgba(61, 43, 31, 0.08);
+    --glass-bg: rgba(244, 234, 213, 0.85);
     --paper-bg: #fdfdf5;
-    --sidebar-bg: #1e1e1e;
-    --ink-color: #2c3e50;
+    --sidebar-bg: #2b1d12;
+    --ink-color: #3d2b1f;
     --accent-red: #b22222;
     --chalkboard-bg: #2d2d2d;
     --chalk-white: #f5f5f5;
     --chalk-comment: #88bd88;
     --chalk-keyword: #ffda6a;
-    --shadow: 0 4px 15px rgba(0,0,0,0.1);
+    --shadow: 0 10px 30px rgba(0,0,0,0.08);
     --radius: 16px;
-    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 [data-theme="dark"] {
-    --bg-paper: #1a1a1a;
-    --ink-color: #e0e0e0;
-    --accent-color: #f39c12;
-    --accent-hover: #e67e22;
-    --line-color: #444;
-    --dot-color: rgba(255, 255, 255, 0.05);
-    --ruled-line: rgba(255, 255, 255, 0.05);
-    --glass-bg: rgba(30, 30, 30, 0.8);
-    --paper-bg: #2d2d2d;
-    --sidebar-bg: #121212;
-    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+    /* Dark Library (Improved) */
+    --bg-paper: #0a0a0a;
+    --ink-color: #d1c4a8;
+    --accent-color: #c5a059;
+    --accent-hover: #d4af37;
+    --line-color: #333;
+    --dot-color: rgba(197, 160, 89, 0.1);
+    --ruled-line: rgba(197, 160, 89, 0.1);
+    --glass-bg: rgba(15, 15, 15, 0.9);
+    --paper-bg: #1a1a1a;
+    --sidebar-bg: #050505;
+    --shadow: 0 15px 45px rgba(0,0,0,0.5);
 }
 
 [data-theme="modern"] {
-    --bg-paper: #0f172a;
-    --ink-color: #f1f5f9;
-    --accent-color: #38bdf8;
-    --accent-hover: #0ea5e9;
-    --line-color: #334155;
-    --dot-color: rgba(56, 189, 248, 0.1);
-    --ruled-line: rgba(56, 189, 248, 0.1);
-    --glass-bg: rgba(15, 23, 42, 0.7);
-    --paper-bg: #1e293b;
-    --sidebar-bg: #020617;
-    --shadow: 0 8px 32px rgba(0,0,0,0.3);
+    /* Modern Lab (Enhanced) */
+    --bg-paper: #020617;
+    --ink-color: #f8fafc;
+    --accent-color: #22d3ee;
+    --accent-hover: #0891b2;
+    --line-color: #1e293b;
+    --dot-color: rgba(34, 211, 238, 0.12);
+    --ruled-line: rgba(34, 211, 238, 0.12);
+    --glass-bg: rgba(15, 23, 42, 0.75);
+    --paper-bg: #0f172a;
+    --sidebar-bg: #010413;
+    --shadow: 0 20px 50px rgba(0,0,0,0.4);
 }
 
 /* ── RESET & BASE ── */
@@ -120,25 +122,35 @@ header {
 .project-card {
     position: relative;
     overflow: hidden;
+    border: 2px solid transparent;
 }
 
 .project-card:hover {
-    transform: translateY(-8px) scale(1.01);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    transform: translateY(-12px) scale(1.05);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    border-color: var(--accent-color);
 }
 
-.project-card::after {
+.project-card.selected {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 5px var(--accent-color), 0 30px 60px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+/* Shimmer Animation for Selected State */
+.project-card.selected::after {
     content: '';
     position: absolute;
     top: 0; left: -100%;
-    width: 50%;
+    width: 200%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: 0.5s;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3) 45%, rgba(255,255,255,0.3) 55%, transparent);
+    animation: selectionShimmer 2s infinite linear;
 }
 
-.project-card:hover::after {
-    left: 100%;
+@keyframes selectionShimmer {
+    0% { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(100%) skewX(-15deg); }
 }
 
 /* ── BADGES ── */
@@ -796,36 +808,139 @@ header {
     margin-bottom: 0.5rem;
 }
 
-.selection-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.8rem;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: rgba(0,0,0,0.03);
-    border-radius: 12px;
-    border: 1px dashed var(--line-color);
+/* ── APPEARANCE MENU ── */
+.appearance-wrapper {
+    position: relative;
+    margin-right: 1.5rem;
 }
 
-.selection-item {
+.appearance-trigger {
+    background: rgba(0,0,0,0.05);
+    border: 1px solid var(--dot-color);
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-weight: 700;
+    color: var(--ink-color);
+    cursor: pointer;
+    transition: all var(--transition);
+    font-size: 0.9rem;
+}
+
+.appearance-trigger:hover {
+    background: rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.appearance-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: var(--paper-bg);
+    border: 1px solid var(--dot-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    display: none;
+    flex-direction: column;
+    min-width: 180px;
+    z-index: 2000;
+    overflow: hidden;
+    animation: modalScaleUp 0.2s ease-out;
+}
+
+.appearance-dropdown.active {
+    display: flex;
+}
+
+.appearance-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
+    gap: 10px;
+    padding: 0.8rem 1.2rem;
+    border: none;
+    background: none;
+    color: var(--ink-color);
+    font-weight: 600;
     cursor: pointer;
-    user-select: none;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
+    text-align: left;
 }
 
-.selection-item:hover {
-    opacity: 0.8;
+.appearance-item:hover {
+    background: rgba(0,0,0,0.05);
+    padding-left: 1.5rem;
 }
 
-.selection-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+.appearance-item .theme-check {
+    margin-left: auto;
+    opacity: 0;
+    color: var(--accent-color);
+    font-weight: 900;
+}
+
+.appearance-item.active .theme-check {
+    opacity: 1;
+}
+
+/* ── SELECTION GRID & CARDS ── */
+.selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.selection-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1.2rem;
+    background: var(--glass-bg);
+    border: 2px solid var(--dot-color);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all var(--transition);
+    text-align: center;
+    position: relative;
+}
+
+.selection-card:hover {
+    transform: translateY(-8px) scale(1.05);
+    border-color: var(--accent-color);
+    box-shadow: var(--shadow);
+}
+
+.selection-card.active {
+    background: rgba(var(--accent-color-rgb, 160, 82, 45), 0.15);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 25px rgba(var(--accent-color-rgb, 160, 82, 45), 0.3), inset 0 0 0 1px var(--accent-color);
+    transform: scale(1.05);
+}
+
+.selection-card input[type="checkbox"] {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
     accent-color: var(--accent-color);
     cursor: pointer;
+    z-index: 10;
+}
+
+.selection-icon {
+    font-size: 2.2rem;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.selection-card:hover .selection-icon {
+    transform: scale(1.2) rotate(5deg);
+}
+
+.selection-name {
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: var(--ink-color);
 }
 
 .select-all-btn {
