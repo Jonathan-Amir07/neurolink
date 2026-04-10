@@ -3,6 +3,7 @@
     /* Parchment (Improved Default) */
     --bg-paper: #f4ead5;
     --accent-color: #a0522d;
+    --accent-color-rgb: 160, 82, 45;
     --accent-hover: #8b4513;
     --line-color: #7d6b5d;
     --dot-color: rgba(61, 43, 31, 0.08);
@@ -26,6 +27,7 @@
     --bg-paper: #0a0a0a;
     --ink-color: #d1c4a8;
     --accent-color: #c5a059;
+    --accent-color-rgb: 197, 160, 89;
     --accent-hover: #d4af37;
     --line-color: #333;
     --dot-color: rgba(197, 160, 89, 0.1);
@@ -41,6 +43,7 @@
     --bg-paper: #020617;
     --ink-color: #f8fafc;
     --accent-color: #22d3ee;
+    --accent-color-rgb: 34, 211, 238;
     --accent-hover: #0891b2;
     --line-color: #1e293b;
     --dot-color: rgba(34, 211, 238, 0.12);
