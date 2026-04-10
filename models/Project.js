@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const OutputSchema = new mongoose.Schema({
-    type: { type: String, enum: ['notebook', 'mindmap', 'infographic', 'slides', 'flashcards'] },
+    type: { type: String, enum: ['notebook', 'mindmap', 'infographic', 'slides', 'flashcards', 'quiz'] },
     content: mongoose.Schema.Types.Mixed, // Storing final HTML/JSON
     created_at: { type: Date, default: Date.now }
 });
