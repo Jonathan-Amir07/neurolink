@@ -122,9 +122,13 @@ const THEMES = {
 };
 
 function initTheme() {
-    const savedTheme = localStorage.getItem('neurolink-theme') || 'parchment';
-    setTheme(savedTheme);
-    renderThemeSwitcher();
+    try {
+        const savedTheme = localStorage.getItem('neurolink-theme') || 'parchment';
+        setTheme(savedTheme);
+        renderThemeSwitcher();
+    } catch (e) {
+        console.error('Theme Init Failed:', e);
+    }
 }
 
 function setTheme(theme) {
@@ -162,6 +166,7 @@ function renderThemeSwitcher() {
 
 function updateThemeSwitcherUI(activeTheme) {
     const btns = document.querySelectorAll('.theme-switcher-btn');
+    if (!btns.length) return;
     btns.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.themeId === activeTheme);
     });

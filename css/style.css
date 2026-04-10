@@ -66,12 +66,11 @@ body {
     transition: background-color var(--transition), color var(--transition);
 }
 
-/* ── HEADER ── */
 header {
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    padding: 1rem 2rem;
+    padding: 0.8rem 2rem;
     border-bottom: 1px solid var(--dot-color);
     display: flex;
     justify-content: space-between;
@@ -81,14 +80,20 @@ header {
     z-index: 1000;
 }
 
+#nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
 /* ── BUTTONS ── */
 .auth-btn {
     background: var(--ink-color);
-    color: white;
+    color: var(--bg-paper);
     padding: 0.5rem 1.5rem;
     border-radius: 8px;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
     border: none;
     cursor: pointer;
     font-size: 0.9rem;
@@ -840,8 +845,8 @@ header {
 
 .theme-switcher-btn.active {
     background: var(--accent-color);
-    color: white;
-    box-shadow: 0 4px 12px rgba(var(--accent-color-rgb, 160, 82, 45), 0.3);
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .theme-switcher-btn .btn-icon {
@@ -876,10 +881,9 @@ header {
 
 .selection-card {
     display: flex;
-    flex-direction: row; /* Horizontal for compact two-column */
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.8rem 1rem;
+    gap: 0.8rem;
+    padding: 1rem;
     background: var(--glass-bg);
     border: 2px solid var(--dot-color);
     border-radius: 12px;
@@ -887,6 +891,7 @@ header {
     transition: all var(--transition);
     text-align: left;
     position: relative;
+    overflow: hidden;
 }
 
 .selection-card:hover {
