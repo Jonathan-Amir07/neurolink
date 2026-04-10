@@ -267,7 +267,8 @@ app.post('/api/projects', parseUpload, async (req, res) => {
             const tStart = Date.now();
             const results = [];
 
-            for (const type of selectedTypes) {
+            for (let i = 0; i < selectedTypes.length; i++) {
+                const type = selectedTypes[i];
                 if (!generators[type]) continue;
                 
                 try {
@@ -281,6 +282,12 @@ app.post('/api/projects', parseUpload, async (req, res) => {
                     }
                 } catch (err) {
                     console.error(`[AI] ❌ Error in ${type}:`, err.message);
+                }
+
+                // Add delay to prevent Gemini free-tier rate limiting (15 RPM), except for the final item
+                if (i < selectedTypes.length - 1) {
+                    console.log(`[AI] Waiting 2 seconds before next generation to prevent rate limits...`);
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                 }
             }
 

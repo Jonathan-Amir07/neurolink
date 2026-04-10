@@ -16,11 +16,11 @@ let workingModelIndex = 0;
 // Gemini free-tier safe limit: ~100k characters (≈25k tokens)
 // We proportionally sample from each file section to fit under this ceiling
 const INPUT_CHAR_LIMITS = {
-    notebook:    80000,   // Needs most detail
-    mindmap:     60000,   // Structural overview
-    flashcards:  60000,   // Q&A pairs
-    slides:      60000,   // Key points
-    infographic: 40000    // Short summaries
+    notebook:    70000,   // Needs most detail
+    mindmap:     40000,   // Structural overview
+    flashcards:  40000,   // Q&A pairs
+    slides:      40000,   // Key points
+    infographic: 30000    // Short summaries
 };
 
 /**
@@ -116,8 +116,11 @@ async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2
         } catch (error) {
             console.error(`[AI] ❌ ${currentModel} failed:`, error.message);
             if (i === retries) return null;
-            // Exponential backoff: 300ms, 600ms, 1200ms...
-            await new Promise(r => setTimeout(r, 300 * Math.pow(2, i)));
+            
+            const isRateLimit = error.message.includes('429') || error.message.toLowerCase().includes('rate limit') || error.message.toLowerCase().includes('quota');
+            const delay = isRateLimit ? (4000 + (Math.random() * 2000)) : (1000 * Math.pow(2, i));
+            console.log(`[AI] Delaying retries for ${Math.round(delay/1000)}s due to potential rate limits...`);
+            await new Promise(r => setTimeout(r, delay));
         }
     }
 }

@@ -26,11 +26,13 @@
             position: absolute;
             width: 500px;
             height: 500px;
-            background: radial-gradient(circle, rgba(230, 126, 34, 0.12) 0%, transparent 70%);
+            background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%);
+            opacity: 0.12;
             top: -100px;
             right: -100px;
             border-radius: 50%;
             animation: float 8s ease-in-out infinite;
+            z-index: 1;
         }
 
         .hero::after {
@@ -38,11 +40,13 @@
             position: absolute;
             width: 400px;
             height: 400px;
-            background: radial-gradient(circle, rgba(44, 62, 80, 0.08) 0%, transparent 70%);
+            background: radial-gradient(circle, var(--ink-color) 0%, transparent 70%);
+            opacity: 0.08;
             bottom: -50px;
             left: -100px;
             border-radius: 50%;
             animation: float 10s ease-in-out infinite reverse;
+            z-index: 1;
         }
 
         @keyframes float {

@@ -1,5 +1,6 @@
 /* ── DESIGN SYSTEM / CSS VARIABLES ── */
 :root {
+    /* Parchment (Default) */
     --bg-paper: #f9f7f1;
     --accent-color: #e67e22;
     --accent-hover: #d35400;
@@ -9,7 +10,6 @@
     --glass-bg: rgba(255, 255, 255, 0.7);
     --paper-bg: #fdfdf5;
     --sidebar-bg: #1e1e1e;
-    --text-ink: #2c3e50;
     --ink-color: #2c3e50;
     --accent-red: #b22222;
     --chalkboard-bg: #2d2d2d;
@@ -18,7 +18,35 @@
     --chalk-keyword: #ffda6a;
     --shadow: 0 4px 15px rgba(0,0,0,0.1);
     --radius: 16px;
-    --transition: 0.25s ease;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+    --bg-paper: #1a1a1a;
+    --ink-color: #e0e0e0;
+    --accent-color: #f39c12;
+    --accent-hover: #e67e22;
+    --line-color: #444;
+    --dot-color: rgba(255, 255, 255, 0.05);
+    --ruled-line: rgba(255, 255, 255, 0.05);
+    --glass-bg: rgba(30, 30, 30, 0.8);
+    --paper-bg: #2d2d2d;
+    --sidebar-bg: #121212;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+[data-theme="modern"] {
+    --bg-paper: #0f172a;
+    --ink-color: #f1f5f9;
+    --accent-color: #38bdf8;
+    --accent-hover: #0ea5e9;
+    --line-color: #334155;
+    --dot-color: rgba(56, 189, 248, 0.1);
+    --ruled-line: rgba(56, 189, 248, 0.1);
+    --glass-bg: rgba(15, 23, 42, 0.7);
+    --paper-bg: #1e293b;
+    --sidebar-bg: #020617;
+    --shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 
 /* ── RESET & BASE ── */
@@ -33,6 +61,7 @@ body {
     margin: 0;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    transition: background-color var(--transition), color var(--transition);
 }
 
 /* ── HEADER ── */
@@ -79,13 +108,37 @@ header {
 /* ── GLASS CARD ── */
 .card {
     background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
     border-radius: var(--radius);
     padding: 2rem;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+    box-shadow: var(--shadow);
     transition: all var(--transition);
+}
+
+.project-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.project-card:hover {
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.project-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.5s;
+}
+
+.project-card:hover::after {
+    left: 100%;
 }
 
 /* ── BADGES ── */

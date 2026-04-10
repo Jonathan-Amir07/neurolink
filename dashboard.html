@@ -39,10 +39,22 @@
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
             z-index: 2000;
             justify-content: center;
             align-items: center;
+            padding: 1rem;
+        }
+
+        .modal .card {
+            max-width: 100%;
+            animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalScaleUp {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         /* Input mode toggle */
@@ -167,15 +179,50 @@
 
                 <!-- Material selection -->
                 <div class="selection-title-row">
-                    <label style="font-weight:700; font-size:0.9rem;">Study Materials to Generate</label>
+                    <label style="font-weight:700; font-size:0.9rem;">Study Toolkit</label>
                     <button type="button" class="select-all-btn" id="toggle-all">Deselect All</button>
                 </div>
-                <div class="selection-group" id="material-selection">
-                    <label class="selection-item"><input type="checkbox" name="material" value="notebook" checked> 📓 Notebook</label>
-                    <label class="selection-item"><input type="checkbox" name="material" value="mindmap" checked> 🗺️ Mind Map</label>
-                    <label class="selection-item"><input type="checkbox" name="material" value="flashcards" checked> 🃏 Flashcards</label>
-                    <label class="selection-item"><input type="checkbox" name="material" value="slides" checked> 📊 Slides</label>
-                    <label class="selection-item"><input type="checkbox" name="material" value="infographic" checked> 🖼️ Infographic</label>
+                <div class="workbench-grid" id="material-selection">
+                    <div class="workbench-item active" data-type="notebook">
+                        <input type="checkbox" name="material" value="notebook" checked style="display:none">
+                        <span class="workbench-icon">📓</span>
+                        <div class="workbench-info">
+                            <div class="workbench-name">Notebook</div>
+                            <div class="workbench-desc">Structured chapters & ruled paper</div>
+                        </div>
+                    </div>
+                    <div class="workbench-item active" data-type="mindmap">
+                        <input type="checkbox" name="material" value="mindmap" checked style="display:none">
+                        <span class="workbench-icon">🗺️</span>
+                        <div class="workbench-info">
+                            <div class="workbench-name">Mind Map</div>
+                            <div class="workbench-desc">Interactive collapsible tree</div>
+                        </div>
+                    </div>
+                    <div class="workbench-item active" data-type="flashcards">
+                        <input type="checkbox" name="material" value="flashcards" checked style="display:none">
+                        <span class="workbench-icon">🃏</span>
+                        <div class="workbench-info">
+                            <div class="workbench-name">Flashcards</div>
+                            <div class="workbench-desc">Active recall flip cards</div>
+                        </div>
+                    </div>
+                    <div class="workbench-item active" data-type="slides">
+                        <input type="checkbox" name="material" value="slides" checked style="display:none">
+                        <span class="workbench-icon">📊</span>
+                        <div class="workbench-info">
+                            <div class="workbench-name">Slides</div>
+                            <div class="workbench-desc">Clean presentation decks</div>
+                        </div>
+                    </div>
+                    <div class="workbench-item active" data-type="infographic">
+                        <input type="checkbox" name="material" value="infographic" checked style="display:none">
+                        <span class="workbench-icon">🖼️</span>
+                        <div class="workbench-info">
+                            <div class="workbench-name">Infographic</div>
+                            <div class="workbench-desc">Visual summary blocks</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:0.5rem;">
@@ -186,6 +233,10 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
     <script src="js/app.js"></script>
     <script>
         // ── Input mode ───────────────────────────────────────────────────────
@@ -236,21 +287,31 @@
             }
         });
 
-        // ── Select All toggle ─────────────────────────────────────────────────
+        // ── Toolkit selection (Workbench) ─────────────────────────────────────
+        document.querySelectorAll('.workbench-item').forEach(item => {
+            item.onclick = () => {
+                const cb = item.querySelector('input');
+                cb.checked = !cb.checked;
+                item.classList.toggle('active', cb.checked);
+                updateToggleAllBtn();
+            };
+        });
+
         const toggleBtn = document.getElementById('toggle-all');
-        const getCheckboxes = () => document.querySelectorAll('input[name="material"]');
-
-        toggleBtn.onclick = () => {
-            const checks = getCheckboxes();
-            const anyUnchecked = Array.from(checks).some(c => !c.checked);
-            checks.forEach(c => c.checked = anyUnchecked);
-            toggleBtn.innerText = anyUnchecked ? 'Deselect All' : 'Select All';
-        };
-
-        document.getElementById('material-selection').onchange = () => {
-            const checks = getCheckboxes();
+        function updateToggleAllBtn() {
+            const checks = document.querySelectorAll('input[name="material"]');
             const allChecked = Array.from(checks).every(c => c.checked);
             toggleBtn.innerText = allChecked ? 'Deselect All' : 'Select All';
+        }
+
+        toggleBtn.onclick = () => {
+            const checks = document.querySelectorAll('input[name="material"]');
+            const anyUnchecked = Array.from(checks).some(c => !c.checked);
+            checks.forEach(c => {
+                c.checked = anyUnchecked;
+                c.parentElement.classList.toggle('active', anyUnchecked);
+            });
+            updateToggleAllBtn();
         };
 
         // ── Form submission ───────────────────────────────────────────────────
@@ -264,26 +325,69 @@
             if (!title) { alert('Please enter a project title.'); return; }
             if (selectedTypes.length === 0) { alert('Please select at least one study material to generate.'); return; }
 
-            // Build FormData (works for both text and file)
+            const originalText = btn.innerText;
+            btn.innerText = 'Preparing your files... 🗃️';
+            btn.disabled = true;
+
+            // Build FormData
             const formData = new FormData();
             formData.append('title', title);
             formData.append('selectedTypes', JSON.stringify(selectedTypes));
 
             if (activeMode === 'file') {
                 const fileInput = document.getElementById('file-upload');
-                if (!fileInput.files.length) { alert('Please select at least one file to upload.'); return; }
-                for (let i = 0; i < fileInput.files.length; i++) {
-                    formData.append('files', fileInput.files[i]);
+                if (!fileInput.files.length) { 
+                    alert('Please select at least one file to upload.'); 
+                    btn.innerText = originalText; btn.disabled = false; return; 
+                }
+                
+                try {
+                    let combinedTextChunks = [];
+                    for (let i = 0; i < fileInput.files.length; i++) {
+                        const file = fileInput.files[i];
+                        btn.innerText = `Extracting ${file.name}... ⏳`;
+                        let text = '';
+
+                        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                            const arrayBuffer = await file.arrayBuffer();
+                            const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+                            let maxPages = Math.min(pdf.numPages, 100); // cap max pages per file to speed up browser
+                            for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+                                const page = await pdf.getPage(pageNum);
+                                const textContent = await page.getTextContent();
+                                const pageText = textContent.items.map(item => item.str).join(' ');
+                                text += pageText + ' \n';
+                            }
+                        } else {
+                            text = await file.text();
+                        }
+                        
+                        if (text.trim()) {
+                            combinedTextChunks.push(`[File: ${file.name}]\n${text.trim()}`);
+                        }
+                    }
+                    
+                    const finalContent = combinedTextChunks.join('\n\n---\n\n');
+                    if (!finalContent) {
+                        alert('Could not extract text from the provided files.');
+                        btn.innerText = originalText; btn.disabled = false; return;
+                    }
+                    formData.append('content', finalContent);
+                } catch (extractErr) {
+                    console.error("Extraction error", extractErr);
+                    alert('An error occurred while reading the files: ' + extractErr.message);
+                    btn.innerText = originalText; btn.disabled = false; return;
                 }
             } else {
                 const content = document.getElementById('content').value.trim();
-                if (!content) { alert('Please paste some content.'); return; }
+                if (!content) { 
+                    alert('Please paste some content.'); 
+                    btn.innerText = originalText; btn.disabled = false; return; 
+                }
                 formData.append('content', content);
             }
 
-            const originalText = btn.innerText;
             btn.innerText = `Generating ${selectedTypes.length} material${selectedTypes.length > 1 ? 's' : ''}… 🧠`;
-            btn.disabled = true;
 
             try {
                 const res = await fetch('/api/projects', { method: 'POST', body: formData });

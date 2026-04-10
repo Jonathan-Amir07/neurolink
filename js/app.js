@@ -105,8 +105,69 @@ async function loadProjects() {
     }
 }
 
+// ── THEME MANAGEMENT ───────────────────────────────────────────────────
+const THEMES = {
+    parchment: { name: 'Parchment', icon: '📜' },
+    dark: { name: 'Dark Library', icon: '🌙' },
+    modern: { name: 'Modern Lab', icon: '🧪' }
+};
+
+function initTheme() {
+    const savedTheme = localStorage.getItem('neurolink-theme') || 'parchment';
+    setTheme(savedTheme);
+    renderThemeSwitcher();
+}
+
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('neurolink-theme', theme);
+    updateThemeSwitcherUI(theme);
+}
+
+function renderThemeSwitcher() {
+    const nav = document.getElementById('nav-links');
+    if (!nav) return;
+
+    // Check if switcher already exists
+    if (document.getElementById('theme-switcher')) return;
+
+    const switcher = document.createElement('div');
+    switcher.id = 'theme-switcher';
+    switcher.style.cssText = 'display: flex; gap: 0.5rem; margin-right: 1.5rem; background: rgba(0,0,0,0.05); padding: 0.25rem; border-radius: 20px;';
+    
+    Object.entries(THEMES).forEach(([id, info]) => {
+        const btn = document.createElement('button');
+        btn.innerHTML = info.icon;
+        btn.title = info.name;
+        btn.dataset.themeId = id;
+        btn.style.cssText = 'border: none; background: none; cursor: pointer; padding: 0.4rem; border-radius: 50%; font-size: 1.1rem; transition: all 0.3s; line-height: 1;';
+        btn.onclick = () => setTheme(id);
+        switcher.appendChild(btn);
+    });
+
+    nav.prepend(switcher);
+    updateThemeSwitcherUI(localStorage.getItem('neurolink-theme') || 'parchment');
+}
+
+function updateThemeSwitcherUI(activeTheme) {
+    const btns = document.querySelectorAll('#theme-switcher button');
+    btns.forEach(btn => {
+        if (btn.dataset.themeId === activeTheme) {
+            btn.style.background = 'var(--accent-color)';
+            btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+            btn.style.transform = 'scale(1.1)';
+        } else {
+            btn.style.background = 'none';
+            btn.style.boxShadow = 'none';
+            btn.style.transform = 'scale(1)';
+        }
+    });
+}
+
 // Global initialization
 document.addEventListener('DOMContentLoaded', async () => {
+    initTheme(); // Initialize theme ASAP
+    
     const user = await checkAuth();
     
     const path = window.location.pathname;
