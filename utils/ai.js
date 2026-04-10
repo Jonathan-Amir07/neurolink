@@ -20,7 +20,8 @@ const INPUT_CHAR_LIMITS = {
     mindmap:     40000,   // Structural overview
     flashcards:  40000,   // Q&A pairs
     slides:      40000,   // Key points
-    infographic: 30000    // Short summaries
+    infographic: 30000,   // Short summaries
+    quiz:        50000    // Detailed testing
 };
 
 /**
@@ -212,9 +213,26 @@ Content: ${prepareContext(text, INPUT_CHAR_LIMITS.infographic)}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 2000);
 }
 
+async function generateQuiz(text) {
+    const prompt = `Generate a multiple-choice quiz from the following academic content to test comprehension.
+Return ONLY a valid JSON object with this exact shape:
+{"quiz": [{"question": "Clear question text", "options": ["Option 1", "Option 2", "Option 3", "Option 4"], "correctAnswerIndex": 0, "explanation": "Why this is correct"}]}
 
-async function generateStudyMaterials(text, selectedTypes = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic']) {
-    const generators = { notebook: generateNotebook, mindmap: generateMindmap, flashcards: generateFlashcards, slides: generateSlides, infographic: generateInfographic };
+Guidelines:
+- Generate 5-10 multiple-choice questions.
+- Make exactly 4 options per question.
+- 'correctAnswerIndex' must be an integer (0, 1, 2, or 3) indicating the index of the correct option in the options array.
+- Provide a brief 1-2 sentence explanation for the correct answer.
+- Test important concepts, definitions, and applications.
+- Avoid tricky phrasing; focus on actual learning validation.
+
+Content: ${prepareContext(text, INPUT_CHAR_LIMITS.quiz)}`;
+    return await callAI(prompt, MODEL_VARIANTS.length - 1, 3000);
+}
+
+
+async function generateStudyMaterials(text, selectedTypes = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz']) {
+    const generators = { notebook: generateNotebook, mindmap: generateMindmap, flashcards: generateFlashcards, slides: generateSlides, infographic: generateInfographic, quiz: generateQuiz };
     const results = {};
 
     for (const type of selectedTypes) {
@@ -232,5 +250,6 @@ module.exports = {
     generateFlashcards,
     generateSlides,
     generateInfographic,
+    generateQuiz,
     generateStudyMaterials
 };

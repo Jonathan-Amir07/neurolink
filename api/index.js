@@ -99,7 +99,7 @@ app.use(express.static(path.join(__dirname, '..'), {
 // ── Project Routes ────────────────────────────────────────────────────────────
 
 const Project = require('../models/Project');
-const { generateNotebook, generateMindmap, generateFlashcards, generateSlides, generateInfographic } = require('../utils/ai');
+const { generateNotebook, generateMindmap, generateFlashcards, generateSlides, generateInfographic, generateQuiz } = require('../utils/ai');
 
 app.get('/api/projects', async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send();
@@ -140,7 +140,7 @@ app.post('/api/projects/:id/regenerate', async (req, res) => {
         if (!project) return res.status(404).send();
 
         const { type } = req.body;
-        const validTypes = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic'];
+        const validTypes = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
         if (!validTypes.includes(type)) return res.status(400).json({ error: 'Invalid type' });
 
         const generators = {
@@ -148,7 +148,8 @@ app.post('/api/projects/:id/regenerate', async (req, res) => {
             mindmap:     generateMindmap,
             flashcards:  generateFlashcards,
             slides:      generateSlides,
-            infographic: generateInfographic
+            infographic: generateInfographic,
+            quiz:        generateQuiz
         };
 
         if (!generators[type]) return res.status(400).json({ error: 'Generator not found' });
@@ -194,9 +195,9 @@ app.post('/api/projects', parseUpload, async (req, res) => {
         // selectedTypes arrives as a JSON string from FormData
         let selectedTypes;
         try {
-            selectedTypes = JSON.parse(req.body.selectedTypes || '["notebook","mindmap","flashcards","slides","infographic"]');
+            selectedTypes = JSON.parse(req.body.selectedTypes || '["notebook","mindmap","flashcards","slides","infographic","quiz"]');
         } catch {
-            selectedTypes = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic'];
+            selectedTypes = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
         }
 
         if (!title) return res.status(400).json({ error: 'Title is required' });
@@ -259,7 +260,8 @@ app.post('/api/projects', parseUpload, async (req, res) => {
             mindmap:     generateMindmap,
             flashcards:  generateFlashcards,
             slides:      generateSlides,
-            infographic: generateInfographic
+            infographic: generateInfographic,
+            quiz:        generateQuiz
         };
 
         try {

@@ -876,24 +876,6 @@ header {
     transition: all var(--transition);
     text-align: left;
     position: relative;
-}
-
-.selection-card:nth-child(5) {
-    grid-column: 1 / -1; /* Make the 5th item full width */
-}
-
-.selection-card {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 1rem;
-    background: var(--glass-bg);
-    border: 2px solid var(--dot-color);
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all var(--transition);
-    text-align: left;
-    position: relative;
     overflow: hidden;
 }
 
@@ -1030,6 +1012,80 @@ header {
     .card-perspective { width: 280px; }
     .flashcard-progress-bar { width: 280px; }
     .notebook-sidebar { max-height: 160px; }
+}
+
+/* ── QUIZ UI ── */
+.quiz-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+.quiz-card {
+    background: var(--paper-bg);
+    border: 1px solid var(--dot-color);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+}
+.quiz-question {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--ink-color);
+    margin-bottom: 1.5rem;
+}
+.quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+.quiz-option {
+    padding: 1rem;
+    border: 2px solid var(--dot-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--transition);
+    background: var(--glass-bg);
+    color: var(--ink-color);
+    font-weight: 600;
+    text-align: left;
+}
+.quiz-option:hover:not(:disabled) {
+    border-color: var(--accent-color);
+    transform: translateX(5px);
+}
+.quiz-option.selected {
+    background: var(--accent-color);
+    color: white !important;
+    border-color: var(--accent-color);
+}
+.quiz-option.correct {
+    background: #27ae60 !important;
+    color: white !important;
+    border-color: #27ae60 !important;
+}
+.quiz-option.wrong {
+    background: #e74c3c !important;
+    color: white !important;
+    border-color: #e74c3c !important;
+}
+.quiz-explanation {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(var(--accent-color-rgb, 160, 82, 45), 0.1);
+    border-left: 4px solid var(--accent-color);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.95rem;
+    color: var(--ink-color);
+    display: none;
+    animation: fadeSlideUp 0.3s ease;
+}
+.quiz-explanation.visible { display: block; }
+.quiz-score-display {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent-color);
+    margin-bottom: 1rem;
 }
 
 /* ── UTILITY ── */

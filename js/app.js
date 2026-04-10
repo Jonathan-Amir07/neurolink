@@ -23,7 +23,8 @@ const TYPE_ICONS = {
     mindmap: '🗺️',
     flashcards: '🃏',
     slides: '📊',
-    infographic: '🖼️'
+    infographic: '🖼️',
+    quiz: '🎯'
 };
 
 async function loadProjects() {
