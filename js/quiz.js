@@ -4,7 +4,7 @@ let quizScore = 0;
 let optionSelected = false;
 
 function initQuiz(data) {
-    if (!data || !data.quiz || !data.quiz.length) {
+    if (!data || !Array.isArray(data) || data.length === 0) {
         document.getElementById('quiz-container').innerHTML = `
             <div class="empty-state-card">
                 <h3>Invalid Quiz Data</h3>
@@ -15,7 +15,7 @@ function initQuiz(data) {
         return;
     }
     
-    currentQuizData = data.quiz;
+    currentQuizData = data;
     currentQuestionIndex = 0;
     quizScore = 0;
     
