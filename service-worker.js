@@ -1,9 +1,8 @@
 const CACHE_NAME = 'neurolink-cache-v2';
 const ASSETS_TO_CACHE = [
   '/',
-  '/index.html',
-  '/dashboard.html',
-  '/project.html',
+  '/dashboard',
+  '/project',
   '/css/style.css',
   '/js/app.js',
   '/js/mindmap.js',

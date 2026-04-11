@@ -2,7 +2,9 @@ async function checkAuth() {
     try {
         const res = await fetch('/api/user');
         if (!res.ok) {
-            if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+            const path = window.location.pathname;
+            const isPublicPage = path === '/' || path === '/index.html' || path === '/login';
+            if (!isPublicPage) {
                 window.location.href = '/';
             }
             return null;
