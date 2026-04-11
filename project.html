@@ -17,134 +17,91 @@
             <a href="dashboard.html" class="brand" style="font-weight: 800; font-size: 1.2rem; color: var(--accent-color); text-decoration: none;">NeuroLink</a>
             <span class="sep">/</span>
             <span class="current" id="breadcrumb-project">Project Studio</span>
-            <div id="gen-progress" class="gen-progress-bar" style="width: 0%;"></div>
         </div>
         
         <nav id="nav-links">
-            <div class="theme-selector-pill">
-                <button onclick="setTheme('parchment')" title="Parchment" class="theme-pill-btn parchment-btn">📜</button>
-                <button onclick="setTheme('library')" title="Library" class="theme-pill-btn library-btn">🌙</button>
-                <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn">🧪</button>
-                <button onclick="setTheme('default')" title="Studio" class="theme-pill-btn studio-btn">🏢</button>
+            <!-- PROJECT PULSE HUD (UX Consolidated) -->
+            <div class="project-pulse-hud">
+                <div class="hud-item" title="AI Status">
+                    <div class="ai-pulse-indicator"></div>
+                    <span id="ai-status-text">AI Synced</span>
+                </div>
+                <div class="hud-item" title="Generation Progress">
+                    <div style="background:rgba(255,255,255,0.1); height:6px; width:80px; border-radius:10px; position:relative; overflow:hidden;">
+                        <div id="gen-progress" style="background:var(--accent-color); height:100%; width:0%; transition:width 0.5s;"></div>
+                    </div>
+                </div>
+                <div class="hud-item" style="border-left:1px solid rgba(255,255,255,0.1); padding-left:1rem;">
+                    <button class="auth-btn" id="regen-btn" onclick="regenerateCurrentTab()" style="background:transparent !important; color:white !important; border:1px solid rgba(255,255,255,0.2) !important;">↺ Regenerate</button>
+                    <button class="auth-btn" onclick="exportProject()">📥 Export PDF</button>
+                </div>
             </div>
 
             <div class="user-menu">
-                <span id="user-display-name">My Workspace</span>
-                <a href="/auth/logout" class="auth-btn">Logout</a>
+                <div class="theme-selector-pill">
+                    <button onclick="setTheme('parchment')" title="Parchment" class="theme-pill-btn parchment-btn">📜</button>
+                    <button onclick="setTheme('library')" title="Library" class="theme-pill-btn library-btn">🌙</button>
+                    <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn">🧪</button>
+                    <button onclick="setTheme('default')" title="Studio" class="theme-pill-btn studio-btn">🏢</button>
+                </div>
+                <a href="/auth/logout" class="auth-btn" style="background:transparent !important; color:white !important; opacity:0.6;">Logout</a>
             </div>
-            
-            <button class="auth-btn" id="regen-btn" onclick="regenerateCurrentTab()">↺ Regenerate</button>
         </nav>
     </header>
 
     <main class="container">
-        <div class="header-controls">
-            <div style="display:flex; align-items:center;">
-                <h1 id="project-title-disp" style="font-family: 'Permanent Marker', cursive; font-size: 2.2rem; color: var(--ink-color); margin: 0;">Study Project</h1>
-                <div class="ai-pulse-indicator" title="AI Core Synced"></div>
-            </div>
-            <div class="header-right-btns" style="display:flex; gap:12px;">
-                <div class="sharing-badge-container" id="share-badge">
-                    <i class="fas fa-share-alt"></i>
-                    <span>Private Project</span>
-                </div>
-                <button class="export-btn" onclick="exportProject()" style="padding: 10px 20px;">
-                    <i class="fas fa-file-export"></i> Export PDF
-                </button>
-            </div>
+        <!-- HORIZONTAL WORKSPACE NAV -->
+        <div class="workspace-tabs">
+            <button class="nav-pill tab-notebook active" onclick="switchTab('notebook')"><i class="fas fa-book"></i> Notebook</button>
+            <button class="nav-pill tab-mindmap" onclick="switchTab('mindmap')"><i class="fas fa-brain"></i> Mind Map</button>
+            <button class="nav-pill tab-flashcards" onclick="switchTab('flashcards')"><i class="fas fa-clone"></i> Flashcards</button>
+            <button class="nav-pill tab-slides" onclick="switchTab('slides')"><i class="fas fa-tv"></i> Slides</button>
+            <button class="nav-pill tab-infographic" onclick="switchTab('infographic')"><i class="fas fa-chart-pie"></i> Infographics</button>
+            <button class="nav-pill tab-quiz" onclick="switchTab('quiz')"><i class="fas fa-vial"></i> Practice Quiz</button>
         </div>
 
-        <div class="binder-frame premium-shadow">
+        <div class="binder-frame premium-shadow" id="binder-frame">
             <!-- BINDER RINGS -->
             <div class="binder-rings">
-                <div class="ring"></div>
-                <div class="ring"></div>
-                <div class="ring"></div>
-                <div class="ring"></div>
-                <div class="ring"></div>
-                <div class="ring"></div>
+                <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+                <div class="ring"></div><div class="ring"></div><div class="ring"></div>
             </div>
 
             <div class="viewer-container">
-                <!-- Loading overlay -->
                 <div id="loading-overlay" class="loading-overlay hidden">
                     <div class="spinner"></div>
-                    <p id="loading-text" style="font-family:'Inter'; font-weight:700; color:var(--ink-color); margin-top:15px; letter-spacing:0.5px;">SECURED. SYNCING CONTENT...</p>
+                    <p id="loading-text">SYNCING...</p>
                 </div>
 
                 <div id="notebook-view">
-                    <div class="notebook-inner-layout">
+                    <div class="notebook-inner-layout" id="notebook-layout">
                         <aside class="notebook-sidebar">
+                            <div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Focus Mode">
+                                <i class="fas fa-chevron-left" id="toggle-icon"></i>
+                            </div>
                             <h1>STUDY INDEX</h1>
                             <nav id="notebook-toc"></nav>
                         </aside>
                         <main id="notebook-content-area" class="notebook-main">
-                            <div class="empty-state-card">
-                                <div style="font-size: 3rem; margin-bottom: 1rem;">📓</div>
-                                <h3>Opening Archives...</h3>
-                            </div>
+                            <!-- Content -->
                         </main>
                     </div>
                 </div>
 
-                <div id="mindmap-view" class="hidden">
-                     <div id="tree-root"></div>
-                </div>
-
+                <div id="mindmap-view" class="hidden"><div id="tree-root"></div></div>
                 <div id="flashcards-view" class="hidden">
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 500px;">
+                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:500px;">
                         <div id="flashcard-container"></div>
-                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                        <div style="margin-top:2rem; display:flex; gap:1rem;">
                             <button class="auth-btn" onclick="prevCard()">← Back</button>
-                            <button class="auth-btn" id="flip-btn" onclick="flipCard()">Flip (Space)</button>
+                            <button class="auth-btn" id="flip-btn" onclick="flipCard()">Flip</button>
                             <button class="auth-btn" onclick="nextCard()">Next →</button>
                         </div>
                     </div>
                 </div>
-
-                <div id="slides-view" class="hidden">
-                    <div id="slides-container"></div>
-                    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
-                        <button class="auth-btn" onclick="prevSlide()">← Previous</button>
-                        <button class="auth-btn" onclick="nextSlide()">Next →</button>
-                    </div>
-                </div>
-
-                <div id="infographic-view" class="hidden">
-                    <div id="infographic-container"></div>
-                </div>
-
-                <div id="quiz-view" class="hidden">
-                    <div id="quiz-container" class="quiz-container"></div>
-                </div>
-            </div>
-
-            <!-- NAVIGATION TABS (Compact Modern Pills) -->
-            <div class="tabs">
-                <button class="tab-btn tab-notebook active" onclick="switchTab('notebook')" title="Notebook">
-                    <i class="fas fa-book"></i>
-                    <span class="tab-label">Notebook</span>
-                </button>
-                <button class="tab-btn tab-mindmap" onclick="switchTab('mindmap')" title="Mind Map">
-                    <i class="fas fa-project-diagram"></i>
-                    <span class="tab-label">Mind Map</span>
-                </button>
-                <button class="tab-btn tab-flashcards" onclick="switchTab('flashcards')" title="Flashcards">
-                    <i class="fas fa-clone"></i>
-                    <span class="tab-label">Flashcards</span>
-                </button>
-                <button class="tab-btn tab-slides" onclick="switchTab('slides')" title="Slides">
-                    <i class="fas fa-tv"></i>
-                    <span class="tab-label">Slides</span>
-                </button>
-                <button class="tab-btn tab-infographic" onclick="switchTab('infographic')" title="Infographic">
-                    <i class="fas fa-chart-pie"></i>
-                    <span class="tab-label">Infographics</span>
-                </button>
-                <button class="tab-btn tab-quiz" onclick="switchTab('quiz')" title="Practice Quiz">
-                    <i class="fas fa-puzzle-piece"></i>
-                    <span class="tab-label">Quiz</span>
-                </button>
+                <div id="slides-view" class="hidden"><div id="slides-container"></div></div>
+                <div id="infographic-view" class="hidden"><div id="infographic-container"></div></div>
+                <div id="quiz-view" class="hidden"><div id="quiz-container"></div></div>
             </div>
         </div>
     </main>
@@ -152,28 +109,21 @@
     <script>
         let currentProject = null;
         let activeTab = 'notebook';
+        let sidebarCollapsed = false;
 
         async function loadProject() {
             showLoading("ACCESING ARCHIVES...");
             const urlParams = new URLSearchParams(window.location.search);
             const projectId = urlParams.get('id');
-
-            if (!projectId) {
-                alert("No project selected.");
-                window.location.href = 'dashboard.html';
-                return;
-            }
+            if (!projectId) { window.location.href = 'dashboard.html'; return; }
 
             try {
                 const res = await fetch(`/api/projects?id=${projectId}`);
                 const data = await res.json();
-                
                 if (data.success && data.project) {
                     currentProject = data.project;
-                    document.getElementById('project-title-disp').innerText = currentProject.title || 'Untitled Project';
-                    document.title = `${currentProject.title} - NeuroLink`;
+                    document.getElementById('ai-status-text').innerText = "Project Synced";
                     
-                    // Update Progress HUD
                     const priority = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
                     const hasMaterial = (type) => {
                         if (!currentProject.outputs) return !!currentProject[type];
@@ -182,93 +132,74 @@
                     };
 
                     const count = priority.filter(hasMaterial).length;
-                    const progPct = (count / 6) * 100;
-                    document.getElementById('gen-progress').style.width = `${progPct}%`;
+                    document.getElementById('gen-progress').style.width = `${(count / 6) * 100}%`;
 
-                    let defaultTab = priority.find(hasMaterial) || 'notebook';
-                    switchTab(defaultTab);
-                    setTimeout(hideLoading, 500); 
-                } else {
-                    document.getElementById('project-title-disp').innerText = "Project Not Found (404)";
+                    switchTab(priority.find(hasMaterial) || 'notebook');
                     hideLoading();
                 }
-            } catch (error) {
-                console.error("Error fetching project:", error);
-                document.getElementById('project-title-disp').innerText = "Connection Error";
-                hideLoading();
-            }
+            } catch (error) { console.error(error); hideLoading(); }
         }
 
         function switchTab(type) {
             activeTab = type;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            const activeBtn = document.querySelector(`.tab-btn.tab-${type}`);
+            document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`.tab-${type}`);
             if (activeBtn) activeBtn.classList.add('active');
 
             const views = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
-            views.forEach(v => {
-                document.getElementById(`${v}-view`).classList.add('hidden');
-            });
+            views.forEach(v => document.getElementById(`${v}-view`).classList.add('hidden'));
             document.getElementById(`${type}-view`).classList.remove('hidden');
             
-            setTimeout(() => { renderContent(type); }, 0);
+            renderContent(type);
+        }
+
+        function toggleSidebar() {
+            sidebarCollapsed = !sidebarCollapsed;
+            const layout = document.getElementById('notebook-layout');
+            const icon = document.getElementById('toggle-icon');
+            if (sidebarCollapsed) {
+                layout.classList.add('collapsed');
+                icon.className = 'fas fa-chevron-right';
+            } else {
+                layout.classList.remove('collapsed');
+                icon.className = 'fas fa-chevron-left';
+            }
         }
 
         function renderContent(type) {
-            showLoading(`Rendering ${type}...`);
-            try {
-                if (!currentProject) return;
-                const output = currentProject.outputs && currentProject.outputs.find(o => o.type === type);
-                const legacyContent = currentProject[type];
-                const content = (output && output.content) || legacyContent;
-                
-                if (!content || content.length < 5) {
-                    showEmptyState(type);
-                    return;
-                }
+            if (!currentProject) return;
+            const output = currentProject.outputs && currentProject.outputs.find(o => o.type === type);
+            const content = (output && output.content) || currentProject[type];
+            
+            if (!content || content.length < 5) { showEmptyState(type); return; }
 
-                if (type === 'notebook') {
-                    renderNotebook(content);
-                } else {
-                    const data = ensureJSON(content);
-                    if (type === 'mindmap' && window.initMindMap) initMindMap(data);
-                    else if (type === 'flashcards' && window.initFlashcards) initFlashcards(data);
-                    else if (type === 'slides' && window.initSlides) initSlides(data);
-                    else if (type === 'infographic' && window.initInfographic) initInfographic(data);
-                    else if (type === 'quiz' && window.initQuiz) initQuiz(data);
-                }
-            } catch (err) {
-                console.error(`Renderer Error ${type}:`, err);
-            } finally {
-                hideLoading();
+            if (type === 'notebook') renderNotebook(content);
+            else {
+                const data = ensureJSON(content);
+                if (type === 'mindmap' && window.initMindMap) initMindMap(data);
+                else if (type === 'flashcards' && window.initFlashcards) initFlashcards(data);
+                else if (type === 'slides' && window.initSlides) initSlides(data);
+                else if (type === 'infographic' && window.initInfographic) initInfographic(data);
+                else if (type === 'quiz' && window.initQuiz) initQuiz(data);
             }
         }
 
         function renderNotebook(content) {
             const area = document.getElementById('notebook-content-area');
             const toc = document.getElementById('notebook-toc');
-            if (!area || !toc) return;
             area.innerHTML = content;
             toc.innerHTML = '';
             
-            const h2s = area.querySelectorAll('h2');
-            h2s.forEach((h2, i) => {
-                const id = `ch-${i}`;
-                h2.id = id;
-
+            area.querySelectorAll('h2').forEach((h2, i) => {
+                const id = `ch-${i}`; h2.id = id;
                 const group = document.createElement('div');
                 group.className = 'toc-group';
+                group.innerHTML = `<span class="toc-title">${h2.innerText}</span>`;
                 
-                const title = document.createElement('span');
-                title.className = 'toc-title';
-                title.innerText = h2.innerText;
-                group.appendChild(title);
-
-                // Find H3s for this group
                 let next = h2.nextElementSibling;
                 while(next && next.tagName !== 'H2') {
                     if (next.tagName === 'H3') {
-                        const subId = `${id}-s-${Math.random().toString(36).substr(2, 5)}`;
+                        const subId = `s-${Math.random().toString(36).substr(2,5)}`;
                         next.id = subId;
                         const link = document.createElement('a');
                         link.className = 'toc-link';
@@ -276,8 +207,6 @@
                         link.onclick = (e) => {
                             e.preventDefault();
                             document.getElementById(subId).scrollIntoView({ behavior: 'smooth' });
-                            document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
-                            link.classList.add('active');
                         };
                         group.appendChild(link);
                     }
@@ -291,57 +220,45 @@
             if (typeof data === 'object') return data;
             try { return JSON.parse(data); } catch (e) {
                 const match = data.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-                if (match) return JSON.parse(match[1]);
-                return data;
+                return match ? JSON.parse(match[1]) : data;
             }
         }
 
         function showEmptyState(type) {
-            const icons = { notebook: '📓', mindmap: '🧠', flashcards: '🃏', slides: '📊', infographic: '🖼️', quiz: '📝' };
             const containerId = type === 'notebook' ? 'notebook-content-area' : {
                 mindmap: 'tree-root', flashcards: 'flashcard-container',
                 slides: 'slides-container', infographic: 'infographic-container',
                 quiz: 'quiz-container'
             }[type];
             const el = document.getElementById(containerId);
-            if (el) el.innerHTML = `
-                <div class="empty-state-card premium-shadow" style="padding: 3rem; text-align: center;">
-                    <div style="font-size: 4rem; margin-bottom: 2rem; opacity: 0.8;">${icons[type]||'✨'}</div>
-                    <h3 style="font-family: 'Permanent Marker'; color: var(--accent-color); font-size: 2rem;">Material Not Found</h3>
-                    <p style="font-family: 'Patrick Hand'; font-size: 1.3rem; margin-bottom: 2rem;">Wanna generate it now with AI?</p>
-                    <button class="auth-btn" style="background: var(--accent-color); padding: 15px 40px; font-size: 1.1rem; border-radius: 50px;" onclick="regenerateCurrentTab()">✨ Generate ${type.toUpperCase()} Now</button>
-                </div>`;
+            if (el) el.innerHTML = `<div class="empty-state-card" style="padding:4rem; text-align:center;">
+                <h3 style="font-family:'Permanent Marker'; font-size:2rem; color:var(--accent-color);">Missing Material</h3>
+                <p>AI can generate this ${type} for you in seconds.</p>
+                <button class="auth-btn" style="margin-top:2rem; background:var(--accent-color); padding:1rem 2rem;" onclick="regenerateCurrentTab()">Generate Now</button>
+            </div>`;
         }
 
         function showLoading(text) {
-            const overlay = document.getElementById('loading-overlay');
-            if (overlay) {
-                overlay.classList.remove('hidden');
-                document.getElementById('loading-text').innerText = text;
-            }
+            document.getElementById('loading-overlay').classList.remove('hidden');
+            document.getElementById('loading-text').innerText = text;
         }
 
         function hideLoading() {
-            const overlay = document.getElementById('loading-overlay');
-            if (overlay) overlay.classList.add('hidden');
+            document.getElementById('loading-overlay').classList.add('hidden');
         }
 
         function setTheme(theme) {
             if (theme === 'default') document.documentElement.removeAttribute('data-theme');
             else document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('artisan-theme', theme);
-            
-            document.querySelectorAll('.theme-pill-btn').forEach(btn => {
-                btn.classList.remove('active-parchment', 'active-library', 'active-lab', 'active-default');
-            });
-            const themeMap = { 'parchment': 'parchment-btn', 'library': 'library-btn', 'lab': 'lab-btn', 'default': 'studio-btn' };
-            const activeBtn = document.querySelector(`.${themeMap[theme]}`);
+            document.querySelectorAll('.theme-pill-btn').forEach(btn => btn.classList.remove('active-parchment', 'active-library', 'active-lab', 'active-default'));
+            const activeBtn = document.querySelector(`.${theme === 'parchment' ? 'parchment-btn' : theme === 'library' ? 'library-btn' : theme === 'lab' ? 'lab-btn' : 'studio-btn'}`);
             if (activeBtn) activeBtn.classList.add(`active-${theme}`);
         }
 
         async function regenerateCurrentTab() {
-            if (!confirm(`Regenerate ${activeTab}? This will replace existing content.`)) return;
-            showLoading(`AI is creating ${activeTab}...`);
+            if (!confirm(`Regenerate ${activeTab}?`)) return;
+            showLoading("AI IS CREATING...");
             try {
                 const res = await fetch('/api/generate-project', {
                     method: 'POST',
@@ -349,17 +266,12 @@
                     body: JSON.stringify({ projectId: currentProject._id, types: [activeTab], force: true })
                 });
                 const data = await res.json();
-                if (data.success) {
-                    await loadProject();
-                    switchTab(activeTab);
-                }
-            } catch (err) { alert("Generation failed: " + err.message); }
-            finally { hideLoading(); }
+                if (data.success) loadProject();
+            } catch (err) { alert(err.message); } finally { hideLoading(); }
         }
 
         window.onload = () => {
-            const savedTheme = localStorage.getItem('artisan-theme') || 'default';
-            setTheme(savedTheme);
+            setTheme(localStorage.getItem('artisan-theme') || 'default');
             loadProject();
         };
     </script>
