@@ -22,29 +22,60 @@ const upload = multer({
 // Load Passport Configuration
 require('../utils/passport');
 
-// Connect to MongoDB
-mongoose.set('bufferCommands', false); // Disable buffering to prevent 10s hangs during connection issues
-mongoose.connect(process.env.MONGODB_URI, {
-    tlsAllowInvalidCertificates: true,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000
-}).then(() => console.log('✅ MongoDB Connected'))
-  .catch(err => {
-    console.error('❌ MongoDB Initial Connection Error:', err.message);
-    if (err.message.includes('protocol')) {
-        console.error('👉 TIP: Check if your MONGODB_URI is missing "mongodb+srv://" or has typos.');
+// ── DATABASE CONNECTION RESILIENCE ── 
+mongoose.set('bufferCommands', false); // Keep buffering OFF to prevent Vercel 10s hangs
+
+let isConnecting = false;
+async function connectDB() {
+    if (mongoose.connection.readyState === 1) return;
+    if (isConnecting) return;
+
+    isConnecting = true;
+    try {
+        await mongoose.connect(process.env.MONGODB_URI, {
+            tlsAllowInvalidCertificates: true,
+            serverSelectionTimeoutMS: 8000, 
+            socketTimeoutMS: 45000,
+            heartbeatFrequencyMS: 10000
+        });
+        console.log('✅ MongoDB Connected');
+    } catch (err) {
+        console.error('❌ MongoDB Connection Error:', err.message);
+        throw err;
+    } finally {
+        isConnecting = false;
     }
-  });
+}
 
-mongoose.connection.on('error', err => console.error('🔴 MongoDB Runtime Error:', err));
-mongoose.connection.on('disconnected', () => console.warn('🟡 MongoDB Disconnected. Reconnecting...'));
+// Initial connection attempt
+connectDB();
 
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
-});
+// Middleware to ensure DB is connected before processing any request
+const ensureDB = async (req, res, next) => {
+    try {
+        if (mongoose.connection.readyState === 1) return next();
+        
+        // If connecting (readyState 2), wait for it
+        if (mongoose.connection.readyState === 2) {
+            console.log('⏳ Database connecting... waiting...');
+            await new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => reject(new Error('Database connection timed out')), 10000);
+                mongoose.connection.once('open', () => { clearTimeout(timeout); resolve(); });
+                mongoose.connection.once('error', (err) => { clearTimeout(timeout); reject(err); });
+            });
+            return next();
+        }
+
+        // If disconnected (readyState 0), reconnect
+        console.log('🔄 Database disconnected. Reconnecting for request:', req.path);
+        await connectDB();
+        next();
+    } catch (err) {
+        next(err); // Pass to global error handler
+    }
+};
+
+app.use(ensureDB);
 
 // Middleware - shifted static below auth for safety
 app.use(express.json({ limit: '20mb' }));

@@ -55,6 +55,10 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
+    // Tertiary safety check for Mongoose state
+    if (mongoose.connection.readyState !== 1) {
+        return done(null, false); // Fail gracefully if DB is not ready during session lookup
+    }
     const user = await User.findById(id);
     done(null, user);
   } catch (err) {
