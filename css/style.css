@@ -366,27 +366,39 @@ header {
 
 .notebook-sidebar h1 {
     font-family: 'Permanent Marker', cursive;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: var(--sidebar-text);
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
     text-align: center;
-    letter-spacing: 2px;
-    opacity: 0.6;
+    letter-spacing: 3px;
+    opacity: 0.5;
+    text-transform: uppercase;
 }
 
 .toc-group {
     background: var(--paper-bg);
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    box-shadow: 4px 4px 0px var(--accent-color); /* Paper card look */
-    transform: rotate(-1deg);
-    transition: all 0.3s ease;
+    padding: 1.2rem;
+    border-radius: 4px;
+    margin-bottom: 1.2rem;
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.1);
+    transform: rotate(-1.5deg);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     border: 1px solid var(--line-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.toc-group::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 4px; height: 100%;
+    background: var(--accent-color);
+    opacity: 0.6;
 }
 
 .toc-group:hover {
-    transform: rotate(0deg) scale(1.02);
+    transform: rotate(0deg) translateY(-3px) scale(1.03);
+    box-shadow: 10px 10px 20px rgba(0,0,0,0.1);
 }
 
 .toc-title {
@@ -553,92 +565,140 @@ header {
     display: none !important;
 }
 
+/* ── BINDER RINGS (Metallic High-Fidelity) ── */
 .binder-rings {
     position: absolute;
-    left: -15px;
-    top: 50px;
-    width: 30px;
-    height: calc(100% - 100px);
+    left: -20px;
+    top: 60px;
+    width: 40px;
+    height: calc(100% - 120px);
     display: flex;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
-    z-index: 100;
+    z-index: 1100;
+    pointer-events: none;
 }
 
 .ring {
-    width: 40px;
-    height: 10px;
+    width: 50px;
+    height: 14px;
     background: var(--rings-silver);
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    border-radius: 20px;
+    box-shadow: 
+        0 4px 8px rgba(0,0,0,0.4),
+        inset 0 1px 3px rgba(255,255,255,0.5),
+        inset 0 -2px 5px rgba(0,0,0,0.2);
+    border: 1px solid rgba(0,0,0,0.1);
+    transform: translateX(5px);
 }
 
-.viewer-container {
-    flex: 1;
-    position: relative;
-    background: var(--paper-bg);
-    overflow: hidden;
-}
-
-/* ── PHYSICAL DIVIDER TABS (RIGHT) ── */
-.tabs {
+.binder-frame::before {
+    content: '';
     position: absolute;
-    right: -65px; /* Protruding from the right side */
+    left: 0; top: 0; bottom: 0;
+    width: 35px;
+    background: var(--binder-edge);
+    border-radius: var(--radius) 0 0 var(--radius);
+    box-shadow: inset -10px 0 20px rgba(0,0,0,0.3);
+    z-index: 2;
+}
+
+/* ── PHYSICAL DIVIDER TABS (Segmented Luxury Track) ── */
+.tabs {
+    position: fixed;
+    right: 2rem;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    z-index: 1001;
+    gap: 0.75rem;
+    z-index: 1200;
 }
 
 .tab-btn {
-    width: 65px;
-    height: 120px;
-    border: 1px solid var(--line-color);
-    border-left: none;
-    border-radius: 0 10px 10px 0;
-    padding: 10px;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    color: var(--sidebar-bg);
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    font-weight: 700;
-    font-size: 0.85rem;
-    letter-spacing: 0.8px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 64px;
+    height: 64px;
+    border-radius: 50% !important;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    box-shadow: 4px 0 15px rgba(0,0,0,0.05);
-    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+}
+
+.tab-btn i {
+    font-size: 1.4rem;
+    color: var(--ink-color);
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+.tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--accent-color);
+    transform: scale(0);
+    transition: transform 0.4s ease;
+    border-radius: 50%;
 }
 
 .tab-btn:hover {
-    width: 85px;
-    filter: brightness(1.2);
+    width: 180px;
+    border-radius: 40px !important;
+}
+
+.tab-btn:hover .tab-label {
+    opacity: 1;
+    transform: translateX(0);
+    display: block;
 }
 
 .tab-btn.active {
-    width: 80px;
-    background: var(--accent-color);
-    color: white !important;
+    background: var(--paper-bg);
     border-color: var(--accent-color);
-    box-shadow: 10px 10px 30px rgba(var(--accent-color-rgb), 0.4);
-    z-index: 10;
+    box-shadow: 0 15px 45px rgba(var(--accent-color-rgb), 0.3);
 }
 
-/* Tab Colors */
-.tab-notebook { background: var(--notebook-accent); }
-.tab-mindmap { background: var(--mindmap-accent); }
-.tab-flashcards { background: var(--flashcard-accent); }
-.tab-slides { background: var(--slides-accent); }
-.tab-infographic { background: var(--infographic-accent); }
-.tab-quiz { background: var(--quiz-accent); }
+.tab-btn.active::before {
+    transform: scale(1.5);
+}
+
+.tab-btn.active i {
+    color: white;
+}
+
+.tab-label {
+    position: absolute;
+    left: 60px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: white;
+    opacity: 0;
+    transition: all 0.3s ease;
+    transition-delay: 0.1s;
+    white-space: nowrap;
+    z-index: 2;
+    display: none;
+}
+
+/* Material Colors for Tabs */
+.tab-notebook.active::before { background: var(--notebook-accent); }
+.tab-mindmap.active::before { background: var(--mindmap-accent); }
+.tab-flashcards.active::before { background: var(--flashcard-accent); }
+.tab-slides.active::before { background: var(--slides-accent); }
+.tab-infographic.active::before { background: var(--infographic-accent); }
+.tab-quiz.active::before { background: var(--quiz-accent); }
 
 /* ── TOP ACTION TOOLBAR ── */
 .header-controls {

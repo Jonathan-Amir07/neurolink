@@ -3,9 +3,9 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // Model priority: standard SDK names first (work across all environments),
 // full-path names as fallback (confirmed working locally).
 const MODEL_VARIANTS = [
-    "models/gemini-3-flash-preview", 
-    "models/gemini-2.5-flash", 
-    "models/gemini-1.5-flash"
+    "gemini-1.5-flash", 
+    "gemini-1.5-pro", 
+    "gemini-2.0-flash"
 ];
 
 // Cache the index of the last known-working model to skip failed ones on subsequent calls

@@ -20,49 +20,77 @@
         </div>
         
         <nav id="nav-links">
-            <div id="gen-progress" style="background:var(--accent-color); height:2px; width:0%; position:absolute; top:0; left:0; transition:width 1s; box-shadow: 0 0 10px var(--accent-color);"></div>
-            <!-- PROJECT PULSE HUD (Luxury Redesign) -->
-            <div class="action-capsule">
-                <div class="hud-item" style="padding: 0 12px; border-right: 1px solid rgba(255,255,255,0.1);">
+            <div id="gen-progress" class="gen-progress-bar"></div>
+            
+            <!-- PROJECT PULSE HUD -->
+            <div class="project-pulse-hud">
+                <div class="hud-item">
                     <div class="ai-pulse-indicator"></div>
-                    <span id="ai-status-text" style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Live</span>
+                    <span id="ai-status-text" style="text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem;">Archiving...</span>
                 </div>
-                <button class="action-btn" id="regen-btn" onclick="regenerateCurrentTab()" title="Regenerate Content">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-                <button class="action-btn active-primary" onclick="exportProject()" title="Export Workspace">
-                    <i class="fas fa-file-export"></i> <span>Export</span>
-                </button>
+                <div class="action-capsule">
+                    <button class="action-btn" id="regen-btn" onclick="regenerateCurrentTab()" title="Refine Content">
+                        <i class="fas fa-magic"></i>
+                    </button>
+                    <button class="action-btn active-primary" onclick="exportProject()" title="Export Workspace">
+                        <i class="fas fa-file-export"></i> <span>Export</span>
+                    </button>
+                </div>
             </div>
 
-            <div class="user-menu" style="gap: 1.5rem;">
+            <div class="user-menu">
                 <div class="theme-selector-pill">
                     <button onclick="setTheme('parchment')" title="Parchment Mode" class="theme-pill-btn parchment-btn">📜</button>
                     <button onclick="setTheme('library')" title="Midnight Library" class="theme-pill-btn library-btn">🌙</button>
                     <button onclick="setTheme('lab')" title="Sterile Lab" class="theme-pill-btn lab-btn">🧪</button>
                     <button onclick="setTheme('default')" title="Standard Studio" class="theme-pill-btn studio-btn">🏢</button>
                 </div>
-                <a href="/auth/logout" style="font-size: 0.75rem; font-weight: 700; color: white; opacity: 0.4; text-decoration: none; text-transform: uppercase; letter-spacing: 1px;">Sign Out</a>
+                <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.1); margin: 0 0.5rem;"></div>
+                <a href="/auth/logout" style="font-size: 0.7rem; font-weight: 800; color: white; opacity: 0.4; text-decoration: none; text-transform: uppercase;">Exit</a>
             </div>
         </nav>
     </header>
 
     <main class="container">
-        <!-- SEGMENTED WORKSPACE NAV (Redesigned) -->
-        <div class="workspace-tabs">
-            <button class="nav-pill tab-notebook active" onclick="switchTab('notebook')"><i class="fas fa-book-open"></i> Notebook</button>
-            <button class="nav-pill tab-mindmap" onclick="switchTab('mindmap')"><i class="fas fa-project-diagram"></i> Mind Map</button>
-            <button class="nav-pill tab-flashcards" onclick="switchTab('flashcards')"><i class="fas fa-layer-group"></i> Flashcards</button>
-            <button class="nav-pill tab-slides" onclick="switchTab('slides')"><i class="fas fa-presentation-screen"></i> Slides</button>
-            <button class="nav-pill tab-infographic" onclick="switchTab('infographic')"><i class="fas fa-chart-line"></i> Analytics</button>
-            <button class="nav-pill tab-quiz" onclick="switchTab('quiz')"><i class="fas fa-vial"></i> Quiz</button>
+        <!-- FLOATING LUXURY TRACK (Segmented Navigation) -->
+        <div class="tabs">
+            <button class="tab-btn tab-notebook active" onclick="switchTab('notebook')">
+                <i class="fas fa-book-open"></i>
+                <span class="tab-label">Notebook</span>
+            </button>
+            <button class="tab-btn tab-mindmap" onclick="switchTab('mindmap')">
+                <i class="fas fa-project-diagram"></i>
+                <span class="tab-label">Mind Map</span>
+            </button>
+            <button class="tab-btn tab-flashcards" onclick="switchTab('flashcards')">
+                <i class="fas fa-layer-group"></i>
+                <span class="tab-label">Flashcards</span>
+            </button>
+            <button class="tab-btn tab-slides" onclick="switchTab('slides')">
+                <i class="fas fa-presentation-screen"></i>
+                <span class="tab-label">Slides</span>
+            </button>
+            <button class="tab-btn tab-infographic" onclick="switchTab('infographic')">
+                <i class="fas fa-chart-line"></i>
+                <span class="tab-label">Analytics</span>
+            </button>
+            <button class="tab-btn tab-quiz" onclick="switchTab('quiz')">
+                <i class="fas fa-vial"></i>
+                <span class="tab-label">Knowledge Quiz</span>
+            </button>
         </div>
 
         <div class="binder-frame premium-shadow" id="binder-frame">
             <!-- BINDER RINGS -->
             <div class="binder-rings">
-                <div class="ring"></div><div class="ring"></div><div class="ring"></div>
-                <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
             </div>
 
             <div class="viewer-container">
@@ -74,9 +102,6 @@
                 <div id="notebook-view">
                     <div class="notebook-inner-layout" id="notebook-layout">
                         <aside class="notebook-sidebar">
-                            <div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Focus Mode">
-                                <i class="fas fa-chevron-left" id="toggle-icon"></i>
-                            </div>
                             <h1>STUDY INDEX</h1>
                             <nav id="notebook-toc"></nav>
                         </aside>
@@ -116,26 +141,40 @@
             if (!projectId) { window.location.href = 'dashboard.html'; return; }
 
             try {
-                const res = await fetch(`/api/projects?id=${projectId}`);
-                const data = await res.json();
-                if (data.success && data.project) {
-                    currentProject = data.project;
+                const res = await fetch(`/api/projects/${projectId}`);
+                if (!res.ok) {
+                    console.error('Failed to load project:', res.status);
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+                const project = await res.json();
+                if (project && project._id) {
+                    currentProject = project;
                     document.getElementById('ai-status-text').innerText = "Project Synced";
                     
                     const priority = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
                     const hasMaterial = (type) => {
-                        if (!currentProject.outputs) return !!currentProject[type];
+                        if (!currentProject.outputs) return false;
                         const o = currentProject.outputs.find(out => out.type === type);
-                        return (o && o.content && o.content.length > 5);
+                        return (o && o.content);
                     };
 
                     const count = priority.filter(hasMaterial).length;
                     document.getElementById('gen-progress').style.width = `${(count / 6) * 100}%`;
 
-                    switchTab(priority.find(hasMaterial) || 'notebook');
+                    // Default to notebook or the first available material
+                    const firstAvailable = priority.find(hasMaterial) || 'notebook';
+                    switchTab(firstAvailable);
                     hideLoading();
+                } else {
+                    console.warn('Project not found or invalid data structure');
+                    window.location.href = 'dashboard.html';
                 }
-            } catch (error) { console.error(error); hideLoading(); }
+            } catch (error) { 
+                console.error('Load Error:', error); 
+                document.getElementById('ai-status-text').innerText = "Sync Error";
+                hideLoading(); 
+            }
         }
 
         function switchTab(type) {
@@ -151,18 +190,6 @@
             renderContent(type);
         }
 
-        function toggleSidebar() {
-            sidebarCollapsed = !sidebarCollapsed;
-            const layout = document.getElementById('notebook-layout');
-            const icon = document.getElementById('toggle-icon');
-            if (sidebarCollapsed) {
-                layout.classList.add('collapsed');
-                icon.className = 'fas fa-chevron-right';
-            } else {
-                layout.classList.remove('collapsed');
-                icon.className = 'fas fa-chevron-left';
-            }
-        }
 
         function renderContent(type) {
             if (!currentProject) return;
@@ -248,9 +275,10 @@
         function setTheme(theme) {
             if (theme === 'default') document.documentElement.removeAttribute('data-theme');
             else document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('artisan-theme', theme);
+            localStorage.setItem('neurolink-theme', theme);
             document.querySelectorAll('.theme-pill-btn').forEach(btn => btn.classList.remove('active-parchment', 'active-library', 'active-lab', 'active-default'));
-            const activeBtn = document.querySelector(`.${theme === 'parchment' ? 'parchment-btn' : theme === 'library' ? 'library-btn' : theme === 'lab' ? 'lab-btn' : 'studio-btn'}`);
+            const themeMap = { 'parchment': 'parchment-btn', 'library': 'library-btn', 'lab': 'lab-btn', 'default': 'studio-btn' };
+            const activeBtn = document.querySelector(`.${themeMap[theme] || 'studio-btn'}`);
             if (activeBtn) activeBtn.classList.add(`active-${theme}`);
         }
 
@@ -258,18 +286,27 @@
             if (!confirm(`Regenerate ${activeTab}?`)) return;
             showLoading("AI IS CREATING...");
             try {
-                const res = await fetch('/api/generate-project', {
+                const res = await fetch(`/api/projects/${currentProject._id}/regenerate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ projectId: currentProject._id, types: [activeTab], force: true })
+                    body: JSON.stringify({ type: activeTab })
                 });
                 const data = await res.json();
                 if (data.success) loadProject();
             } catch (err) { alert(err.message); } finally { hideLoading(); }
         }
 
+        // Load study scripts
+    </script>
+    <script src="js/app.js"></script>
+    <script src="js/mindmap.js"></script>
+    <script src="js/flashcards.js"></script>
+    <script src="js/slides.js"></script>
+    <script src="js/infographic.js"></script>
+    <script src="js/quiz.js"></script>
+    <script>
         window.onload = () => {
-            setTheme(localStorage.getItem('artisan-theme') || 'default');
+            setTheme(localStorage.getItem('neurolink-theme') || 'default');
             loadProject();
         };
     </script>

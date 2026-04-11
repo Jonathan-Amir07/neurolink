@@ -204,7 +204,7 @@ const THEMES = {
 
 function initTheme() {
     try {
-        const savedTheme = localStorage.getItem('neurolink-theme') || 'parchment';
+        const savedTheme = localStorage.getItem('neurolink-theme') || 'default';
         setTheme(savedTheme);
         renderThemeSwitcher();
     } catch (e) {
@@ -213,20 +213,27 @@ function initTheme() {
 }
 
 function setTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'default') {
+        document.documentElement.removeAttribute('data-theme');
+    } else {
+        document.documentElement.setAttribute('data-theme', theme);
+    }
     localStorage.setItem('neurolink-theme', theme);
     updateThemeSwitcherUI(theme);
 }
 
 function renderThemeSwitcher() {
+    // Avoid double switchers if the luxury capsule is present
+    if (document.querySelector('.theme-selector-pill')) return;
+
     const nav = document.getElementById('nav-links');
     if (!nav) return;
-
     if (document.getElementById('theme-switcher-row')) return;
 
     const row = document.createElement('div');
     row.id = 'theme-switcher-row';
     row.className = 'theme-switcher-row';
+    // ... rest of logic
 
     Object.entries(THEMES).forEach(([id, info]) => {
         const btn = document.createElement('button');
@@ -246,11 +253,20 @@ function renderThemeSwitcher() {
 }
 
 function updateThemeSwitcherUI(activeTheme) {
+    // Standard switchers
     const btns = document.querySelectorAll('.theme-switcher-btn');
-    if (!btns.length) return;
     btns.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.themeId === activeTheme);
     });
+
+    // Luxury Capsule switchers (Dashboard/Project Studio)
+    document.querySelectorAll('.theme-pill-btn').forEach(btn => {
+        btn.classList.remove('active-parchment', 'active-library', 'active-lab', 'active-default');
+    });
+    const themeMap = { 'parchment': 'parchment-btn', 'library': 'library-btn', 'lab': 'lab-btn', 'default': 'studio-btn' };
+    const targetClass = themeMap[activeTheme] || 'studio-btn';
+    const activeBtn = document.querySelector(`.${targetClass}`);
+    if (activeBtn) activeBtn.classList.add(`active-${activeTheme}`);
 }
 
 // ── PROJECT EDITING ────────────────────────────────────────────────────

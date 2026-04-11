@@ -294,25 +294,8 @@
     <script src="js/app.js?v=1.1"></script>
     <script>
         // ── Theme Persistence ──────────────────────────────────────────────────
-        function setTheme(theme) {
-            if (theme === 'default') {
-                document.documentElement.removeAttribute('data-theme');
-            } else {
-                document.documentElement.setAttribute('data-theme', theme);
-            }
-            localStorage.setItem('artisan-theme', theme);
-            
-            // Update UI
-            document.querySelectorAll('.theme-pill-btn').forEach(btn => {
-                btn.classList.remove('active-parchment', 'active-library', 'active-lab', 'active-default');
-            });
-            const themeMap = { 'parchment': 'parchment-btn', 'library': 'library-btn', 'lab': 'lab-btn', 'default': 'studio-btn' };
-            const activeBtn = document.querySelector(`.${themeMap[theme]}`);
-            if (activeBtn) activeBtn.classList.add(`active-${theme}`);
-        }
-        
         // Initial Theme Load
-        const savedTheme = localStorage.getItem('artisan-theme') || 'default';
+        const savedTheme = localStorage.getItem('neurolink-theme') || 'default';
         setTheme(savedTheme);
 
         // ── Input mode ───────────────────────────────────────────────────────
