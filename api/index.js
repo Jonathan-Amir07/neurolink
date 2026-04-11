@@ -433,37 +433,27 @@ app.post('/api/projects', parseUpload, async (req, res) => {
         }
 
     } catch (err) {
-        console.error('[POST /api/projects Outer Catch Error]', {
-            message: err.message,
-            stack: err.stack,
-            bodyKeys: Object.keys(req.body || {}),
-            filesCount: (req.files || []).length
-        });
+        console.error('[POST /api/projects] SERVER_ERROR:', err.message);
         res.status(500).json({ error: 'Server error: ' + err.message });
     }
 });
 
 // Global Error Handler (must be registered before listen in Express 5)
 app.use((err, req, res, next) => {
-    // Log detailed error on server
-    console.error('--- SERVER-SIDE ERROR LOG ---');
-    console.error('Time:', new Date().toISOString());
-    console.error('URL:', req.originalUrl);
-    console.error('Method:', req.method);
-    console.error('IP:', req.ip);
-    console.error('Headers:', JSON.stringify(req.headers, null, 2));
-    console.error('Error Message:', err.message);
-    console.error('Error Stack:', err.stack);
-    console.error('-----------------------------');
+    // Log professional error on server
+    console.error('--- PRODUCTION ERROR ---');
+    console.error(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+    console.error('Message:', err.message);
+    if (process.env.NODE_ENV !== 'production') console.error('Stack:', err.stack);
+    console.error('-----------------------');
 
     const status = err.status || err.statusCode || 500;
+    const isProd = process.env.NODE_ENV === 'production';
     
-    // TEMPORARILY exposing stack for diagnostics
     res.status(status).json({ 
         error: status >= 500 ? 'Internal Server Error' : (err.name || 'Bad Request'), 
         message: err.message,
-        stack: err.stack,  // EXPOSED for user debugging
-        path: req.originalUrl,
+        stack: isProd ? null : err.stack,
         timestamp: new Date().toISOString()
     });
 });
