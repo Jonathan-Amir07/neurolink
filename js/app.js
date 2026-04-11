@@ -210,9 +210,6 @@ function updateThemeSwitcherUI(activeTheme) {
     });
 }
 
-    });
-}
-
 // ── PROJECT EDITING ────────────────────────────────────────────────────
 window.openEditModal = function(id) {
     const project = window.allProjects.find(p => p._id === id);
