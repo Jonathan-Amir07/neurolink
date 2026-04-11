@@ -1,23 +1,23 @@
 :root {
-    --bg-paper: #e5e3de; /* Modern Neutral */
-    --accent-color: #4a3427; /* Deepest Espresso */
-    --accent-color-rgb: 74, 52, 39;
-    --accent-hover: #33241b;
-    --line-color: #d1cfc7;
-    --dot-color: rgba(74, 52, 39, 0.08);
-    --ruled-line: rgba(74, 52, 39, 0.12);
-    --glass-bg: rgba(255, 255, 255, 0.95);
-    --paper-bg: #fffefe; /* Purest paper */
-    --sidebar-bg: #f5f3f0;
-    --ink-color: #121110; /* Max contrast */
-    --accent-red: #a53d3d;
-    --shadow-soft: 0 20px 60px -15px rgba(0,0,0,0.18);
-    --radius: 8px; /* Modern sharp radius */
+    --bg-paper: #f1f5f9; /* Slate 100 */
+    --accent-color: #4f46e5; /* Indigo 600 */
+    --accent-color-rgb: 79, 70, 229;
+    --accent-hover: #4338ca;
+    --line-color: #cbd5e1; /* Slate 300 */
+    --dot-color: rgba(79, 70, 229, 0.1);
+    --ruled-line: rgba(79, 70, 229, 0.08);
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --paper-bg: #ffffff;
+    --sidebar-bg: #0f172a; /* Deep Slate Sidebar */
+    --ink-color: #020617; /* High contrast black */
+    --accent-red: #ef4444;
+    --shadow-soft: 0 25px 50px -12px rgba(0,0,0,0.15);
+    --radius: 12px;
     --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
     /* Studio Binder Accents */
-    --binder-edge: #221f1d;
-    --rings-silver: linear-gradient(135deg, #a0a0a0 0%, #e8e8e8 50%, #707070 100%);
+    --binder-edge: #020617;
+    --rings-silver: linear-gradient(135deg, #cbd5e1 0%, #f1f5f9 50%, #64748b 100%);
     
     /* Material Specific Accents (Muted & Professional) */
     --notebook-accent: #3d5a80;
@@ -86,11 +86,10 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #dfdbd1; /* Paper-like base color */
+    background-color: var(--bg-paper);
     background-image: 
-        radial-gradient(rgba(140, 93, 66, 0.15) 1px, transparent 1px),
-        url("https://www.transparenttextures.com/patterns/handmade-paper.png");
-    background-size: 24px 24px, auto;
+        radial-gradient(rgba(78, 70, 229, 0.1) 1.5px, transparent 1.5px);
+    background-size: 32px 32px;
     margin: 0;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -131,11 +130,12 @@ header #project-title-header { font-family: 'Permanent Marker', cursive; font-si
     max-width: 1400px;
     margin: 2rem auto;
     background: var(--paper-bg);
-    border: 8px solid var(--binder-edge); /* Thinner, modern edge */
+    border: 3px solid var(--line-color); /* Thinner, higher-tech edge */
     border-radius: var(--radius);
     box-shadow: var(--shadow-soft);
     display: flex;
     min-height: 85vh;
+    overflow: visible; /* Correct tab visibility */
 }
 
 .binder-rings {
@@ -169,35 +169,36 @@ header #project-title-header { font-family: 'Permanent Marker', cursive; font-si
 /* ── PHYSICAL DIVIDER TABS (RIGHT) ── */
 .tabs {
     position: absolute;
-    right: -65px;
-    top: 80px;
+    right: -55px; /* Thinner protrusion */
+    top: 60px;
     display: flex;
     flex-direction: column;
-    gap: 0;
-    z-index: 1100;
+    gap: 8px; /* Spaced tabs look better */
+    z-index: 1001;
 }
 
 .tab-btn {
-    width: 75px;
-    height: 120px;
-    border: 1px solid rgba(0,0,0,0.15);
+    width: 65px;
+    height: 100px;
+    border: 1px solid var(--line-color);
     border-left: none;
-    border-radius: 0 10px 10px 0;
-    padding: 12px;
+    border-radius: 0 8px 8px 0;
+    padding: 10px;
     cursor: pointer;
-    background: #ccc;
-    color: white;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    color: var(--sidebar-bg);
     writing-mode: vertical-rl;
     text-orientation: mixed;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     letter-spacing: 0.5px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
 }
 
 .tab-btn:hover {
@@ -206,10 +207,12 @@ header #project-title-header { font-family: 'Permanent Marker', cursive; font-si
 }
 
 .tab-btn.active {
-    width: 95px;
-    box-shadow: 10px 10px 25px rgba(0,0,0,0.25);
-    z-index: 5;
-    font-weight: 900;
+    width: 80px;
+    background: var(--accent-color);
+    color: white !important;
+    border-color: var(--accent-color);
+    box-shadow: 10px 10px 30px rgba(var(--accent-color-rgb), 0.4);
+    z-index: 10;
 }
 
 /* Tab Colors */
@@ -222,15 +225,16 @@ header #project-title-header { font-family: 'Permanent Marker', cursive; font-si
 
 /* ── TOP ACTION TOOLBAR ── */
 .header-controls {
-    background: var(--bg-paper);
-    padding: 1rem 2rem;
-    border-bottom: 2px solid var(--line-color);
+    background: #ffffff;
+    padding: 1.25rem 2.5rem;
+    border-bottom: 1px solid var(--line-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: sticky;
     top: -1px;
     z-index: 900;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
 }
 
 .header-right-btns {
@@ -240,12 +244,21 @@ header #project-title-header { font-family: 'Permanent Marker', cursive; font-si
 }
 
 .export-btn, .auth-btn {
-    border-radius: 4px !important;
-    text-transform: uppercase;
-    font-size: 0.75rem !important;
-    letter-spacing: 1px;
+    border-radius: 6px !important;
+    text-transform: none;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0;
     box-shadow: none !important;
-    border: 2px solid var(--ink-color) !important;
+    border: 1px solid var(--line-color) !important;
+    background: white !important;
+    color: var(--sidebar-bg) !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.export-btn:hover, .auth-btn:hover {
+    background: var(--bg-paper) !important;
+    border-color: var(--accent-color) !important;
 }
 .empty-state-card {
     background: var(--glass-bg);
@@ -751,14 +764,14 @@ header #project-title-header { font-family: 'Permanent Marker', cursive; font-si
 .notebook-sidebar {
     width: 320px;
     min-width: 280px;
-    background-color: var(--sidebar-bg); /* Warm divider color */
-    color: var(--ink-color);
+    background-color: var(--sidebar-bg); /* Indigo Slate theme */
+    color: #f8fafc;
     padding: 30px 20px;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    border-right: 4px solid var(--line-color);
-    box-shadow: inset -5px 0 15px rgba(0,0,0,0.05);
+    border-right: 1px solid rgba(255,255,255,0.1);
+    box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);
     z-index: 100;
 }
 
@@ -808,7 +821,7 @@ header #project-title-header { font-family: 'Permanent Marker', cursive; font-si
     background-color: var(--accent-color);
     color: white !important;
     opacity: 1;
-    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(var(--accent-color-rgb), 0.3);
 }
 
 .notebook-main {
