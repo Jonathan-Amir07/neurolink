@@ -603,8 +603,9 @@
                 const res = await fetch(`/api/projects/${id}`);
                 if (res.ok) {
                     currentProject = await res.json();
-                    document.getElementById('breadcrumb-project').innerText = currentProject.title;
-                    document.title = `${currentProject.title} - NeuroLink`;
+                    document.getElementById('project-title-header').innerText = currentProject.title || 'Untitled Project';
+                    document.getElementById('breadcrumb-project').innerText = currentProject.title || 'Project';
+                    document.title = `${currentProject.title || 'Project'} - NeuroLink`;
                     
                     // Update sharing button
                     updateShareButton(currentProject.is_public);
@@ -635,33 +636,63 @@
             });
             document.getElementById(`${type}-view`).classList.remove('hidden');
             
-            renderContent(type);
+            // Critical: Use a clean rendering cycle
+            setTimeout(() => {
+                renderContent(type);
+            }, 0);
         }
 
         function renderContent(type) {
-            if (!currentProject) {
-                showEmptyState(type, 'Project data not loaded.', 'Please refresh the page.');
-                return;
-            }
-            const output = currentProject.outputs.find(o => o.type === type);
-            if (!output || !output.content) {
-                showEmptyState(type, `No ${type} generated yet.`, 'There might have been a timeout or generation error.');
-                return;
-            }
+            showLoading(`Loading ${type}... 🧠`);
+            
+            try {
+                if (!currentProject) {
+                    showEmptyState(type, 'Project data not loaded.', 'Please refresh the page.');
+                    return;
+                }
 
-            if (type === 'notebook') {
-                renderNotebook(output.content);
-            } else if (type === 'mindmap') {
-                initMindMap(output.content);
-            } else if (type === 'flashcards') {
-                initFlashcards(output.content);
-            } else if (type === 'slides') {
-                initSlides(output.content);
-            } else if (type === 'infographic') {
-                initInfographic(output.content);
-            } else if (type === 'quiz') {
-                initQuiz(output.content);
+                const output = currentProject.outputs.find(o => o.type === type);
+                if (!output || !output.content) {
+                    showEmptyState(type, `No ${type} generated yet.`, 'There might have been a timeout or generation error.');
+                    return;
+                }
+
+                // Normalizer: Handle JSON strings from legacy project storage
+                const data = ensureJSON(output.content);
+                
+                if (type === 'notebook') {
+                    renderNotebook(data);
+                } else if (type === 'mindmap') {
+                    initMindMap(data);
+                } else if (type === 'flashcards') {
+                    initFlashcards(data);
+                } else if (type === 'slides') {
+                    initSlides(data);
+                } else if (type === 'infographic') {
+                    initInfographic(data);
+                } else if (type === 'quiz') {
+                    initQuiz(data);
+                }
+            } catch (renderError) {
+                console.error(`[Renderer Error] ${type}:`, renderError);
+                showEmptyState(type, `Visualizer Error`, 'This project material might have been created with an older version of NeuroLink. Try Regenerating this tab.');
+            } finally {
+                hideLoading();
             }
+        }
+
+        function ensureJSON(data) {
+            if (typeof data === 'string') {
+                try {
+                    // Only try parsing if it looks like JSON
+                    if (data.trim().startsWith('{') || data.trim().startsWith('[')) {
+                        return JSON.parse(data);
+                    }
+                } catch (e) {
+                    console.warn('[SafeParse] Falling back to raw string');
+                }
+            }
+            return data;
         }
 
         function showEmptyState(type, title, subtitle) {

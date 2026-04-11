@@ -29,11 +29,11 @@ function renderCurrentSlide() {
 
     slideEl.innerHTML = `
         <div class="slide-indicator" style="position:absolute; top:20px; left:30px; font-size:0.75rem; color:var(--slides-accent); border:1px solid var(--slides-accent); padding:2px 8px; border-radius:4px; font-family:'Inter'; font-weight:700;">PRESENTATION</div>
-        <h2 class="slide-title" style="color: var(--slides-accent);">${slide.title}</h2>
+        <h2 class="slide-title" style="color: var(--slides-accent);">${slide.title || 'Untitled Slide'}</h2>
         <ul class="slide-bullets">
-            ${slide.bullets.map((b, i) => `<li style="animation: slideIn 0.3s ease both ${i * 0.1 + 0.2}s">${b}</li>`).join('')}
+            ${(slide.bullets || []).map((b, i) => `<li style="animation: slideIn 0.3s ease both ${i * 0.1 + 0.2}s">${b}</li>`).join('')}
         </ul>
-        <button class="auth-btn" onclick="pinToChat('Slide: ${slide.title}. Content: ${slide.bullets.join(', ')}')" style="position:absolute; bottom:20px; left:30px; font-size: 0.7rem; padding: 2px 8px; background: none; border: 1px dashed var(--line-color); color: var(--ink-color);">📌 Ask AI about this slide</button>
+        <button class="auth-btn" onclick="pinToChat('Slide: ${slide.title || 'Unknown'}. Content: ${(slide.bullets || []).join(', ')}')" style="position:absolute; bottom:20px; left:30px; font-size: 0.7rem; padding: 2px 8px; background: none; border: 1px dashed var(--line-color); color: var(--ink-color);">📌 Ask AI about this slide</button>
         <div class="slide-counter">${slideIndex + 1} / ${slideData.length}</div>
         <div class="slide-progress-bar"><div class="slide-progress-fill" style="width: ${((slideIndex + 1) / slideData.length) * 100}%"></div></div>
     `;

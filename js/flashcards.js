@@ -29,14 +29,14 @@ function renderFlashcard() {
                 <div class="card-face card-front hand-drawn-border">
                     <div class="card-card-indicator" style="position:absolute; top:15px; left:15px; font-size:0.8rem; opacity:0.6; font-family:'Inter'; text-transform:uppercase; letter-spacing:1px;">Question</div>
                     <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--flashcard-accent); font-family: 'Permanent Marker'; line-height:1.2;">${card.title || 'Concept'}</div>
-                    <div style="font-size: 1.4rem; font-family: 'Patrick Hand'; text-align:center;">${card.question}</div>
+                    <div style="font-size: 1.4rem; font-family: 'Patrick Hand'; text-align:center;">${card.question || '...'}</div>
                     <div style="position:absolute; bottom:20px; font-size:0.8rem; opacity:0.4;">Click or Space to Flip</div>
                 </div>
                 <div class="card-face card-back hand-drawn-border">
                     <div class="card-card-indicator" style="position:absolute; top:15px; left:15px; font-size:0.8rem; opacity:0.6; font-family:'Inter'; text-transform:uppercase; letter-spacing:1px;">Answer</div>
-                    <div style="font-size: 1.3rem; margin-top: 1rem; font-family: 'Patrick Hand'; text-align:center; max-height: 180px; overflow-y: auto;">${card.answer}</div>
+                    <div style="font-size: 1.3rem; margin-top: 1rem; font-family: 'Patrick Hand'; text-align:center; max-height: 180px; overflow-y: auto;">${card.answer || '...'}</div>
                     
-                    <button class="auth-btn" onclick="event.stopPropagation(); pinToChat('Concept: ${card.title}. Question: ${card.question}. Answer: ${card.answer}')" style="margin-top: 10px; font-size: 0.7rem; padding: 2px 8px; background: none; border: 1px dashed var(--line-color); color: var(--ink-color);">📌 Ask AI about this</button>
+                    <button class="auth-btn" onclick="event.stopPropagation(); pinToChat('Concept: ${card.title || ''}. Question: ${card.question || ''}. Answer: ${card.answer || ''}')" style="margin-top: 10px; font-size: 0.7rem; padding: 2px 8px; background: none; border: 1px dashed var(--line-color); color: var(--ink-color);">📌 Ask AI about this</button>
 
                     <div class="confidence-container" onclick="event.stopPropagation()">
                         <button class="conf-btn conf-red" onclick="handleConfidence('again')">Again</button>

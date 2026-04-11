@@ -3,6 +3,13 @@ let translateX = 0;
 let translateY = 0;
 let isDragging = false;
 let startX, startY;
+let mindmapData = null;
+let nodeMeta = new Map(); // Stores {x, y, collapsed}
+
+const NODE_WIDTH = 250;
+const NODE_HEIGHT = 100;
+const LEVEL_GAP = 350;
+const SIBLING_GAP = 140;
 
 function initMindMap(data) {
     const container = document.getElementById('mindmap-view');
@@ -37,8 +44,10 @@ function initMindMap(data) {
     initNodeMeta(mindmapData, 0);
     
     // Initial layout
-    layoutAndRender();
-    resetView();
+    requestAnimationFrame(() => {
+        layoutAndRender();
+        resetView();
+    });
 }
 
 function initPanZoom(viewport) {
@@ -116,7 +125,7 @@ function initNodeMeta(node, depth) {
         y: 0,
         depth: depth
     });
-    if (node.children) {
+    if (node && node.children && Array.isArray(node.children)) {
         node.children.forEach(child => initNodeMeta(child, depth + 1));
     }
 }
@@ -176,6 +185,7 @@ function calculatePositions(node, x, yStart) {
     let currentY = yStart;
     
     visibleChildren.forEach((child, index) => {
+        if (!child) return;
         // Tag children with unique paths to avoid collisions in the map
         child._path = id + '->' + (child.title || index);
         const childHeight = calculatePositions(child, x + LEVEL_GAP, currentY);
@@ -218,15 +228,17 @@ function renderNodes(node, container) {
         card.onclick = (e) => {
             e.stopPropagation();
             meta.collapsed = !meta.collapsed;
-            layoutAndRender();
+            requestAnimationFrame(layoutAndRender);
         };
     }
 
     nodeEl.appendChild(card);
     container.appendChild(nodeEl);
 
-    if (!meta.collapsed && node.children) {
-        node.children.forEach(child => renderNodes(child, container));
+    if (!meta.collapsed && node.children && Array.isArray(node.children)) {
+        node.children.forEach(child => {
+            if (child) renderNodes(child, container);
+        });
     }
 }
 

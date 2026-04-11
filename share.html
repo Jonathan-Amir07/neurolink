@@ -113,15 +113,33 @@
         }
 
         function renderContent(type) {
+            if (!currentProject) return;
             const output = currentProject.outputs.find(o => o.type === type);
-            if (!output) return;
+            if (!output || !output.content) return;
 
-            if (type === 'notebook') renderNotebook(output.content);
-            else if (type === 'mindmap') initMindMap(output.content);
-            else if (type === 'flashcards') initFlashcards(output.content);
-            else if (type === 'slides') initSlides(output.content);
-            else if (type === 'infographic') initInfographic(output.content);
-            else if (type === 'quiz') initQuiz(output.content);
+            const data = ensureJSON(output.content);
+
+            try {
+                if (type === 'notebook') renderNotebook(data);
+                else if (type === 'mindmap') initMindMap(data);
+                else if (type === 'flashcards') initFlashcards(data);
+                else if (type === 'slides') initSlides(data);
+                else if (type === 'infographic') initInfographic(data);
+                else if (type === 'quiz') initQuiz(data);
+            } catch (err) {
+                console.error(`[Share Renderer] Failed for ${type}:`, err);
+            }
+        }
+
+        function ensureJSON(data) {
+            if (typeof data === 'string') {
+                try {
+                    if (data.trim().startsWith('{') || data.trim().startsWith('[')) {
+                        return JSON.parse(data);
+                    }
+                } catch (e) { return data; }
+            }
+            return data;
         }
 
         function renderNotebook(content) {
@@ -129,8 +147,9 @@
             const toc = document.getElementById('notebook-toc');
             contentArea.innerHTML = content;
             toc.innerHTML = '';
-            // Simplified TOC logic
-            contentArea.querySelectorAll('section.notebook-page').forEach((ch, i) => {
+            
+            const chapters = contentArea.querySelectorAll('section.notebook-page');
+            chapters.forEach((ch, i) => {
                 const title = ch.querySelector('h2')?.innerText;
                 if (!title) return;
                 const link = document.createElement('a');
@@ -139,6 +158,13 @@
                 link.onclick = () => ch.scrollIntoView({behavior:'smooth'});
                 toc.appendChild(link);
             });
+
+            if (chapters.length === 0 && typeof content === 'string' && content.trim()) {
+                const link = document.createElement('a');
+                link.className = 'toc-link';
+                link.innerText = 'Content';
+                toc.appendChild(link);
+            }
         }
 
         function exportCurrentTab() {

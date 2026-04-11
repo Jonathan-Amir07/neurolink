@@ -5,13 +5,15 @@ let optionSelected = false;
 
 function initQuiz(data) {
     if (!data || !Array.isArray(data) || data.length === 0) {
-        document.getElementById('quiz-container').innerHTML = `
-            <div class="empty-state-card">
-                <h3>Invalid Quiz Data</h3>
-                <p>The AI didn't return a valid quiz format.</p>
-                <button class="auth-btn" style="background-color: var(--accent-color); margin-top: 1rem;" onclick="regenerateCurrentTab()">✨ Try Again</button>
-            </div>
-        `;
+        const container = document.getElementById('quiz-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="empty-state-card">
+                    <h3>No Quiz Available</h3>
+                    <p>This project might have been created without a quiz, or the data structure is older. Try regenerating this tab!</p>
+                </div>
+            `;
+        }
         return;
     }
     
@@ -62,14 +64,16 @@ function renderQuizQuestion() {
                 <span style="font-weight: 700; color: var(--ink-color); opacity: 0.7;">Score: ${quizScore}</span>
             </div>
             
-            <div class="quiz-question">${q.question}</div>
+            <div class="quiz-question">${q.question || 'Question text missing'}</div>
             
             <div class="quiz-options">
-                ${optionsHtml}
+                ${(q.options || []).map((opt, idx) => `
+                    <button class="quiz-option" id="quiz-opt-${idx}" onclick="selectQuizOption(${idx}, ${q.correctAnswerIndex})">${opt}</button>
+                `).join('')}
             </div>
             
             <div id="quiz-explanation" class="quiz-explanation">
-                <strong>Explanation:</strong> ${q.explanation}
+                <strong>Explanation:</strong> ${q.explanation || 'No explanation available.'}
             </div>
             
             <div id="quiz-next-block" style="margin-top: 2rem; text-align: right; display: none;">
