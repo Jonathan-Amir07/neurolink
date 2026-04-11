@@ -119,10 +119,20 @@
 </head>
 <body>
     <header>
-        <div style="font-weight: 800; font-size: 1.5rem;"><span style="color: var(--accent-color);">Neuro</span>Link</div>
-        <nav id="nav-links">
-            <span id="user-name">Loading...</span>
-            <a href="/auth/logout" class="auth-btn">Logout</a>
+        <div class="breadcrumb">
+            <span style="font-weight: 800; letter-spacing: 0.5px;">NeuroLink</span>
+            <span>/</span>
+            <span>Dashboard</span>
+        </div>
+        <div id="project-title-header" style="font-family: 'Permanent Marker', cursive; font-size: 1.5rem;">Academic Pipeline</div>
+        <nav id="nav-links" style="display:flex; align-items:center; gap:12px;">
+            <div class="theme-selector" style="display:flex; gap:8px; background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:30px;">
+                <button onclick="setTheme('parchment')" title="Parchment Design" style="background:#dfdbd1; width:22px; height:22px; border-radius:50%; border:1px solid rgba(0,0,0,0.2); cursor:pointer;"></button>
+                <button onclick="setTheme('library')" title="Dark Library" style="background:#0a0908; width:22px; height:22px; border-radius:50%; border:1px solid #c5a059; cursor:pointer;"></button>
+                <button onclick="setTheme('lab')" title="Modern Lab" style="background:#020617; width:22px; height:22px; border-radius:50%; border:1px solid #22d3ee; cursor:pointer;"></button>
+                <button onclick="setTheme('default')" title="Digital Studio" style="background:#4f46e5; width:22px; height:22px; border-radius:50%; border:1px solid white; cursor:pointer;"></button>
+            </div>
+            <a href="/auth/logout" class="auth-btn" style="background:var(--sidebar-bg) !important; color:white !important;">Logout</a>
         </nav>
     </header>
 
@@ -276,6 +286,20 @@
     </script>
     <script src="js/app.js?v=1.1"></script>
     <script>
+        // ── Theme Persistence ──────────────────────────────────────────────────
+        function setTheme(theme) {
+            if (theme === 'default') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+            localStorage.setItem('artisan-theme', theme);
+        }
+        
+        // Initial Theme Load
+        const savedTheme = localStorage.getItem('artisan-theme') || 'default';
+        setTheme(savedTheme);
+
         // ── Input mode ───────────────────────────────────────────────────────
         let activeMode = 'text';
 

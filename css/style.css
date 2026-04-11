@@ -1,23 +1,26 @@
 :root {
-    --bg-paper: #f1f5f9; /* Slate 100 */
-    --accent-color: #4f46e5; /* Indigo 600 */
+    /* DEFAULT: Digital Studio (Indigo) */
+    --bg-paper: #f1f5f9;
+    --accent-color: #4f46e5;
     --accent-color-rgb: 79, 70, 229;
     --accent-hover: #4338ca;
-    --line-color: #cbd5e1; /* Slate 300 */
+    --line-color: #cbd5e1;
     --dot-color: rgba(79, 70, 229, 0.1);
     --ruled-line: rgba(79, 70, 229, 0.08);
     --glass-bg: rgba(255, 255, 255, 0.9);
     --paper-bg: #ffffff;
-    --sidebar-bg: #0f172a; /* Deep Slate Sidebar */
-    --ink-color: #020617; /* High contrast black */
+    --sidebar-bg: #0f172a;
+    --ink-color: #020617;
     --accent-red: #ef4444;
     --shadow-soft: 0 25px 50px -12px rgba(0,0,0,0.15);
     --radius: 12px;
-    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     
-    /* Studio Binder Accents */
+    /* Global Binder Accents (Themeable) */
     --binder-edge: #020617;
     --rings-silver: linear-gradient(135deg, #cbd5e1 0%, #f1f5f9 50%, #64748b 100%);
+    --bg-texture: radial-gradient(rgba(78, 70, 229, 0.1) 1.5px, transparent 1.5px);
+    --sidebar-text: #f8fafc;
     
     /* Material Specific Accents (Muted & Professional) */
     --notebook-accent: #3d5a80;
@@ -49,37 +52,9 @@
     border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
 }
 
-[data-theme="dark"] {
-    /* Dark Library (Improved) */
-    --bg-paper: #0a0a0a;
-    --ink-color: #d1c4a8;
-    --accent-color: #c5a059;
-    --accent-color-rgb: 197, 160, 89;
-    --accent-hover: #d4af37;
-    --line-color: #333;
-    --dot-color: rgba(197, 160, 89, 0.1);
-    --ruled-line: rgba(197, 160, 89, 0.1);
-    --glass-bg: rgba(15, 15, 15, 0.9);
-    --paper-bg: #1a1a1a;
-    --sidebar-bg: #050505;
-    --shadow: 0 15px 45px rgba(0,0,0,0.5);
-}
+/* Themes moved up to root context */
 
-[data-theme="modern"] {
-    /* Modern Lab (Enhanced) */
-    --bg-paper: #020617;
-    --ink-color: #f8fafc;
-    --accent-color: #22d3ee;
-    --accent-color-rgb: 34, 211, 238;
-    --accent-hover: #0891b2;
-    --line-color: #1e293b;
-    --dot-color: rgba(34, 211, 238, 0.12);
-    --ruled-line: rgba(34, 211, 238, 0.12);
-    --glass-bg: rgba(15, 23, 42, 0.75);
-    --paper-bg: #0f172a;
-    --sidebar-bg: #010413;
-    --shadow: 0 20px 50px rgba(0,0,0,0.4);
-}
+/* Themes moved up to root context */
 
 /* ── RESET & BASE ── */
 *, *::before, *::after { box-sizing: border-box; }
@@ -87,9 +62,9 @@
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-paper);
-    background-image: 
-        radial-gradient(rgba(78, 70, 229, 0.1) 1.5px, transparent 1.5px);
-    background-size: 32px 32px;
+    background-image: var(--bg-texture);
+    background-size: 32px 32px, auto;
+    background-repeat: repeat;
     margin: 0;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -766,8 +741,9 @@ header #project-title-header { font-family: 'Permanent Marker', cursive; font-si
 .notebook-sidebar {
     width: 320px;
     min-width: 280px;
-    background-color: var(--sidebar-bg); /* Indigo Slate theme */
-    color: #f8fafc;
+    background-color: var(--sidebar-bg); /* Theme Adaptive */
+    background-image: var(--bg-texture); /* Texture Adaptive */
+    color: var(--sidebar-text);
     padding: 30px 20px;
     display: flex;
     flex-direction: column;
@@ -895,10 +871,11 @@ header #project-title-header { font-family: 'Permanent Marker', cursive; font-si
 
 .notebook-page p, .notebook-page li {
     margin-bottom: 14px;
-    font-size: 1.15rem; /* Better scaling */
+    font-size: 1.1rem;
     text-align: left;
-    line-height: 1.7;
+    line-height: 1.75;
     font-weight: 400;
+    color: var(--ink-color);
 }
 
 .notebook-page ul, .notebook-page ol {

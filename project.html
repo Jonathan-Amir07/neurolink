@@ -19,8 +19,14 @@
             <span id="breadcrumb-project">Project</span>
         </div>
         <div id="project-title-header">Project</div>
-        <nav id="nav-links" style="display:flex; align-items:center;">
-            <button class="auth-btn" onclick="regenerateCurrentTab()" style="margin-right:1rem; border:1px solid var(--accent-color) !important; color:var(--accent-color) !important;">↺ Regenerate</button>
+        <nav id="nav-links" style="display:flex; align-items:center; gap:12px;">
+            <div class="theme-selector" style="display:flex; gap:8px; background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:30px;">
+                <button onclick="setTheme('parchment')" title="Parchment Design" style="background:#dfdbd1; width:22px; height:22px; border-radius:50%; border:1px solid rgba(0,0,0,0.2); cursor:pointer;"></button>
+                <button onclick="setTheme('library')" title="Dark Library" style="background:#0a0908; width:22px; height:22px; border-radius:50%; border:1px solid #c5a059; cursor:pointer;"></button>
+                <button onclick="setTheme('lab')" title="Modern Lab" style="background:#020617; width:22px; height:22px; border-radius:50%; border:1px solid #22d3ee; cursor:pointer;"></button>
+                <button onclick="setTheme('default')" title="Digital Studio" style="background:#4f46e5; width:22px; height:22px; border-radius:50%; border:1px solid white; cursor:pointer;"></button>
+            </div>
+            <button class="auth-btn" id="regen-btn" onclick="regenerateCurrentTab()" style="border:1px solid var(--accent-color) !important; color:var(--accent-color) !important;">↺ Regenerate</button>
             <a href="/auth/logout" class="auth-btn" style="background:var(--sidebar-bg) !important; color:white !important;">Logout</a>
         </nav>
     </header>
@@ -167,6 +173,10 @@
         let activeTab = 'notebook';
 
         async function init() {
+            // Load theme first
+            const savedTheme = localStorage.getItem('artisan-theme') || 'default';
+            setTheme(savedTheme);
+
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
             if (!id) {
@@ -448,13 +458,13 @@
             }
         }
 
-        function hideLoading() {
-            const overlay = document.getElementById('loading-overlay');
-            if (overlay) overlay.classList.add('hidden');
-            if (loaderTimeout) {
-                clearTimeout(loaderTimeout);
-                loaderTimeout = null;
+        function setTheme(theme) {
+            if (theme === 'default') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', theme);
             }
+            localStorage.setItem('artisan-theme', theme);
         }
 
         async function regenerateCurrentTab() {
