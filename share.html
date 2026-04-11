@@ -85,8 +85,19 @@
                 const res = await fetch(`/api/public/projects/${id}`);
                 if (res.ok) {
                     currentProject = await res.json();
-                    document.getElementById('project-title-header').innerText = currentProject.title;
-                    switchTab('notebook');
+                    
+                    // Naming Logic: Fallback for Legacy Projects
+                    const projectName = currentProject.title || currentProject.projectName || currentProject.topic || 'Shared Project';
+                    document.getElementById('project-title-header').innerText = projectName;
+                    document.title = `${projectName} - NeuroLink`;
+                    
+                    // Smart Material Detection: Find first available material
+                    const priority = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
+                    let defaultTab = priority.find(type => 
+                        currentProject.outputs && currentProject.outputs.some(o => o.type === type && o.content)
+                    ) || 'notebook';
+
+                    switchTab(defaultTab);
                 }
             } catch (error) { console.error(error); }
         }
@@ -97,10 +108,14 @@
             const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${type}')"]`);
             if (activeBtn) activeBtn.classList.add('active');
 
-            ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'].forEach(v => {
-                document.getElementById(`${v}-view`).classList.add('hidden');
+            const views = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
+            views.forEach(v => {
+                const el = document.getElementById(`${v}-view`);
+                if (el) el.classList.add('hidden');
             });
-            document.getElementById(`${type}-view`).classList.remove('hidden');
+            const activeView = document.getElementById(`${type}-view`);
+            if (activeView) activeView.classList.remove('hidden');
+            
             renderContent(type);
         }
 
@@ -124,12 +139,25 @@
         }
 
         function ensureJSON(data) {
+            if (!data) return null;
+            if (typeof data === 'object') return data;
+            
             if (typeof data === 'string') {
+                const trimmed = data.trim();
                 try {
-                    if (data.trim().startsWith('{') || data.trim().startsWith('[')) {
-                        return JSON.parse(data);
+                    // 1. Standard JSON check
+                    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                        return JSON.parse(trimmed);
                     }
-                } catch (e) { return data; }
+                    
+                    // 2. Legacy Check: Markdown-wrapped JSON (common in early AI outputs)
+                    const jsonMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+                    if (jsonMatch && jsonMatch[1]) {
+                        return JSON.parse(jsonMatch[1].trim());
+                    }
+                } catch (e) {
+                    console.warn('[SafeParse] JSON parse failed, returning raw string');
+                }
             }
             return data;
         }

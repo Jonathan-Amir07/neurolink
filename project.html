@@ -38,7 +38,7 @@
             </div>
             <div class="header-right-btns">
                 <button class="export-btn" onclick="exportCurrentTab()" title="Download current material">⬇ Export</button>
-                <div id="share-status" class="sharing-badge-container" onclick="toggleSharing()" title="Toggle public access" style="cursor:pointer; display:flex; align-items:center; gap:8px; padding:6px 12px; border-radius:20px; background:var(--dot-color); font-size:0.8rem; font-weight:700; transition:all 0.3s ease;">
+                <div id="share-status" class="sharing-badge-container" onclick="toggleSharing()" title="Toggle public access">
                     <span id="share-dot" style="width:8px; height:8px; border-radius:50%; background:#999;"></span>
                     <span id="share-text">PRIVATE</span>
                 </div>
@@ -157,13 +157,19 @@
                 return;
             }
 
+            showLoading('Loading project... 🧠');
+
             try {
                 const res = await fetch(`/api/projects/${id}`);
                 if (res.ok) {
                     currentProject = await res.json();
-                    document.getElementById('project-title-header').innerText = currentProject.title || 'Untitled Project';
-                    document.getElementById('breadcrumb-project').innerText = currentProject.title || 'Project';
-                    document.title = `${currentProject.title || 'Project'} - NeuroLink`;
+                    
+                    // Naming Logic: Fallback for Legacy Projects
+                    const projectName = currentProject.title || currentProject.projectName || currentProject.topic || 'Untitled Project';
+                    
+                    document.getElementById('project-title-header').innerText = projectName;
+                    document.getElementById('breadcrumb-project').innerText = projectName;
+                    document.title = `${projectName} - NeuroLink`;
                     
                     // Update sharing button
                     updateShareButton(currentProject.is_public);
@@ -171,14 +177,22 @@
                     // Load chat history
                     if (window.loadChatHistory) loadChatHistory(currentProject.chat_history);
                     
-                    switchTab('notebook');
+                    // Smart Material Detection: Find first available material
+                    const priority = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
+                    let defaultTab = priority.find(type => 
+                        currentProject.outputs && currentProject.outputs.some(o => o.type === type && o.content)
+                    ) || 'notebook';
+
+                    switchTab(defaultTab);
                 } else {
                     document.getElementById('project-title-header').innerText = "Project Not Found (404)";
                     console.error("Failed to fetch project");
+                    hideLoading();
                 }
             } catch (error) {
                 console.error("Error fetching project:", error);
                 document.getElementById('project-title-header').innerText = "Connection Error";
+                hideLoading();
             }
         }
 
@@ -240,14 +254,24 @@
         }
 
         function ensureJSON(data) {
+            if (!data) return null;
+            if (typeof data === 'object') return data;
+            
             if (typeof data === 'string') {
+                const trimmed = data.trim();
                 try {
-                    // Only try parsing if it looks like JSON
-                    if (data.trim().startsWith('{') || data.trim().startsWith('[')) {
-                        return JSON.parse(data);
+                    // 1. Standard JSON check
+                    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                        return JSON.parse(trimmed);
+                    }
+                    
+                    // 2. Legacy Check: Markdown-wrapped JSON (common in early AI outputs)
+                    const jsonMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+                    if (jsonMatch && jsonMatch[1]) {
+                        return JSON.parse(jsonMatch[1].trim());
                     }
                 } catch (e) {
-                    console.warn('[SafeParse] Falling back to raw string');
+                    console.warn('[SafeParse] JSON parse failed, returning raw string');
                 }
             }
             return data;
@@ -347,18 +371,30 @@
             }
         }
 
+        let loaderTimeout = null;
         function showLoading(text) {
             const overlay = document.getElementById('loading-overlay');
             const loadingText = document.getElementById('loading-text');
             if (overlay) {
                 loadingText.innerText = text || 'Generating with AI... 🧠';
                 overlay.classList.remove('hidden');
+                
+                // Safety Timeout: Auto-hide after 30 seconds to prevent "stuck" UI
+                if (loaderTimeout) clearTimeout(loaderTimeout);
+                loaderTimeout = setTimeout(() => {
+                    console.warn('[Loader] Safety timeout triggered');
+                    hideLoading();
+                }, 30000);
             }
         }
 
         function hideLoading() {
             const overlay = document.getElementById('loading-overlay');
             if (overlay) overlay.classList.add('hidden');
+            if (loaderTimeout) {
+                clearTimeout(loaderTimeout);
+                loaderTimeout = null;
+            }
         }
 
         async function regenerateCurrentTab() {
