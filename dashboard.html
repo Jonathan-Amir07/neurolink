@@ -130,7 +130,7 @@
             <div class="theme-selector-pill" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:6px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);">
                 <button onclick="setTheme('parchment')" title="Parchment" class="theme-pill-btn parchment-btn">📜</button>
                 <button onclick="setTheme('library')" title="Library" class="theme-pill-btn library-btn">🌙</button>
-                <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn active-lab">🧪 Modern Lab</button>
+                <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn">🧪</button>
                 <button onclick="setTheme('default')" title="Studio" class="theme-pill-btn studio-btn">🏢</button>
             </div>
 
@@ -305,8 +305,7 @@
                 btn.classList.remove('active-parchment', 'active-library', 'active-lab', 'active-default');
             });
             const themeMap = { 'parchment': 'parchment-btn', 'library': 'library-btn', 'lab': 'lab-btn', 'default': 'studio-btn' };
-            const btnClass = themeMap[theme];
-            const activeBtn = document.querySelector(`.${btnClass}`);
+            const activeBtn = document.querySelector(`.${themeMap[theme]}`);
             if (activeBtn) activeBtn.classList.add(`active-${theme}`);
         }
         

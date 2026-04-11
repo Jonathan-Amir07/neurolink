@@ -3,56 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project View - Academic Skills System</title>
-    <meta name="description" content="View and interact with AI-generated study materials including notebooks, mind maps, flashcards, slides, and infographics.">
-    <link rel="stylesheet" href="css/style.css?v=1.1">
-    <link rel="manifest" href="/manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Permanent+Marker&family=Patrick+Hand&family=Indie+Flower&display=swap" rel="stylesheet">
-    <!-- html2pdf.js for premium PDF export -->
+    <title>NeuroLink - Study Project</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Patrick+Hand&family=Permanent+Marker&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body>
-    <header style="padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;">
+<body class="paper-texture">
+    <header style="padding: 1rem 2.5rem; display: flex; align-items: center; justify-content: space-between;">
         <div class="breadcrumb" style="display: flex; align-items: center; gap: 8px;">
             <a href="dashboard.html" style="font-weight: 800; font-size: 1.2rem; color: var(--accent-color); text-decoration: none;">NeuroLink</a>
             <span style="opacity: 0.5;">/</span>
-            <span style="opacity: 0.8;" id="project-title-header">Project</span>
+            <span style="opacity: 0.8;" id="breadcrumb-project">Project View</span>
         </div>
         
-        <nav id="nav-links" style="display:flex; align-items:center; gap:20px;">
+        <nav id="nav-links" style="display:flex; align-items:center; gap:24px;">
             <!-- THEME TOGGLES (Visual Match to reference) -->
             <div class="theme-selector-pill" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:6px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);">
                 <button onclick="setTheme('parchment')" title="Parchment" class="theme-pill-btn parchment-btn">📜</button>
                 <button onclick="setTheme('library')" title="Library" class="theme-pill-btn library-btn">🌙</button>
-                <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn active-lab">🧪 Modern Lab</button>
+                <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn">🧪</button>
                 <button onclick="setTheme('default')" title="Studio" class="theme-pill-btn studio-btn">🏢</button>
             </div>
 
             <div style="display: flex; align-items: center; gap: 12px; font-family: 'Inter', sans-serif;">
-                <span id="user-display-name" style="font-weight: 600; opacity: 0.9;">Hello, User</span>
-                <a href="/auth/logout" class="auth-btn" style="background:#ffffff !important; color:#000000 !important; font-weight:700; border-radius:6px; padding: 6px 16px;">Logout</a>
+                <span id="user-display-name" style="font-weight: 600; opacity: 0.9;">My Workspace</span>
+                <a href="/auth/logout" class="auth-btn" style="background:#ffffff !important; color:#000000 !important; font-weight:700; border-radius:6px; padding: 6px 16px; text-decoration:none; font-size:0.85rem;">Logout</a>
             </div>
-            <button class="auth-btn" id="regen-btn" onclick="regenerateCurrentTab()" style="border:1px solid var(--accent-color) !important; color:var(--accent-color) !important; border-radius:6px;">↺ Regenerate</button>
+            
+            <button class="auth-btn" id="regen-btn" onclick="regenerateCurrentTab()" style="border:1px solid var(--accent-color) !important; color:var(--accent-color) !important; border-radius:6px; padding: 6px 14px; font-size:0.85rem;">↺ Regenerate</button>
         </nav>
     </header>
 
     <main class="container">
-        <!-- TOP TOOLBAR -->
         <div class="header-controls">
-            <div id="project-meta-info" style="font-family:'Patrick Hand';">
-                <span id="project-status-badge" class="badge">Draft</span>
-                <span id="project-date" style="opacity:0.6; font-size:0.8rem; margin-left:10px;">...</span>
-            </div>
-            <div class="header-right-btns">
-                <button class="export-btn" onclick="exportCurrentTab()">⬇ Export PDF/HTML</button>
-                <div id="share-status" class="sharing-badge-container" onclick="toggleSharing()" title="Toggle public access">
-                    <span id="share-dot" style="width:8px; height:8px; border-radius:50%; background:#999;"></span>
-                    <span id="share-text">PRIVATE</span>
+            <h1 id="project-title-disp" style="font-family: 'Permanent Marker', cursive; font-size: 2.2rem; color: var(--ink-color); margin: 0;">Study Project</h1>
+            <div class="header-right-btns" style="display:flex; gap:12px;">
+                <div class="sharing-badge-container" id="share-badge">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Private Project</span>
                 </div>
+                <button class="export-btn" onclick="exportProject()" style="padding: 10px 20px;">
+                    <i class="fas fa-file-export"></i> Export PDF
+                </button>
             </div>
         </div>
 
-        <div class="binder-frame">
+        <div class="binder-frame premium-shadow">
             <!-- BINDER RINGS -->
             <div class="binder-rings">
                 <div class="ring"></div>
@@ -116,123 +115,78 @@
                 </div>
             </div>
 
-            <!-- PHYSICAL TABS (RIGHT) -->
+            <!-- NAVIGATION TABS (Compact Modern Pills) -->
             <div class="tabs">
-                <button class="tab-btn tab-notebook active" onclick="switchTab('notebook')">📓 NOTEBOOK</button>
-                <button class="tab-btn tab-mindmap" onclick="switchTab('mindmap')">🧠 MAP</button>
-                <button class="tab-btn tab-flashcards" onclick="switchTab('flashcards')">🃏 CARDS</button>
-                <button class="tab-btn tab-slides" onclick="switchTab('slides')">📊 SLIDES</button>
-                <button class="tab-btn tab-infographic" onclick="switchTab('infographic')">🖼️ INFO</button>
-                <button class="tab-btn tab-quiz" onclick="switchTab('quiz')">🎯 QUIZ</button>
-            </div>
-        </div>
-
-        <!-- Chatbot UI -->
-        <div id="chat-toggle" class="chat-toggle" onclick="toggleChat()">🤖</div>
-        <div id="chat-window" class="chat-window">
-            <div class="chat-header">
-                <span>AI Study Mate</span>
-                <button onclick="toggleChat()" style="background:none; border:none; color:white; cursor:pointer; font-size:1.2rem;">×</button>
-            </div>
-            <div id="chat-messages" class="chat-messages">
-                <div class="message ai">Hi! I'm your NeuroLink Study Mate. Ask me anything about this project! 📚</div>
-            </div>
-            <form id="chat-form" class="chat-input-area">
-                <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." autocomplete="off">
-                <button type="submit" class="send-btn">Send</button>
-            </form>
-        </div>
-
-        <!-- Export Modal -->
-        <div id="export-modal" class="chat-window" style="height: auto; min-height: 300px; bottom: 50%; right: 50%; transform: translate(50%, 50%) scale(0.8); opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
-            <div class="chat-header">
-                <span>Export Material</span>
-                <button onclick="closeExportModal()" style="background:none; border:none; color:white; cursor:pointer; font-size:1.2rem;">×</button>
-            </div>
-            <div style="padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;">
-                <p style="font-family: 'Patrick Hand', cursive; font-size: 1.2rem; color: var(--ink-color);">Choose your export format for <strong id="export-target-name">...</strong></p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <button class="auth-btn" onclick="executeExport('pdf')" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1.5rem 1rem;">
-                        <span style="font-size: 1.5rem;">📄</span>
-                        <span>PDF Document</span>
-                    </button>
-                    <button class="auth-btn" onclick="executeExport('html')" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1.5rem 1rem;">
-                        <span style="font-size: 1.5rem;">🌐</span>
-                        <span>Single HTML</span>
-                    </button>
-                </div>
-                <div id="export-status" style="font-size: 0.85rem; text-align: center; color: var(--accent-color); font-weight: 700;"></div>
+                <button class="tab-btn tab-notebook active" onclick="switchTab('notebook')" title="Notebook">
+                    <i class="fas fa-book"></i>
+                    <span class="tab-label">Notebook</span>
+                </button>
+                <button class="tab-btn tab-mindmap" onclick="switchTab('mindmap')" title="Mind Map">
+                    <i class="fas fa-project-diagram"></i>
+                    <span class="tab-label">Mind Map</span>
+                </button>
+                <button class="tab-btn tab-flashcards" onclick="switchTab('flashcards')" title="Flashcards">
+                    <i class="fas fa-clone"></i>
+                    <span class="tab-label">Flashcards</span>
+                </button>
+                <button class="tab-btn tab-slides" onclick="switchTab('slides')" title="Slides">
+                    <i class="fas fa-tv"></i>
+                    <span class="tab-label">Slides</span>
+                </button>
+                <button class="tab-btn tab-infographic" onclick="switchTab('infographic')" title="Infographic">
+                    <i class="fas fa-chart-pie"></i>
+                    <span class="tab-label">Infographics</span>
+                </button>
+                <button class="tab-btn tab-quiz" onclick="switchTab('quiz')" title="Practice Quiz">
+                    <i class="fas fa-puzzle-piece"></i>
+                    <span class="tab-label">Quiz</span>
+                </button>
             </div>
         </div>
     </main>
 
-    <script src="js/app.js?v=1.2"></script>
-    <script src="js/mindmap.js"></script>
-    <script src="js/flashcards.js"></script>
-    <script src="js/slides.js"></script>
-    <script src="js/infographic.js"></script>
-    <script src="js/quiz.js?v=1.2"></script>
-    <script src="js/chat.js"></script>
     <script>
         let currentProject = null;
         let activeTab = 'notebook';
 
-        async function init() {
-            // Load theme first
-            const savedTheme = localStorage.getItem('artisan-theme') || 'default';
-            setTheme(savedTheme);
+        async function loadProject() {
+            showLoading("ACCESING ARCHIVES...");
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('id');
 
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            if (!id) {
-                document.getElementById('project-title-header').innerText = 'No Project ID';
+            if (!projectId) {
+                alert("No project selected.");
+                window.location.href = 'dashboard.html';
                 return;
             }
 
-            showLoading('Loading project... 🧠');
-
             try {
-                const res = await fetch(`/api/projects/${id}`);
-                if (res.ok) {
-                    currentProject = await res.json();
+                const res = await fetch(`/api/projects?id=${projectId}`);
+                const data = await res.json();
+                
+                if (data.success && data.project) {
+                    currentProject = data.project;
+                    document.getElementById('project-title-disp').innerText = currentProject.title || 'Untitled Project';
+                    document.title = `${currentProject.title} - NeuroLink`;
                     
-                    // Naming Logic: Fallback for Legacy Projects
-                    const projectName = currentProject.title || currentProject.projectName || currentProject.topic || 'Untitled Project';
-                    
-                    document.getElementById('project-title-header').innerText = projectName;
-                    document.getElementById('breadcrumb-project').innerText = projectName;
-                    document.title = `${projectName} - NeuroLink`;
-                    
-                    // Update sharing button
-                    updateShareButton(currentProject.is_public);
-                    
-                    // Load chat history
-                    if (window.loadChatHistory) loadChatHistory(currentProject.chat_history);
-                    
-                    // Smart Material Detection: Find first available material (Legacy Compatible)
+                    // Smart Material Detection
                     const priority = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
-                    
-                    // Improved helper: Be more strict about what counts as "available"
                     const hasMaterial = (type) => {
                         if (!currentProject.outputs) return !!currentProject[type];
                         const o = currentProject.outputs.find(out => out.type === type);
-                        return (o && o.content && o.content.length > 5); // Must have actual content
+                        return (o && o.content && o.content.length > 5);
                     };
 
                     let defaultTab = priority.find(hasMaterial) || 'notebook';
-                    
-                    // Load chosen tab
                     switchTab(defaultTab);
-                    
-                    // CRITICAL: Ensure loader is hidden even if renderContent finishes too fast or is delayed
                     setTimeout(hideLoading, 500); 
                 } else {
-                    document.getElementById('project-title-header').innerText = "Project Not Found (404)";
+                    document.getElementById('project-title-disp').innerText = "Project Not Found (404)";
                     hideLoading();
                 }
             } catch (error) {
                 console.error("Error fetching project:", error);
-                document.getElementById('project-title-header').innerText = "Connection Error";
+                document.getElementById('project-title-disp').innerText = "Connection Error";
                 hideLoading();
             }
         }
@@ -240,7 +194,7 @@
         function switchTab(type) {
             activeTab = type;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${type}')"]`);
+            const activeBtn = document.querySelector(`.tab-btn.tab-${type}`);
             if (activeBtn) activeBtn.classList.add('active');
 
             const views = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
@@ -249,417 +203,131 @@
             });
             document.getElementById(`${type}-view`).classList.remove('hidden');
             
-            // Critical: Use a clean rendering cycle
-            setTimeout(() => {
-                renderContent(type);
-            }, 0);
+            setTimeout(() => { renderContent(type); }, 0);
         }
 
         function renderContent(type) {
-            showLoading(`Loading ${type}... 🧠`);
-            
+            showLoading(`Rendering ${type}...`);
             try {
-                if (!currentProject) {
-                    showEmptyState(type, 'Project data not loaded.', 'Please refresh the page.');
-                    return;
-                }
-
+                if (!currentProject) return;
                 const output = currentProject.outputs && currentProject.outputs.find(o => o.type === type);
                 const legacyContent = currentProject[type];
                 const content = (output && output.content) || legacyContent;
                 
-                if (!content || (typeof content === 'string' && content.length < 5)) {
+                if (!content || content.length < 5) {
                     showEmptyState(type);
                     return;
                 }
 
-                // Normalizer: Handle JSON strings from legacy project storage
-                const data = ensureJSON(output.content);
-                
                 if (type === 'notebook') {
-                    renderNotebook(data);
+                    renderNotebook(content);
                 } else {
-                    // Isolation Layer: Prevent one bad renderer from crashing the whole app
-                    try {
-                        if (type === 'mindmap') initMindMap(data);
-                        else if (type === 'flashcards') initFlashcards(data);
-                        else if (type === 'slides') initSlides(data);
-                        else if (type === 'infographic') initInfographic(data);
-                        else if (type === 'quiz') initQuiz(data);
-                    } catch (isolationErr) {
-                        console.error(`[Isolated Renderer Error] ${type}:`, isolationErr);
-                        showEmptyState(type, 'Visualizer Error', 'This specific material failed to render. You can try to Regenerate it.');
-                    }
+                    const data = ensureJSON(content);
+                    if (type === 'mindmap' && window.initMindMap) initMindMap(data);
+                    else if (type === 'flashcards' && window.initFlashcards) initFlashcards(data);
+                    else if (type === 'slides' && window.initSlides) initSlides(data);
+                    else if (type === 'infographic' && window.initInfographic) initInfographic(data);
+                    else if (type === 'quiz' && window.initQuiz) initQuiz(data);
                 }
-            } catch (renderError) {
-                console.error(`[Renderer Error] ${type}:`, renderError);
-                showEmptyState(type, `Visualizer Error`, 'This project material might have been created with an older version of NeuroLink. Try Regenerating this tab.');
+            } catch (err) {
+                console.error(`Renderer Error ${type}:`, err);
             } finally {
                 hideLoading();
-            }
-        }
-
-        function ensureJSON(data) {
-            if (!data) return null;
-            if (typeof data === 'object') return data;
-            
-            if (typeof data === 'string') {
-                const trimmed = data.trim();
-                try {
-                    // 1. Standard JSON check
-                    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-                        return JSON.parse(trimmed);
-                    }
-                    
-                    // 2. Legacy Check: Markdown-wrapped JSON (common in early AI outputs)
-                    const jsonMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-                    if (jsonMatch && jsonMatch[1]) {
-                        return JSON.parse(jsonMatch[1].trim());
-                    }
-                } catch (e) {
-                    console.warn('[SafeParse] JSON parse failed, returning raw string');
-                }
-            }
-            return data;
-        }
-
-        function showEmptyState(type) {
-            const icons = {
-                notebook: '📓',
-                mindmap: '🧠',
-                flashcards: '🃏',
-                slides: '📊',
-                infographic: '🖼️',
-                quiz: '📝'
-            };
-            const icon = icons[type] || '✨';
-            const name = type.charAt(0).toUpperCase() + type.slice(1);
-            
-            const html = `
-                <div class="empty-state-card premium-shadow">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">${icon}</div>
-                    <h3 style="font-family: 'Permanent Marker'; color: var(--accent-color); font-size: 1.8rem;">${name} not generated yet</h3>
-                    <p style="font-family: 'Patrick Hand'; font-size: 1.2rem; margin-bottom: 2rem;">Wanna generate it now with AI?</p>
-                    <button class="auth-btn" style="background-color: var(--accent-color); padding: 15px 40px; font-size: 1.1rem; border-radius: 50px;" onclick="regenerateCurrentTab()">✨ Generate ${name} Now</button>
-                </div>
-            `;
-
-            if (type === 'notebook') {
-                document.getElementById('notebook-content-area').innerHTML = html;
-                document.getElementById('notebook-toc').innerHTML = '';
-            } else {
-                const containerId = {
-                    mindmap: 'tree-root',
-                    flashcards: 'flashcard-container',
-                    slides: 'slides-container',
-                    infographic: 'infographic-container',
-                    quiz: 'quiz-container'
-                }[type];
-                const el = document.getElementById(containerId);
-                if (el) {
-                    el.innerHTML = html;
-                }
             }
         }
 
         function renderNotebook(content) {
-            const contentArea = document.getElementById('notebook-content-area');
+            const area = document.getElementById('notebook-content-area');
             const toc = document.getElementById('notebook-toc');
-            const sidebarTitle = document.getElementById('notebook-sidebar-title');
-            
-            if (!contentArea || !toc) return;
-            
-            sidebarTitle.innerText = (currentProject.title || 'STUDY NOTES').toUpperCase();
-            contentArea.innerHTML = content;
+            if (!area || !toc) return;
+            area.innerHTML = content;
             toc.innerHTML = '';
-
-            // TOC Logic with Stabilized Renderer
-            const h2s = Array.from(contentArea.querySelectorAll('h2'));
-            h2s.forEach((h2, index) => {
-                const chapterSection = document.createElement('section');
-                chapterSection.className = 'notebook-page';
-                chapterSection.id = `chapter-${index}`;
-                
-                // Move elements between this H2 and the next one (or end) into the section
-                const nodesToMove = [];
-                let next = h2.nextSibling;
-                while (next && next.tagName !== 'H2' && !next.classList?.contains('notebook-page')) {
-                    nodesToMove.push(next);
-                    next = next.nextSibling;
-                }
-                
-                h2.parentNode.insertBefore(chapterSection, h2);
-                chapterSection.appendChild(h2);
-                nodesToMove.forEach(node => chapterSection.appendChild(node));
+            
+            // Logic to build TOC from H2 and H3 tags
+            const headers = area.querySelectorAll('h2, h3');
+            headers.forEach((h, i) => {
+                const id = `sec-${i}`;
+                h.id = id;
+                const link = document.createElement('a');
+                link.href = `#${id}`;
+                link.className = h.tagName === 'H2' ? 'toc-title' : 'toc-link';
+                link.innerText = h.innerText;
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+                };
+                toc.appendChild(link);
             });
+        }
 
-            // Re-query chapters for TOC
-            const chapters = Array.from(contentArea.querySelectorAll('section.notebook-page'));
-
-            chapters.forEach((chapter, index) => {
-                const chTitleEl = chapter.querySelector('h2');
-                if (!chTitleEl) return;
-
-                const chId = chapter.id || `chapter-${index}`;
-                chapter.id = chId;
-
-                const group = document.createElement('div');
-                group.className = 'toc-group';
-
-                const groupTitle = document.createElement('div');
-                groupTitle.className = 'toc-title';
-                groupTitle.innerText = chTitleEl.innerText;
-                group.appendChild(groupTitle);
-
-                // Subsections Fallback
-                let subSections = chapter.querySelectorAll('div.notebook-section');
-                if (subSections.length === 0) {
-                    subSections = chapter.querySelectorAll('h3');
-                }
-
-                subSections.forEach((sub, subIdx) => {
-                    const subTitleEl = sub.tagName === 'H3' ? sub : sub.querySelector('h3');
-                    if (!subTitleEl) return;
-
-                    const subId = sub.id || `${chId}-sub-${subIdx}`;
-                    sub.id = subId;
-
-                    const link = document.createElement('a');
-                    link.className = 'toc-link';
-                    link.innerText = subTitleEl.innerText;
-                    link.onclick = (e) => {
-                        e.preventDefault();
-                        const target = document.getElementById(subId);
-                        if (target) target.scrollIntoView({ behavior: 'smooth' });
-                        document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
-                        link.classList.add('active');
-                    };
-                    group.appendChild(link);
-                });
-
-                toc.appendChild(group);
-            });
-
-            // If still no chapters found, add a placeholder in TOC
-            if (chapters.length === 0 && content.trim()) {
-                toc.innerHTML = '<div class="toc-group"><div class="toc-title">Content</div></div>';
+        function ensureJSON(data) {
+            if (typeof data === 'object') return data;
+            try { return JSON.parse(data); } catch (e) {
+                const match = data.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+                if (match) return JSON.parse(match[1]);
+                return data;
             }
         }
 
-        let loaderTimeout = null;
+        function showEmptyState(type) {
+            const containerId = type === 'notebook' ? 'notebook-content-area' : {
+                mindmap: 'tree-root', flashcards: 'flashcard-container',
+                slides: 'slides-container', infographic: 'infographic-container',
+                quiz: 'quiz-container'
+            }[type];
+            const el = document.getElementById(containerId);
+            if (el) el.innerHTML = `<div class="empty-state-card"><h3>${type.toUpperCase()} not found</h3><button class="auth-btn" onclick="regenerateCurrentTab()">Generate Now</button></div>`;
+        }
+
         function showLoading(text) {
             const overlay = document.getElementById('loading-overlay');
-            const loadingText = document.getElementById('loading-text');
             if (overlay) {
-                loadingText.innerText = text || 'Generating with AI... 🧠';
                 overlay.classList.remove('hidden');
-                
-                // Safety Timeout: Auto-hide after 30 seconds to prevent "stuck" UI
-                if (loaderTimeout) clearTimeout(loaderTimeout);
-                loaderTimeout = setTimeout(() => {
-                    console.warn('[Loader] Safety timeout triggered');
-                    hideLoading();
-                }, 30000);
+                document.getElementById('loading-text').innerText = text;
             }
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) overlay.classList.add('hidden');
         }
 
         function setTheme(theme) {
-            if (theme === 'default') {
-                document.documentElement.removeAttribute('data-theme');
-            } else {
-                document.documentElement.setAttribute('data-theme', theme);
-            }
+            if (theme === 'default') document.documentElement.removeAttribute('data-theme');
+            else document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('artisan-theme', theme);
-
-            // Update UI
+            
             document.querySelectorAll('.theme-pill-btn').forEach(btn => {
                 btn.classList.remove('active-parchment', 'active-library', 'active-lab', 'active-default');
             });
             const themeMap = { 'parchment': 'parchment-btn', 'library': 'library-btn', 'lab': 'lab-btn', 'default': 'studio-btn' };
-            const btnClass = themeMap[theme];
-            const activeBtn = document.querySelector(`.${btnClass}`);
+            const activeBtn = document.querySelector(`.${themeMap[theme]}`);
             if (activeBtn) activeBtn.classList.add(`active-${theme}`);
         }
 
         async function regenerateCurrentTab() {
-            if (!currentProject) return;
-
-            const btn = document.getElementById('regen-btn');
-            const originalText = btn.innerText;
-            btn.innerText = 'Generating... ⏳';
-            btn.disabled = true;
-            showLoading(`Regenerating ${activeTab}... 🧠`);
-
+            if (!confirm(`Regenerate ${activeTab}? This will replace existing content.`)) return;
+            showLoading(`AI is creating ${activeTab}...`);
             try {
-                const res = await fetch(`/api/projects/${currentProject._id}/regenerate`, {
+                const res = await fetch('/api/generate-project', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: activeTab })
+                    body: JSON.stringify({ projectId: currentProject._id, types: [activeTab], force: true })
                 });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    currentProject = data.project;
-                    renderContent(activeTab);
-                } else {
-                    const err = await res.json().catch(()=>({}));
-                    alert(err.error || 'Regeneration failed');
+                const data = await res.json();
+                if (data.success) {
+                    await loadProject();
+                    switchTab(activeTab);
                 }
-            } catch (error) {
-                alert('Connection error. Is the server running?');
-            } finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
-                hideLoading();
-            }
+            } catch (err) { alert("Generation failed: " + err.message); }
+            finally { hideLoading(); }
         }
 
-        function exportCurrentTab() {
-            if (!currentProject) return;
-            document.getElementById('export-target-name').innerText = activeTab.toUpperCase();
-            const modal = document.getElementById('export-modal');
-            modal.style.opacity = '1';
-            modal.style.pointerEvents = 'all';
-            modal.style.transform = 'translate(50%, 50%) scale(1)';
-        }
-
-        function closeExportModal() {
-            const modal = document.getElementById('export-modal');
-            modal.style.opacity = '0';
-            modal.style.pointerEvents = 'none';
-            modal.style.transform = 'translate(50%, 50%) scale(0.8)';
-            document.getElementById('export-status').innerText = '';
-        }
-
-        async function executeExport(format) {
-            const status = document.getElementById('export-status');
-            status.innerText = `Preparing your ${format.toUpperCase()}... ⏳`;
-            
-            const output = currentProject.outputs.find(o => o.type === activeTab);
-            if (!output || !output.content) {
-                status.innerText = 'Error: No content found.';
-                return;
-            }
-
-            const fileName = `${currentProject.title}_${activeTab}`;
-
-            if (format === 'html') {
-                const title = `${currentProject.title} - ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`;
-                let template = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Indie+Flower&family=Permanent+Marker&display=swap" rel="stylesheet"><style>body{font-family:'Patrick Hand',cursive;max-width:900px;margin:2rem auto;padding:0 1rem;color:#2c3e50;background-color:#f4ead5;background-image:radial-gradient(rgba(0,0,0,0.05) 1.5px,transparent 1.5px);background-size:25px 25px;}.page{background:#fff;padding:40px;margin-bottom:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.1);border-radius:8px;}h2{font-family:'Permanent Marker',cursive;color:#003366;border-bottom:4px double #003366;}h3{color:#b22222;border-left:6px solid #b22222;padding-left:15px;}</style></head><body><div class="page"><h1>${title}</h1>${output.content}</div></body></html>`;
-                
-                // Special handling for flashcards/slides
-                if (activeTab === 'flashcards' || activeTab === 'slides') {
-                    const items = activeTab === 'flashcards' 
-                        ? output.content.map(c => `<div style="border:1px solid #ddd;padding:1rem;margin:1rem 0;border-radius:8px;"><strong>Q: ${c.question}</strong><p>A: ${c.answer}</p></div>`).join('')
-                        : output.content.map(s => `<div style="border:1px solid #ddd;padding:1rem;margin:1rem 0;border-radius:8px;"><h2>${s.title}</h2><ul>${s.bullets.map(b=>`<li>${b}</li>`).join('')}</ul></div>`).join('');
-                    template = template.replace(output.content, items);
-                }
-
-                const blob = new Blob([template], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${fileName}.html`;
-                a.click();
-                status.innerText = 'Export complete! 🎉';
-                setTimeout(closeExportModal, 1500);
-            } else if (format === 'pdf') {
-                // Determine target element for PDF
-                let element = null;
-                if (activeTab === 'notebook') element = document.getElementById('notebook-content-area');
-                else if (activeTab === 'mindmap') element = document.getElementById('tree-root');
-                else if (activeTab === 'flashcards') element = document.getElementById('flashcard-container');
-                else if (activeTab === 'slides') element = document.getElementById('slides-container');
-                else if (activeTab === 'infographic') element = document.getElementById('infographic-container');
-                else if (activeTab === 'quiz') element = document.getElementById('quiz-container');
-
-                if (!element) {
-                    status.innerText = 'Error: Target not found.';
-                    return;
-                }
-
-                const opt = {
-                    margin:       1,
-                    filename:     `${fileName}.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true },
-                    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-                };
-
-                html2pdf().set(opt).from(element).save().then(() => {
-                    status.innerText = 'Export complete! 🎉';
-                    setTimeout(closeExportModal, 1500);
-                }).catch(err => {
-                    status.innerText = 'PDF Export failed.';
-                    console.error(err);
-                });
-            }
-        }
-
-        function updateShareButton(isPublic) {
-            const container = document.getElementById('share-status');
-            const dot = document.getElementById('share-dot');
-            const text = document.getElementById('share-text');
-            
-            if (!container || !dot || !text) return;
-
-            if (isPublic) {
-                container.style.background = 'rgba(46, 125, 50, 0.1)';
-                container.style.color = '#2e7d32';
-                dot.style.background = '#2e7d32';
-                text.innerText = 'PUBLIC';
-            } else {
-                container.style.background = 'var(--dot-color)';
-                container.style.color = 'var(--ink-color)';
-                dot.style.background = '#999';
-                text.innerText = 'PRIVATE';
-            }
-        }
-
-        async function toggleSharing() {
-            if (!currentProject) return;
-            
-            const nextState = !currentProject.is_public;
-            
-            try {
-                const res = await fetch(`/api/projects/${currentProject._id}/share`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ is_public: nextState })
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    currentProject.is_public = data.is_public;
-                    updateShareButton(currentProject.is_public);
-                    
-                    if (currentProject.is_public) {
-                        const shareUrl = `${window.location.origin}/share.html?id=${currentProject._id}`;
-                        navigator.clipboard.writeText(shareUrl);
-                        alert(`Project is now PUBLIC!\nShare Link copied to clipboard:\n${shareUrl}`);
-                    } else {
-                        alert('Project is now PRIVATE.');
-                    }
-                }
-            } catch (error) {
-                alert('Failed to update sharing status.');
-            }
-            const blob = new Blob([template], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${fileName}.html`;
-            a.click();
-            status.innerText = 'Export complete! 🎉';
-            setTimeout(closeExportModal, 1500);
-            URL.revokeObjectURL(url);
-        }
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js');
-        }
-
-        init();
+        window.onload = () => {
+            const savedTheme = localStorage.getItem('artisan-theme') || 'default';
+            setTheme(savedTheme);
+            loadProject();
+        };
     </script>
 </body>
 </html>
