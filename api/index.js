@@ -160,6 +160,12 @@ app.post('/api/chat/:id', async (req, res) => {
         if (!project) return res.status(404).json({ error: 'Project not found' });
 
         const reply = await chatWithAI(project.raw_input, message);
+        
+        // Save chat history
+        project.chat_history.push({ role: 'user', message });
+        project.chat_history.push({ role: 'ai', message: reply });
+        await project.save();
+
         res.json(reply);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -214,6 +220,38 @@ app.post('/api/projects/:id/regenerate', async (req, res) => {
         }
     } catch (err) {
         console.error(`[AI] Regeneration error:`, err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/projects/:id/share', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send();
+    try {
+        const { is_public } = req.body;
+        const project = await Project.findOneAndUpdate(
+            { _id: req.params.id, user: req.user.id },
+            { is_public: !!is_public },
+            { new: true }
+        );
+        if (!project) return res.status(404).send();
+        res.json({ success: true, is_public: project.is_public });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Public Project route
+app.get('/api/public/projects/:id', async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project || !project.is_public) return res.status(404).json({ error: 'Project not found or private' });
+        // Return only what's needed for the viewer
+        res.json({
+            title: project.title,
+            outputs: project.outputs,
+            is_public: project.is_public
+        });
+    } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });

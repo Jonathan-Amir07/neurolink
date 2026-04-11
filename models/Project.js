@@ -12,6 +12,12 @@ const ProjectSchema = new mongoose.Schema({
     tags: [{ type: String }],
     raw_input: String, // Original text or source
     outputs: [OutputSchema],
+    is_public: { type: Boolean, default: false },
+    chat_history: [{
+        role: { type: String, enum: ['user', 'ai'] },
+        message: String,
+        timestamp: { type: Date, default: Date.now }
+    }],
     created_at: { type: Date, default: Date.now }
 });
 

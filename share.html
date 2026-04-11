@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared Project - NeuroLink</title>
+    <link rel="stylesheet" href="css/style.css?v=1.1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Permanent+Marker&family=Patrick+Hand&family=Indie+Flower&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Simplified Project Styles */
+        .tabs { position: fixed; right: 0; top: 50%; transform: translateY(-50%); flex-direction: column; gap: 0.5rem; z-index: 1000; }
+        .tab-btn { background: var(--glass-bg); backdrop-filter: blur(8px); border: 1px solid var(--dot-color); border-right: none; border-radius: 12px 0 0 12px; padding: 0.8rem 1.2rem; text-align: right; font-size: 0.85rem; width: 140px; display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem; box-shadow: -4px 4px 10px rgba(0,0,0,0.05); cursor: pointer; }
+        .tab-btn.active { width: 160px; background: var(--accent-color); color: white; border-color: var(--accent-color); box-shadow: -6px 6px 20px rgba(var(--accent-color-rgb), 0.4); }
+        .hidden { display: none !important; }
+        .header-controls { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--dot-color); margin-bottom: 2rem; padding-bottom: 0.5rem; }
+    </style>
+</head>
+<body class="paper-texture">
+    <header>
+        <div style="display:flex; flex-direction:column;">
+            <div style="font-size: 0.8rem; color: #777; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Shared Project</div>
+            <div style="font-weight: 800; font-size: 1.5rem;" id="project-title-header">Loading...</div>
+        </div>
+        <nav id="nav-links">
+            <a href="/" class="auth-btn">Join NeuroLink</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="header-controls">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('notebook')">📓 Notebook</button>
+                <button class="tab-btn" onclick="switchTab('mindmap')">🗺️ Mind Map</button>
+                <button class="tab-btn" onclick="switchTab('flashcards')">🃏 Flashcards</button>
+                <button class="tab-btn" onclick="switchTab('slides')">📊 Slides</button>
+                <button class="tab-btn" onclick="switchTab('infographic')">🖼️ Infographic</button>
+                <button class="tab-btn" onclick="switchTab('quiz')">🎯 Quiz</button>
+            </div>
+            <div>
+                <button class="export-btn" onclick="exportCurrentTab()">⬇ Download PDF</button>
+            </div>
+        </div>
+
+        <div class="viewer-container">
+            <div id="notebook-view">
+                 <div class="notebook-inner-layout">
+                     <aside class="notebook-sidebar">
+                         <h1 id="notebook-sidebar-title">STUDY NOTES</h1>
+                         <nav id="notebook-toc"></nav>
+                     </aside>
+                     <main id="notebook-content-area" class="notebook-main"></main>
+                 </div>
+            </div>
+            <div id="mindmap-view" class="hidden"><div id="tree-root"></div></div>
+            <div id="flashcards-view" class="hidden">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 500px;">
+                    <div id="flashcard-container"></div>
+                    <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                        <button class="auth-btn" onclick="prevCard()">← Back</button>
+                        <button class="auth-btn" id="flip-btn" onclick="flipCard()">Flip (Space)</button>
+                        <button class="auth-btn" onclick="nextCard()">Next →</button>
+                    </div>
+                </div>
+            </div>
+            <div id="slides-view" class="hidden">
+                <div id="slides-container"></div>
+                <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+                    <button class="auth-btn" onclick="prevSlide()">← Previous</button>
+                    <button class="auth-btn" onclick="nextSlide()">Next →</button>
+                </div>
+            </div>
+            <div id="infographic-view" class="hidden"><div id="infographic-container"></div></div>
+            <div id="quiz-view" class="hidden"><div id="quiz-container" class="quiz-container"></div></div>
+        </div>
+    </main>
+
+    <script src="js/mindmap.js"></script>
+    <script src="js/flashcards.js"></script>
+    <script src="js/slides.js"></script>
+    <script src="js/infographic.js"></script>
+    <script src="js/quiz.js?v=1.2"></script>
+    <script>
+        let currentProject = null;
+        let activeTab = 'notebook';
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (!id) return;
+
+            try {
+                const res = await fetch(`/api/public/projects/${id}`);
+                if (res.ok) {
+                    currentProject = await res.json();
+                    document.getElementById('project-title-header').innerText = currentProject.title;
+                    switchTab('notebook');
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        function switchTab(type) {
+            activeTab = type;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${type}')"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'].forEach(v => {
+                document.getElementById(`${v}-view`).classList.add('hidden');
+            });
+            document.getElementById(`${type}-view`).classList.remove('hidden');
+            renderContent(type);
+        }
+
+        function renderContent(type) {
+            const output = currentProject.outputs.find(o => o.type === type);
+            if (!output) return;
+
+            if (type === 'notebook') renderNotebook(output.content);
+            else if (type === 'mindmap') initMindMap(output.content);
+            else if (type === 'flashcards') initFlashcards(output.content);
+            else if (type === 'slides') initSlides(output.content);
+            else if (type === 'infographic') initInfographic(output.content);
+            else if (type === 'quiz') initQuiz(output.content);
+        }
+
+        function renderNotebook(content) {
+            const contentArea = document.getElementById('notebook-content-area');
+            const toc = document.getElementById('notebook-toc');
+            contentArea.innerHTML = content;
+            toc.innerHTML = '';
+            // Simplified TOC logic
+            contentArea.querySelectorAll('section.notebook-page').forEach((ch, i) => {
+                const title = ch.querySelector('h2')?.innerText;
+                if (!title) return;
+                const link = document.createElement('a');
+                link.className = 'toc-link';
+                link.innerText = title;
+                link.onclick = () => ch.scrollIntoView({behavior:'smooth'});
+                toc.appendChild(link);
+            });
+        }
+
+        function exportCurrentTab() {
+            const element = {
+                notebook: 'notebook-content-area',
+                mindmap: 'tree-root',
+                flashcards: 'flashcard-container',
+                slides: 'slides-container',
+                infographic: 'infographic-container',
+                quiz: 'quiz-container'
+            }[activeTab];
+            html2pdf().from(document.getElementById(element)).save(`${currentProject.title}_${activeTab}.pdf`);
+        }
+
+        init();
+    </script>
+</body>
+</html>

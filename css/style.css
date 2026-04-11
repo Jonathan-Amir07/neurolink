@@ -20,6 +20,35 @@
     --shadow: 0 10px 30px rgba(0,0,0,0.08);
     --radius: 16px;
     --transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    
+    /* Phase 2: Material Specific Accents */
+    --notebook-accent: #003366;
+    --mindmap-accent: #2e7d32;
+    --flashcard-accent: #c62828;
+    --slides-accent: #ef6c00;
+    --infographic-accent: #6a1b9a;
+    --quiz-accent: #00838f;
+}
+
+/* ── PAPER TEXTURE OVERLAY ── */
+.paper-texture {
+    position: relative;
+}
+
+.paper-texture::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("https://www.transparenttextures.com/patterns/felt.png");
+    z-index: 1;
+}
+
+/* ── HAND-DRAWN ELEMENTS ── */
+.hand-drawn-border {
+    border: 2px solid var(--ink-color);
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
 }
 
 [data-theme="dark"] {
@@ -68,6 +97,12 @@ body {
     -webkit-font-smoothing: antialiased;
     transition: background-color var(--transition), color var(--transition);
     animation: fadeIn 0.6s ease-out;
+    background-attachment: fixed;
+}
+
+/* Premium Layout Shadows */
+.premium-shadow {
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.05);
 }
 
 @keyframes fadeIn {
@@ -302,9 +337,47 @@ header {
     box-shadow: 0 15px 35px rgba(0,0,0,0.15);
 }
 
-.card-back {
+.card-face.card-front {
+    background-color: var(--paper-bg);
+}
+
+.card-face.card-back {
+    background-color: #fdfdf5;
     transform: rotateY(180deg);
 }
+
+/* Confidence Buttons */
+.confidence-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+    width: 100%;
+    justify-content: center;
+    padding-top: 1.5rem;
+}
+
+.conf-btn {
+    flex: 1;
+    border: none;
+    padding: 0.5rem 0.2rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    color: white;
+}
+
+.conf-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.conf-red { background-color: #d32f2f; }
+.conf-orange { background-color: #ef6c00; }
+.conf-green { background-color: #2e7d32; }
+.conf-blue { background-color: #1976d2; }
 
 /* Flashcard Counter */
 .flashcard-counter {
