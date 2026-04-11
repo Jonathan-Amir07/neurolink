@@ -1012,7 +1012,9 @@ header {
     transform: translateY(-50%);
     flex-direction: column;
     gap: 0.5rem;
-    z-index: 1000;
+    z-index: 1200;
+    pointer-events: auto !important;
+
 }
 
 .tab-btn {

@@ -121,18 +121,29 @@
 
         function renderContent(type) {
             if (!currentProject) return;
-            const output = currentProject.outputs.find(o => o.type === type);
-            if (!output || !output.content) return;
+            const output = currentProject.outputs && currentProject.outputs.find(o => o.type === type);
+            const legacyContent = currentProject[type];
+            
+            const content = (output && output.content) || legacyContent;
+            if (!content) return;
 
-            const data = ensureJSON(output.content);
+            const data = ensureJSON(content);
 
             try {
-                if (type === 'notebook') renderNotebook(data);
-                else if (type === 'mindmap') initMindMap(data);
-                else if (type === 'flashcards') initFlashcards(data);
-                else if (type === 'slides') initSlides(data);
-                else if (type === 'infographic') initInfographic(data);
-                else if (type === 'quiz') initQuiz(data);
+                if (type === 'notebook') {
+                    renderNotebook(data);
+                } else {
+                    // Isolation Layer: Prevents one malformed legacy visualizer from blocking the UI
+                    try {
+                        if (type === 'mindmap') initMindMap(data);
+                        else if (type === 'flashcards') initFlashcards(data);
+                        else if (type === 'slides') initSlides(data);
+                        else if (type === 'infographic') initInfographic(data);
+                        else if (type === 'quiz') initQuiz(data);
+                    } catch (isolationErr) {
+                        console.error(`[Share Isolated Error] ${type}:`, isolationErr);
+                    }
+                }
             } catch (err) {
                 console.error(`[Share Renderer] Failed for ${type}:`, err);
             }

@@ -177,12 +177,16 @@
                     // Load chat history
                     if (window.loadChatHistory) loadChatHistory(currentProject.chat_history);
                     
-                    // Smart Material Detection: Find first available material
+                    // Smart Material Detection: Find first available material (Legacy Compatible)
                     const priority = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
-                    let defaultTab = priority.find(type => 
-                        currentProject.outputs && currentProject.outputs.some(o => o.type === type && o.content)
-                    ) || 'notebook';
+                    
+                    // Helper to check for content in legacy or modern fields
+                    const hasMaterial = (type) => {
+                        const o = currentProject.outputs && currentProject.outputs.find(out => out.type === type);
+                        return (o && o.content) || currentProject[type]; // Check direct field fallback
+                    };
 
+                    let defaultTab = priority.find(hasMaterial) || 'notebook';
                     switchTab(defaultTab);
                 } else {
                     document.getElementById('project-title-header').innerText = "Project Not Found (404)";
@@ -234,16 +238,18 @@
                 
                 if (type === 'notebook') {
                     renderNotebook(data);
-                } else if (type === 'mindmap') {
-                    initMindMap(data);
-                } else if (type === 'flashcards') {
-                    initFlashcards(data);
-                } else if (type === 'slides') {
-                    initSlides(data);
-                } else if (type === 'infographic') {
-                    initInfographic(data);
-                } else if (type === 'quiz') {
-                    initQuiz(data);
+                } else {
+                    // Isolation Layer: Prevent one bad renderer from crashing the whole app
+                    try {
+                        if (type === 'mindmap') initMindMap(data);
+                        else if (type === 'flashcards') initFlashcards(data);
+                        else if (type === 'slides') initSlides(data);
+                        else if (type === 'infographic') initInfographic(data);
+                        else if (type === 'quiz') initQuiz(data);
+                    } catch (isolationErr) {
+                        console.error(`[Isolated Renderer Error] ${type}:`, isolationErr);
+                        showEmptyState(type, 'Visualizer Error', 'This specific material failed to render. You can try to Regenerate it.');
+                    }
                 }
             } catch (renderError) {
                 console.error(`[Renderer Error] ${type}:`, renderError);
@@ -319,13 +325,38 @@
             contentArea.innerHTML = content;
             toc.innerHTML = '';
 
-            const chapters = contentArea.querySelectorAll('section.notebook-page');
+            // TOC Logic with Legacy Fallback
+            let chapters = contentArea.querySelectorAll('section.notebook-page');
             
+            // Fallback: If no modern notebook-page sections found, use standard h2 tags
+            if (chapters.length === 0) {
+                const genericChapters = contentArea.querySelectorAll('h2');
+                genericChapters.forEach((h2, index) => {
+                    const chapterId = `legacy-chapter-${index}`;
+                    const wrapper = document.createElement('section');
+                    wrapper.className = 'notebook-page legacy-structure';
+                    wrapper.id = chapterId;
+                    
+                    // Move contents until next H2
+                    let next = h2.nextSibling;
+                    wrapper.appendChild(h2.cloneNode(true));
+                    h2.parentNode.replaceChild(wrapper, h2);
+                    
+                    while (next && next.tagName !== 'H2') {
+                        let toMove = next;
+                        next = next.nextSibling;
+                        wrapper.appendChild(toMove);
+                    }
+                });
+                // Re-query now that we've wrapped them
+                chapters = contentArea.querySelectorAll('section.notebook-page');
+            }
+
             chapters.forEach((chapter, index) => {
                 const chTitleEl = chapter.querySelector('h2');
                 if (!chTitleEl) return;
 
-                const chId = `chapter-${index}`;
+                const chId = chapter.id || `chapter-${index}`;
                 chapter.id = chId;
 
                 const group = document.createElement('div');
@@ -336,12 +367,17 @@
                 groupTitle.innerText = chTitleEl.innerText;
                 group.appendChild(groupTitle);
 
-                const subSections = chapter.querySelectorAll('div.notebook-section');
+                // Subsections Fallback
+                let subSections = chapter.querySelectorAll('div.notebook-section');
+                if (subSections.length === 0) {
+                    subSections = chapter.querySelectorAll('h3');
+                }
+
                 subSections.forEach((sub, subIdx) => {
-                    const subTitleEl = sub.querySelector('h3');
+                    const subTitleEl = sub.tagName === 'H3' ? sub : sub.querySelector('h3');
                     if (!subTitleEl) return;
 
-                    const subId = `${chId}-sub-${subIdx}`;
+                    const subId = sub.id || `${chId}-sub-${subIdx}`;
                     sub.id = subId;
 
                     const link = document.createElement('a');
@@ -349,7 +385,8 @@
                     link.innerText = subTitleEl.innerText;
                     link.onclick = (e) => {
                         e.preventDefault();
-                        document.getElementById(subId).scrollIntoView({ behavior: 'smooth' });
+                        const target = document.getElementById(subId);
+                        if (target) target.scrollIntoView({ behavior: 'smooth' });
                         document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
                         link.classList.add('active');
                     };
@@ -359,15 +396,9 @@
                 toc.appendChild(group);
             });
 
-            // If no chapters found, AI might have returned flat HTML — still display it
+            // If still no chapters found, add a placeholder in TOC
             if (chapters.length === 0 && content.trim()) {
-                const group = document.createElement('div');
-                group.className = 'toc-group';
-                const groupTitle = document.createElement('div');
-                groupTitle.className = 'toc-title';
-                groupTitle.innerText = 'Content';
-                group.appendChild(groupTitle);
-                toc.appendChild(group);
+                toc.innerHTML = '<div class="toc-group"><div class="toc-title">Content</div></div>';
             }
         }
 

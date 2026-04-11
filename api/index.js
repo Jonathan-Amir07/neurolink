@@ -193,12 +193,19 @@ app.post('/api/projects/:id/regenerate', async (req, res) => {
 
         if (!generators[type]) return res.status(400).json({ error: 'Generator not found' });
         
-        const inputContent = (project.raw_input || '').trim();
+        const inputContent = (
+            project.raw_input || 
+            project.topic || 
+            project.content || 
+            project.text || 
+            project.summary || 
+            ''
+        ).trim();
         console.log(`[AI] Regenerating ${type} for project ${project._id}. Content length: ${inputContent.length} chars.`);
         
         if (!inputContent) {
-            console.warn(`[AI] ⚠️ Cannot regenerate ${type}: project.raw_input is empty.`);
-            return res.status(400).json({ error: 'No content in project to regenerate from.' });
+            console.warn(`[AI] ⚠️ Cannot regenerate ${type}: No source text found in any legacy or modern fields.`);
+            return res.status(400).json({ error: 'No content in project to regenerate from. Please try updating the project source text.' });
         }
 
         const data = await generators[type](inputContent);
