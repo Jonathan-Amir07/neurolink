@@ -75,12 +75,31 @@ function renderProjects(projects) {
 
     if (projects.length === 0 && window.allProjects.length === 0) {
         list.innerHTML = `
-            <div class="empty-state-card" style="grid-column: 1 / -1;">
-                <div style="font-size: 4.5rem; margin-bottom: 1.5rem; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));">🔭</div>
-                <h3 style="font-family: 'Permanent Marker', cursive; font-size: 2rem; margin-bottom: 0.5rem;">The library is empty</h3>
-                <p style="color: #666; margin: 0.5rem auto 2rem; max-width: 400px; font-size:1.1rem; line-height:1.5;">Start your academic journey by creating your first project. We'll handle the notes, you handle the learning.</p>
+            <div class="empty-state-card" style="grid-column: 1 / -1; padding: 4rem 2rem;">
+                <div style="font-size: 5rem; margin-bottom: 2rem; filter: drop-shadow(0 15px 25px rgba(160,82,45,0.2));">🏮</div>
+                <h3 style="font-family: 'Permanent Marker', cursive; font-size: 2.5rem; margin-bottom: 1rem; color: var(--accent-color);">Your Academic Journey Starts Here</h3>
+                <p style="color: #666; margin: 0 auto 3rem; max-width: 500px; font-size:1.1rem; line-height:1.6; opacity:0.8;">Welcome to NeuroLink. Let's transform your study experience in three simple steps:</p>
+                
+                <div class="onboarding-steps" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:2rem; margin-bottom: 3.5rem; width:100%; max-width:900px; margin-left:auto; margin-right:auto; text-align:left;">
+                    <div style="background:var(--paper-bg); padding:1.5rem; border-radius:16px; border:1px solid var(--dot-color); box-shadow: 4px 4px 0 var(--dot-color);">
+                        <div style="font-size:1.5rem; margin-bottom:0.5rem;">🏗️</div>
+                        <h4 style="font-weight:800; margin-bottom:0.5rem;">1. Create</h4>
+                        <p style="font-size:0.85rem; color:#666;">Click the plus button and give your unit a name and tags.</p>
+                    </div>
+                    <div style="background:var(--paper-bg); padding:1.5rem; border-radius:16px; border:1px solid var(--dot-color); box-shadow: 4px 4px 0 var(--dot-color);">
+                        <div style="font-size:1.5rem; margin-bottom:0.5rem;">📎</div>
+                        <h4 style="font-weight:800; margin-bottom:0.5rem;">2. Supply</h4>
+                        <p style="font-size:0.85rem; color:#666;">Paste your notes or upload PDFs. The more detail, the better the AI outputs.</p>
+                    </div>
+                    <div style="background:var(--paper-bg); padding:1.5rem; border-radius:16px; border:1px solid var(--dot-color); box-shadow: 4px 4px 0 var(--dot-color);">
+                        <div style="font-size:1.5rem; margin-bottom:0.5rem;">✨</div>
+                        <h4 style="font-weight:800; margin-bottom:0.5rem;">3. Learn</h4>
+                        <p style="font-size:0.85rem; color:#666;">Explore Mind Maps, Flashcards, and more. Use the AI Mate to quiz yourself.</p>
+                    </div>
+                </div>
+
                 <div style="display:flex; justify-content:center; gap:1rem;">
-                    <button class="new-project-btn" onclick="showModal()" style="box-shadow: 0 10px 25px rgba(var(--accent-color-rgb), 0.3);">+ Create First Project</button>
+                    <button class="new-project-btn" onclick="showModal()" style="padding: 1rem 3rem; font-size:1.1rem; box-shadow: 0 10px 25px rgba(var(--accent-color-rgb), 0.3);">🚀 Create First Project</button>
                 </div>
             </div>
         `;

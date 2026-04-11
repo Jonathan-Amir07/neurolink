@@ -1,4 +1,4 @@
-const CACHE_NAME = 'neurolink-cache-v1';
+const CACHE_NAME = 'neurolink-cache-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -11,18 +11,36 @@ const ASSETS_TO_CACHE = [
   '/js/slides.js',
   '/js/infographic.js',
   '/js/quiz.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Permanent+Marker&family=Patrick+Hand&family=Indie+Flower&display=swap'
+  '/js/chat.js',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
 });
 
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  // Strategy for API calls: Network first, then cache
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clonedResponse = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, clonedResponse);
+          });
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Strategy for Static Assets: Cache first, then network
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request);
