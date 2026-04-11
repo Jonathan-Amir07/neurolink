@@ -6,6 +6,7 @@
     <title>NeuroLink — AI-Powered Study Materials</title>
     <meta name="description" content="Transform your lectures into Notebooks, Mind Maps, Flashcards, Slides, and Infographics instantly with AI.">
     <link rel="stylesheet" href="css/style.css?v=1.1">
+    <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Permanent+Marker&family=Patrick+Hand&display=swap" rel="stylesheet">
     <style>
         /* ── Landing Page Styles ── */
@@ -402,6 +403,10 @@
             el.style.transform = 'translateY(20px)';
             observer.observe(el);
         });
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js');
+        }
     </script>
 </body>
 </html>

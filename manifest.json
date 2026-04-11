@@ -1,0 +1,24 @@
+{
+  "name": "NeuroLink",
+  "short_name": "NeuroLink",
+  "description": "AI-Powered Academic Study System",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#f4ead5",
+  "theme_color": "#a0522d",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3534/3534033.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Project",
+      "url": "/dashboard?action=new",
+      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/9333/9333979.png", "sizes": "512x512" }]
+    }
+  ]
+}

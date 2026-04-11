@@ -231,6 +231,34 @@ Content: ${prepareContext(text, INPUT_CHAR_LIMITS.quiz)}`;
 }
 
 
+async function chatWithAI(context, userMessage) {
+    const prompt = `You are the NeuroLink AI Study Mate, a friendly academic tutor. 
+Your goal is to help the student understand the provided study content. 
+Be concise, encouraging, and clear. If the answer isn't in the context, use your general knowledge but mention it's outside the current notes.
+
+Context (Student's Study Material):
+${prepareContext(context, 50000)}
+
+Student: ${userMessage}
+NeuroLink Study Mate:`;
+
+    // chat doesn't need JSON enforcement
+    if (!process.env.GOOGLE_API_KEY) return { reply: "API Key missing." };
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+    const currentModel = MODEL_VARIANTS[workingModelIndex];
+
+    try {
+        const model = genAI.getGenerativeModel({ model: currentModel });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        return { reply: response.text().trim() };
+    } catch (err) {
+        console.error('[AI Chat] Failed:', err.message);
+        return { reply: "I'm having trouble thinking right now. Please try again later." };
+    }
+}
+
+
 async function generateStudyMaterials(text, selectedTypes = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz']) {
     const generators = { notebook: generateNotebook, mindmap: generateMindmap, flashcards: generateFlashcards, slides: generateSlides, infographic: generateInfographic, quiz: generateQuiz };
     const results = {};
@@ -251,5 +279,6 @@ module.exports = {
     generateSlides,
     generateInfographic,
     generateQuiz,
-    generateStudyMaterials
+    generateStudyMaterials,
+    chatWithAI
 };

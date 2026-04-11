@@ -99,7 +99,7 @@ app.use(express.static(path.join(__dirname, '..'), {
 // ── Project Routes ────────────────────────────────────────────────────────────
 
 const Project = require('../models/Project');
-const { generateNotebook, generateMindmap, generateFlashcards, generateSlides, generateInfographic, generateQuiz } = require('../utils/ai');
+const { generateNotebook, generateMindmap, generateFlashcards, generateSlides, generateInfographic, generateQuiz, chatWithAI } = require('../utils/ai');
 
 app.get('/api/projects', async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send();
@@ -147,6 +147,20 @@ app.patch('/api/projects/:id', async (req, res) => {
 
         await project.save();
         res.json(project);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/chat/:id', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send();
+    try {
+        const { message } = req.body;
+        const project = await Project.findOne({ _id: req.params.id, user: req.user.id });
+        if (!project) return res.status(404).json({ error: 'Project not found' });
+
+        const reply = await chatWithAI(project.raw_input, message);
+        res.json(reply);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

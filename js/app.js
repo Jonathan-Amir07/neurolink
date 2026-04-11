@@ -75,11 +75,13 @@ function renderProjects(projects) {
 
     if (projects.length === 0 && window.allProjects.length === 0) {
         list.innerHTML = `
-            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
-                <h3>No projects yet</h3>
-                <p style="color: #666; margin: 0.5rem 0 1.5rem;">Create your first project to generate AI study materials.</p>
-                <button class="new-project-btn" onclick="showModal()">+ Create First Project</button>
+            <div class="empty-state-card" style="grid-column: 1 / -1;">
+                <div style="font-size: 4.5rem; margin-bottom: 1.5rem; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));">🔭</div>
+                <h3 style="font-family: 'Permanent Marker', cursive; font-size: 2rem; margin-bottom: 0.5rem;">The library is empty</h3>
+                <p style="color: #666; margin: 0.5rem auto 2rem; max-width: 400px; font-size:1.1rem; line-height:1.5;">Start your academic journey by creating your first project. We'll handle the notes, you handle the learning.</p>
+                <div style="display:flex; justify-content:center; gap:1rem;">
+                    <button class="new-project-btn" onclick="showModal()" style="box-shadow: 0 10px 25px rgba(var(--accent-color-rgb), 0.3);">+ Create First Project</button>
+                </div>
             </div>
         `;
         return;
@@ -149,6 +151,26 @@ function renderProjects(projects) {
         };
 
         list.appendChild(card);
+    });
+    
+    initMicroAnimations();
+}
+
+function initMicroAnimations() {
+    document.querySelectorAll('.project-card').forEach(card => {
+        card.onmousemove = (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = (y - centerY) / 10;
+            const rotateY = (centerX - x) / 10;
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
+        };
+        card.onmouseleave = () => {
+            card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)`;
+        };
     });
 }
 
