@@ -23,8 +23,13 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Strategy for API calls: Network first, then cache
+  // Strategy for API calls: Network first, then cache (GET only)
   if (url.pathname.startsWith('/api/')) {
+    if (event.request.method !== 'GET') {
+      event.respondWith(fetch(event.request));
+      return;
+    }
+
     event.respondWith(
       fetch(event.request)
         .then((response) => {
