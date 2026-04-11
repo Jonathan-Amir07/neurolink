@@ -26,7 +26,14 @@ self.addEventListener('fetch', (event) => {
   // Strategy for API calls: Network first, then cache (GET only)
   if (url.pathname.startsWith('/api/')) {
     if (event.request.method !== 'GET') {
-      event.respondWith(fetch(event.request));
+      event.respondWith(
+        fetch(event.request).catch(err => {
+          console.error('[SW] API POST failed:', err);
+          return new Response(JSON.stringify({ error: 'Offline or connection failed' }), {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        })
+      );
       return;
     }
 
@@ -39,15 +46,18 @@ self.addEventListener('fetch', (event) => {
           });
           return response;
         })
-        .catch(() => caches.match(event.request))
+        .catch(() => caches.match(event.request, { ignoreSearch: true }))
     );
     return;
   }
 
   // Strategy for Static Assets: Cache first, then network
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+    caches.match(event.request, { ignoreSearch: true }).then((response) => {
+      return response || fetch(event.request).catch(() => {
+        // If everything fails, we could return a custom offline page or 404
+        return caches.match('/'); 
+      });
     })
   );
 });
