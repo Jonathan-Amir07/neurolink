@@ -133,6 +133,25 @@ app.delete('/api/projects/:id', async (req, res) => {
     }
 });
 
+app.patch('/api/projects/:id', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send();
+    try {
+        const { title, tags } = req.body;
+        const project = await Project.findOne({ _id: req.params.id, user: req.user.id });
+        if (!project) return res.status(404).json({ error: 'Project not found' });
+
+        if (title) project.title = title.trim();
+        if (tags !== undefined) {
+            project.tags = tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+        }
+
+        await project.save();
+        res.json(project);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/projects/:id/regenerate', async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send();
     try {

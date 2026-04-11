@@ -86,7 +86,7 @@ function renderProjects(projects) {
     }
 
     if (projects.length === 0) {
-        list.innerHTML = \`<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #777;">No matching projects found.</div>\`;
+        list.innerHTML = `<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #777;">No matching projects found.</div>`;
         return;
     }
 
@@ -94,37 +94,44 @@ function renderProjects(projects) {
     projects.forEach((project, index) => {
         const card = document.createElement('div');
         card.className = 'card project-card';
-        card.style.animation = \`fadeSlideUp 0.4s ease \${index * 0.05}s both\`;
+        card.style.animation = `fadeSlideUp 0.4s ease ${index * 0.05}s both`;
         
         const rawPreview = (project.raw_input || '').substring(0, 80);
         const outputBadges = (project.outputs || []).map(o => 
-            \`<span class="badge">\${TYPE_ICONS[o.type] || '📄'} \${o.type}</span>\`
+            `<span class="badge">${TYPE_ICONS[o.type] || '📄'} ${o.type}</span>`
         ).join('');
         
         const tagBadges = (project.tags || []).map(t => 
-            \`<span class="badge" style="background: rgba(0,0,0,0.04); color: #555; border: 1px solid #ddd; font-weight: 600;">#\${t}</span>\`
+            `<span class="badge" style="background: rgba(0,0,0,0.04); color: #555; border: 1px solid #ddd; font-weight: 600;">#${t}</span>`
         ).join('');
 
-        card.innerHTML = \`
+        card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <h3 style="margin: 0; font-size: 1.1rem;">\${project.title}</h3>
+                <h3 style="margin: 0; font-size: 1.1rem;">${project.title}</h3>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <span style="font-size: 0.8rem; color: #777;">\${new Date(project.created_at).toLocaleDateString()}</span>
+                    <span style="font-size: 0.8rem; color: #777;">${new Date(project.created_at).toLocaleDateString()}</span>
+                    <button class="edit-btn" title="Edit Metadata" style="background: none; border: none; cursor: pointer; color: var(--accent-color); font-size: 1.1rem; padding: 0 0.2rem;">✏️</button>
                     <button class="delete-btn" title="Delete Project" style="background: none; border: none; cursor: pointer; color: #ff5252; font-size: 1.1rem; padding: 0 0.5rem;">🗑️</button>
                 </div>
             </div>
-            <p style="color: #666; font-size: 0.9rem; margin: 0.8rem 0;">\${rawPreview}\${rawPreview.length >= 80 ? '...' : ''}</p>
+            <p style="color: #666; font-size: 0.9rem; margin: 0.8rem 0;">${rawPreview}${rawPreview.length >= 80 ? '...' : ''}</p>
             <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-                \${tagBadges}
-                \${outputBadges || (tagBadges ? '' : '<span class="badge" style="opacity:0.5;">No outputs yet</span>')}
+                ${tagBadges}
+                ${outputBadges || (tagBadges ? '' : '<span class="badge" style="opacity:0.5;">No outputs yet</span>')}
             </div>
-        \`;
+        `;
         card.onclick = () => {
             document.querySelectorAll('.project-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
             setTimeout(() => {
-                window.location.href = \`/project.html?id=\${project._id}\`;
+                window.location.href = `/project.html?id=${project._id}`;
             }, 400);
+        };
+        
+        const editBtn = card.querySelector('.edit-btn');
+        editBtn.onclick = (e) => {
+            e.stopPropagation();
+            openEditModal(project._id);
         };
         
         const deleteBtn = card.querySelector('.delete-btn');
@@ -132,7 +139,7 @@ function renderProjects(projects) {
             e.stopPropagation();
             if (!confirm('Are you sure you want to delete this project?')) return;
             
-            const res = await fetch(\`/api/projects/\${project._id}\`, { method: 'DELETE' });
+            const res = await fetch(`/api/projects/${project._id}`, { method: 'DELETE' });
             if (res.ok) {
                 card.style.animation = 'fadeOut 0.3s ease forwards';
                 setTimeout(() => loadProjects(), 300);
@@ -202,6 +209,62 @@ function updateThemeSwitcherUI(activeTheme) {
         btn.classList.toggle('active', btn.dataset.themeId === activeTheme);
     });
 }
+
+    });
+}
+
+// ── PROJECT EDITING ────────────────────────────────────────────────────
+window.openEditModal = function(id) {
+    const project = window.allProjects.find(p => p._id === id);
+    if (!project) return;
+    
+    document.getElementById('edit-project-id').value = id;
+    document.getElementById('edit-title').value = project.title;
+    document.getElementById('edit-tags').value = (project.tags || []).join(', ');
+    
+    document.getElementById('edit-project-modal').style.display = 'flex';
+};
+
+window.hideEditModal = function() {
+    document.getElementById('edit-project-modal').style.display = 'none';
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const editForm = document.getElementById('edit-project-form');
+    if (editForm) {
+        editForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-project-id').value;
+            const title = document.getElementById('edit-title').value;
+            const tags = document.getElementById('edit-tags').value;
+            const btn = document.getElementById('edit-submit-btn');
+            
+            const originalText = btn.innerText;
+            btn.innerText = 'Saving...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/projects/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, tags })
+                });
+
+                if (res.ok) {
+                    hideEditModal();
+                    loadProjects(); // Refresh list
+                } else {
+                    alert('Failed to update project.');
+                }
+            } catch (err) {
+                alert('Connection error.');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        };
+    }
+});
 
 // Global initialization
 document.addEventListener('DOMContentLoaded', async () => {
