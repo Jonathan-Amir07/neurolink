@@ -2,8 +2,13 @@ let slideIndex = 0;
 let slideData = [];
 
 function initSlides(data) {
-    if (!data || !Array.isArray(data) || data.length === 0) {
-        document.getElementById('slides-container').innerHTML = '<div class="empty-state-card"><h3>No slides available</h3><p>Click "Regenerate Tab" to generate slides for this project.</p></div>';
+    if (!data || !Array.isArray(data)) {
+        document.getElementById('slides-container').innerHTML = `
+            <div class="empty-state-card">
+                <h3>Slides not ready</h3>
+                <p>Click "Regenerate" to create a presentation for this topic.</p>
+            </div>
+        `;
         return;
     }
     slideData = data;
@@ -13,29 +18,27 @@ function initSlides(data) {
 
 function renderCurrentSlide() {
     const container = document.getElementById('slides-container');
-    if (!container) return;
+    if (!container || !slideData[slideIndex]) return;
     
     container.innerHTML = '';
     const slide = slideData[slideIndex];
-    if (!slide) return;
 
     const slideEl = document.createElement('div');
     slideEl.className = 'slide-card active paper-texture premium-shadow';
-    slideEl.style.animation = 'slideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    slideEl.style.borderLeft = `10px solid var(--slides-accent)`;
     
-    // Add "Chalkboard" style to code snippets if they exist in the title or bullets
-    const isCode = slide.title.includes('<code>') || slide.bullets.some(b => b.includes('<code>'));
-    if (isCode) slideEl.classList.add('chalkboard-theme');
-
     slideEl.innerHTML = `
-        <div class="slide-indicator" style="position:absolute; top:20px; left:30px; font-size:0.75rem; color:var(--slides-accent); border:1px solid var(--slides-accent); padding:2px 8px; border-radius:4px; font-family:'Inter'; font-weight:700;">PRESENTATION</div>
-        <h2 class="slide-title" style="color: var(--slides-accent);">${slide.title || 'Untitled Slide'}</h2>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 2rem;">
+            <h2 class="slide-title" style="color: var(--slides-accent); margin:0;">${slide.title || 'Untitled Slide'}</h2>
+            <div style="font-size:0.8rem; font-weight:800; color:var(--slides-accent); opacity:0.6;">NEUROLINK PRESENTATION</div>
+        </div>
         <ul class="slide-bullets">
-            ${(slide.bullets || []).map((b, i) => `<li style="animation: slideIn 0.3s ease both ${i * 0.1 + 0.2}s">${b}</li>`).join('')}
+            ${(slide.bullets || []).map((b, i) => `<li style="animation: fadeSlideUp 0.4s ease both ${i * 0.1 + 0.2}s">${b}</li>`).join('')}
         </ul>
-        <button class="auth-btn" onclick="pinToChat('Slide: ${slide.title || 'Unknown'}. Content: ${(slide.bullets || []).join(', ')}')" style="position:absolute; bottom:20px; left:30px; font-size: 0.7rem; padding: 2px 8px; background: none; border: 1px dashed var(--line-color); color: var(--ink-color);">📌 Ask AI about this slide</button>
         <div class="slide-counter">${slideIndex + 1} / ${slideData.length}</div>
-        <div class="slide-progress-bar"><div class="slide-progress-fill" style="width: ${((slideIndex + 1) / slideData.length) * 100}%"></div></div>
+        <div class="slide-progress-bar">
+            <div class="slide-progress-fill" style="width: ${((slideIndex + 1) / slideData.length) * 100}%; background: var(--slides-accent);"></div>
+        </div>
     `;
     container.appendChild(slideEl);
 }

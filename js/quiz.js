@@ -58,7 +58,7 @@ function renderQuizQuestion() {
     container.innerHTML = `
         <div class="quiz-card" style="animation: fadeSlideUp 0.3s ease;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <span class="badge" style="background: rgba(var(--accent-color-rgb, 160, 82, 45), 0.1); color: var(--accent-color); border: 1px solid rgba(var(--accent-color-rgb, 160, 82, 45), 0.2);">
+                <span class="badge" style="background: hsla(var(--accent-color-rgb), 0.1); color: var(--accent-color); border: 1px solid hsla(var(--accent-color-rgb), 0.2);">
                     Question ${currentQuestionIndex + 1} of ${currentQuizData.length}
                 </span>
                 <span style="font-weight: 700; color: var(--ink-color); opacity: 0.7;">Score: ${quizScore}</span>

@@ -1,33 +1,28 @@
-/* ── DESIGN SYSTEM / CSS VARIABLES ── */
 :root {
-    /* Parchment (Improved Default) */
-    --bg-paper: #f4ead5;
-    --accent-color: #a0522d;
-    --accent-color-rgb: 160, 82, 45;
-    --accent-hover: #8b4513;
-    --line-color: #7d6b5d;
-    --dot-color: rgba(61, 43, 31, 0.08);
-    --ruled-line: rgba(61, 43, 31, 0.08);
-    --glass-bg: rgba(244, 234, 213, 0.85);
-    --paper-bg: #fdfdf5;
-    --sidebar-bg: #2b1d12;
-    --ink-color: #3d2b1f;
-    --accent-red: #b22222;
-    --chalkboard-bg: #2d2d2d;
-    --chalk-white: #f5f5f5;
-    --chalk-comment: #88bd88;
-    --chalk-keyword: #ffda6a;
-    --shadow: 0 10px 30px rgba(0,0,0,0.08);
-    --radius: 16px;
-    --transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* Premium Study Aesthetic */
+    --bg-paper: #f9f8f4;
+    --accent-color: #8c5d42;
+    --accent-color-rgb: 140, 93, 66;
+    --accent-hover: #724a35;
+    --line-color: #e2e1d8;
+    --dot-color: rgba(140, 93, 66, 0.06);
+    --ruled-line: rgba(140, 93, 66, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --paper-bg: #ffffff;
+    --sidebar-bg: #1a1816;
+    --ink-color: #2b2825;
+    --accent-red: #a53d3d;
+    --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.12);
+    --radius: 20px;
+    --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     
-    /* Phase 2: Material Specific Accents */
-    --notebook-accent: #003366;
-    --mindmap-accent: #2e7d32;
-    --flashcard-accent: #c62828;
-    --slides-accent: #ef6c00;
-    --infographic-accent: #6a1b9a;
-    --quiz-accent: #00838f;
+    /* Material Specific Accents (Muted & Professional) */
+    --notebook-accent: #3d5a80;
+    --mindmap-accent: #588157;
+    --flashcard-accent: #9e2a2b;
+    --slides-accent: #e36414;
+    --infographic-accent: #5f0f40;
+    --quiz-accent: #0f4c5c;
 }
 
 /* ── PAPER TEXTURE OVERLAY ── */
@@ -1424,6 +1419,20 @@ header {
     box-shadow: 6px 6px 0px var(--dot-color);
 }
 
+@media (max-width: 1024px) {
+    .notebook-inner-layout {
+        flex-direction: column;
+        height: auto;
+    }
+    .notebook-sidebar {
+        width: 100%;
+        height: 300px;
+        min-height: 300px;
+        border-right: none;
+        border-bottom: 4px solid #111;
+    }
+}
+
 @media (max-width: 768px) {
     .header-controls {
         flex-direction: column;
@@ -1431,5 +1440,13 @@ header {
     }
     .header-right-btns {
         justify-content: center;
+        flex-wrap: wrap;
+    }
+    .tabs {
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    .notebook-page {
+        padding: 40px 20px;
     }
 }

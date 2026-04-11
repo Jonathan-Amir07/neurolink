@@ -341,29 +341,28 @@
             contentArea.innerHTML = content;
             toc.innerHTML = '';
 
-            // TOC Logic with Legacy Fallback (Resilient Implementation)
-            let chapters = Array.from(contentArea.querySelectorAll('section.notebook-page'));
-            
-            // Fallback: If no modern notebook-page sections found, wrap top-level block appropriately
-            if (chapters.length === 0) {
-                const h2s = Array.from(contentArea.querySelectorAll('h2'));
-                h2s.forEach((h2, index) => {
-                    const wrapper = document.createElement('section');
-                    wrapper.className = 'notebook-page legacy-structure';
-                    wrapper.id = `legacy-chapter-${index}`;
-                    
-                    // Use a safe range-based wrap instead of a nextSibling loop
-                    const range = document.createRange();
-                    let nextH2 = h2s[index + 1] || null;
-                    range.setStartBefore(h2);
-                    if (nextH2) range.setEndBefore(nextH2);
-                    else range.setEndAfter(contentArea.lastChild);
-                    
-                    range.surroundContents(wrapper);
-                });
-                // Re-query now that we've wrapped them
-                chapters = Array.from(contentArea.querySelectorAll('section.notebook-page'));
-            }
+            // TOC Logic with Stabilized Renderer
+            const h2s = Array.from(contentArea.querySelectorAll('h2'));
+            h2s.forEach((h2, index) => {
+                const chapterSection = document.createElement('section');
+                chapterSection.className = 'notebook-page';
+                chapterSection.id = `chapter-${index}`;
+                
+                // Move elements between this H2 and the next one (or end) into the section
+                const nodesToMove = [];
+                let next = h2.nextSibling;
+                while (next && next.tagName !== 'H2' && !next.classList?.contains('notebook-page')) {
+                    nodesToMove.push(next);
+                    next = next.nextSibling;
+                }
+                
+                h2.parentNode.insertBefore(chapterSection, h2);
+                chapterSection.appendChild(h2);
+                nodesToMove.forEach(node => chapterSection.appendChild(node));
+            });
+
+            // Re-query chapters for TOC
+            const chapters = Array.from(contentArea.querySelectorAll('section.notebook-page'));
 
             chapters.forEach((chapter, index) => {
                 const chTitleEl = chapter.querySelector('h2');
@@ -604,23 +603,14 @@
             } catch (error) {
                 alert('Failed to update sharing status.');
             }
-        }
-            } else if (activeTab === 'slides') {
-                const slides = output.content.map((s, i) => `<div style="border:1px solid #ddd;padding:2rem;margin:2rem 0;border-radius:8px;border-left:6px solid #e67e22;"><h2>${s.title}</h2><ul>${s.bullets.map(b=>`<li>${b}</li>`).join('')}</ul><small>Slide ${i+1}</small></div>`).join('');
-                htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title></head><body style="font-family:sans-serif;max-width:800px;margin:2rem auto;"><h1>${title}</h1>${slides}</body></html>`;
-            } else if (activeTab === 'infographic') {
-                const sections = output.content.map(s => `<div style="padding:2rem;margin:2rem 0;background:#fffdf6;box-shadow:0 4px 10px rgba(0,0,0,0.1);"><h2>${s.icon || '📌'} ${s.title}</h2><p>${s.content}</p></div>`).join('');
-                htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title></head><body style="font-family:sans-serif;max-width:800px;margin:2rem auto;"><h1>${title}</h1>${sections}</body></html>`;
-            } else if (activeTab === 'mindmap') {
-                htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title></head><body style="font-family:sans-serif;max-width:800px;margin:2rem auto;"><h1>${title}</h1><pre>${JSON.stringify(output.content, null, 2)}</pre></body></html>`;
-            }
-
-            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const blob = new Blob([template], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${currentProject.title.replace(/[^a-z0-9]/gi, '_')}_${activeTab}.html`;
+            a.download = `${fileName}.html`;
             a.click();
+            status.innerText = 'Export complete! 🎉';
+            setTimeout(closeExportModal, 1500);
             URL.revokeObjectURL(url);
         }
 

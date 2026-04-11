@@ -213,16 +213,15 @@ app.post('/api/projects/:id/regenerate', async (req, res) => {
         if (data && data[type]) {
             const existingIndex = project.outputs.findIndex(o => o.type === type);
             if (existingIndex !== -1) {
-                project.outputs[existingIndex].content = data[type]; // Overwrite existing
+                project.outputs[existingIndex].content = data[type];
             } else {
-                project.outputs.push({ type, content: data[type] }); // Append new
+                project.outputs.push({ type, content: data[type] });
             }
             await project.save();
             return res.json({ success: true, project });
         } else {
-            console.error(`[AI] ⚠️ Regeneration failed for ${type} (Returned null). This is typically caused by Gemini API Rate Limits or unreadable output.`);
             return res.status(500).json({ 
-                error: `AI could not generate the ${type}. Usually, this means the Gemini API is rate-limiting you or the content is too long. Please wait 1 minute and try again!` 
+                error: `AI could not generate the ${type}. This is usually caused by API rate limits or complex content. Please wait a moment and try again.` 
             });
         }
     } catch (err) {
@@ -365,13 +364,11 @@ app.post('/api/projects', parseUpload, async (req, res) => {
                         console.log(`[AI] ✅ ${type} generated in ${Date.now() - cStart}ms`);
                     } else {
                         console.warn(`[AI] ⚠️ ${type} failed: No data returned`);
+                        results.push({ type, content: null });
                     }
                 } catch (err) {
                     console.error(`[AI] ❌ Error in ${type}:`, err.message);
-                    results.push({ 
-                        type, 
-                        content: `<div class="empty-state-card"><h3>Generation Error</h3><p>The AI failed to generate the ${type} (Error: ${err.message}). This usually happens due to rate limits or unreadable source content. Please click Regenerate below.</p><button class="auth-btn" onclick="regenerateCurrentTab()">↺ Try Again</button></div>` 
-                    });
+                    results.push({ type, content: null });
                 }
 
                 // Add delay to prevent Gemini free-tier rate limiting (15 RPM), except for the final item

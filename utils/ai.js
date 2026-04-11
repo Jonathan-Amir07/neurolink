@@ -3,10 +3,9 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // Model priority: standard SDK names first (work across all environments),
 // full-path names as fallback (confirmed working locally).
 const MODEL_VARIANTS = [
-    "models/gemini-1.5-flash",
-    "models/gemini-1.5-flash-latest",
-    "models/gemini-2.0-flash-exp",
-    "models/gemini-2.0-flash"
+    "models/gemini-3-flash-preview", 
+    "models/gemini-2.5-flash", 
+    "models/gemini-1.5-flash"
 ];
 
 // Cache the index of the last known-working model to skip failed ones on subsequent calls
@@ -127,23 +126,22 @@ async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2
 }
 
 async function generateNotebook(text) {
-    const prompt = `You are an AI Study Architect. Transform the provided content into a structured study notebook.
+    const prompt = `You are a Master Academic Study Architect. Transform the provided content into a highly detailed, professional study notebook.
 CONTENT REQUIREMENTS:
-- Create 1-2 highly detailed chapters.
+- Create 1-2 CHAPTERS of dense, structured study material.
 - Each chapter MUST have exactly 4 sections: 1. Overview, 2. Core Explanation, 3. Key Concepts, 4. Summary & Quiz.
-- Focus on conceptual clarity and pedagogical structure.
+- Focus strictly on conceptual clarity and pedagogical depth.
 OUTPUT FORMAT:
 Return ONLY a valid JSON object: {"notebook": "html_content"}.
-Use this HTML structure for every chapter (IMPORTANT: Use single quotes ' for attributes to prevent JSON errors):
+HTML STRUCTURE (Use single quotes ' for all CSS classes):
 <section class='notebook-page ruled'>
+    <div class='tape-strip'></div>
     <h2>Chapter Number. Chapter Title</h2>
-    <div class='notebook-section'><h3>1. Overview</h3><p>...</p></div>
-    <div class='notebook-section'><h3>2. Core Explanation</h3><p>...</p></div>
-    <div class='notebook-section'><h3>3. Key Concepts</h3><p>...</p></div>
-    <div class='notebook-section'><h3>4. Summary & Quiz</h3><p>...</p></div>
+    <div class='notebook-section'><h3>1. Overview</h3><p>Detailed overview...</p></div>
+    <div class='notebook-section'><h3>2. Core Explanation</h3><p>Deep dive into mechanics...</p></div>
+    <div class='notebook-section'><h3>3. Key Concepts</h3><p>Definitions and relationships...</p></div>
+    <div class='notebook-section'><h3>4. Summary & Quiz</h3><p>Recap and 3 review questions...</p></div>
 </section>
-
-Ensure the HTML content is a valid string, escaping any internal double quotes if they occur within text (though single quotes are preferred).
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.notebook)}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 5000);
