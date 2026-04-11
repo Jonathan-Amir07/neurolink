@@ -23,6 +23,12 @@ passport.use(new GoogleStrategy({
     }
 
     try {
+      // Check database connection state before querying
+      if (mongoose.connection.readyState !== 1) {
+          console.error('[Passport] Database is not connected. Current state:', mongoose.connection.readyState);
+          return done(new Error('Database connection is not stable. Please try again in a few seconds.'));
+      }
+
       console.log(`[Passport] Attempting login for: ${newUser.email}`);
       let user = await User.findOne({ googleId: profile.id });
       if (user) {
@@ -34,6 +40,9 @@ passport.use(new GoogleStrategy({
       done(null, user);
     } catch (err) {
       console.error('[Passport] Database error during login:', err.message);
+      if (err.name === 'MongooseError' || err.message.includes('buffering')) {
+          return done(new Error('The database is taking too long to respond. This is usually a network or IP whitelist issue.'));
+      }
       done(err);
     }
   }

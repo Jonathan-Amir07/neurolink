@@ -20,12 +20,21 @@ const upload = multer({
 require('../utils/passport');
 
 // Connect to MongoDB
+mongoose.set('bufferCommands', false); // Disable buffering to prevent 10s hangs during connection issues
 mongoose.connect(process.env.MONGODB_URI, {
-    tlsAllowInvalidCertificates: true
-}).then(() => console.log('MongoDB Connected'))
-  .catch(err => console.error('MongoDB Initial Connection Error:', err));
+    tlsAllowInvalidCertificates: true,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000
+}).then(() => console.log('✅ MongoDB Connected'))
+  .catch(err => {
+    console.error('❌ MongoDB Initial Connection Error:', err.message);
+    if (err.message.includes('protocol')) {
+        console.error('👉 TIP: Check if your MONGODB_URI is missing "mongodb+srv://" or has typos.');
+    }
+  });
 
-mongoose.connection.on('error', err => console.error('MongoDB Runtime Error:', err));
+mongoose.connection.on('error', err => console.error('🔴 MongoDB Runtime Error:', err));
+mongoose.connection.on('disconnected', () => console.warn('🟡 MongoDB Disconnected. Reconnecting...'));
 
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
