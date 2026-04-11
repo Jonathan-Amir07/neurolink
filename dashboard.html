@@ -120,24 +120,24 @@
 <body>
     <header>
         <div class="breadcrumb">
-            <span class="brand" style="font-weight: 800; font-size: 1.2rem; color: var(--accent-color);">NeuroLink</span>
+            <span class="brand" style="font-weight: 800; font-size: 1.25rem; color: var(--accent-color); letter-spacing: -0.5px;">NeuroLink</span>
             <span class="sep">/</span>
-            <span class="current">Dashboard</span>
+            <span class="current" style="font-weight: 400; opacity: 0.6;">Dashboard</span>
         </div>
         
         <nav id="nav-links">
-            <div class="user-menu">
+            <div class="user-menu" style="gap: 1.5rem;">
                 <!-- THEME SELECTOR PILL (Luxury Capsule) -->
                 <div class="theme-selector-pill">
-                    <button onclick="setTheme('parchment')" title="Parchment" class="theme-pill-btn parchment-btn">📜</button>
-                    <button onclick="setTheme('library')" title="Library" class="theme-pill-btn library-btn">🌙</button>
-                    <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn">🧪</button>
-                    <button onclick="setTheme('default')" title="Studio" class="theme-pill-btn studio-btn">🏢</button>
+                    <button onclick="setTheme('parchment')" title="Parchment Mode" class="theme-pill-btn parchment-btn">📜</button>
+                    <button onclick="setTheme('library')" title="Midnight Library" class="theme-pill-btn library-btn">🌙</button>
+                    <button onclick="setTheme('lab')" title="Sterile Lab" class="theme-pill-btn lab-btn">🧪</button>
+                    <button onclick="setTheme('default')" title="Standard Studio" class="theme-pill-btn studio-btn">🏢</button>
                 </div>
 
-                <div style="display: flex; align-items: center; gap: 12px; margin-left: 1rem;">
-                    <span id="user-name" style="font-size: 0.85rem; opacity: 0.7; font-weight: 600;">Loading...</span>
-                    <a href="/auth/logout" class="auth-btn">Logout</a>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span id="user-name" style="font-size: 0.75rem; opacity: 0.5; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Loading...</span>
+                    <a href="/auth/logout" style="font-size: 0.75rem; font-weight: 700; color: white; opacity: 0.3; text-decoration: none; text-transform: uppercase;">Sign Out</a>
                 </div>
             </div>
         </nav>

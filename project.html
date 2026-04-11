@@ -14,50 +14,48 @@
 <body class="paper-texture">
     <header>
         <div class="breadcrumb">
-            <a href="dashboard.html" class="brand" style="font-weight: 800; font-size: 1.2rem; color: var(--accent-color); text-decoration: none;">NeuroLink</a>
+            <a href="dashboard.html" class="brand" style="font-weight: 800; font-size: 1.25rem; color: var(--accent-color); text-decoration: none; letter-spacing: -0.5px;">NeuroLink</a>
             <span class="sep">/</span>
-            <span class="current" id="breadcrumb-project">Project Studio</span>
+            <span class="current" id="breadcrumb-project" style="font-weight: 400; opacity: 0.6;">Project Studio</span>
         </div>
         
         <nav id="nav-links">
-            <!-- PROJECT PULSE HUD (Luxury Glass) -->
-            <div class="project-pulse-hud">
-                <div class="hud-item" title="AI Core Connectivity">
+            <div id="gen-progress" style="background:var(--accent-color); height:2px; width:0%; position:absolute; top:0; left:0; transition:width 1s; box-shadow: 0 0 10px var(--accent-color);"></div>
+            <!-- PROJECT PULSE HUD (Luxury Redesign) -->
+            <div class="action-capsule">
+                <div class="hud-item" style="padding: 0 12px; border-right: 1px solid rgba(255,255,255,0.1);">
                     <div class="ai-pulse-indicator"></div>
-                    <span id="ai-status-text" style="font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">Syncing</span>
+                    <span id="ai-status-text" style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Live</span>
                 </div>
-                <div class="hud-item">
-                    <div style="background:rgba(255,255,255,0.1); height:4px; width:60px; border-radius:10px; position:relative; overflow:hidden;">
-                        <div id="gen-progress" style="background:var(--accent-color); height:100%; width:0%; transition:width 1s;"></div>
-                    </div>
-                </div>
-                <div class="hud-item" style="border-left:1px solid rgba(255,255,255,0.1); padding-left:1rem; gap:10px;">
-                    <button class="auth-btn" id="regen-btn" onclick="regenerateCurrentTab()" title="Regenerate Current Tab">↺</button>
-                    <button class="auth-btn" onclick="exportProject()" title="Export as PDF">📥 Export</button>
-                </div>
+                <button class="action-btn" id="regen-btn" onclick="regenerateCurrentTab()" title="Regenerate Content">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="action-btn active-primary" onclick="exportProject()" title="Export Workspace">
+                    <i class="fas fa-file-export"></i> <span>Export</span>
+                </button>
             </div>
 
-            <div class="user-menu">
+            <div class="user-menu" style="gap: 1.5rem;">
                 <div class="theme-selector-pill">
-                    <button onclick="setTheme('parchment')" title="Parchment" class="theme-pill-btn parchment-btn">📜</button>
-                    <button onclick="setTheme('library')" title="Library" class="theme-pill-btn library-btn">🌙</button>
-                    <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn">🧪</button>
-                    <button onclick="setTheme('default')" title="Studio" class="theme-pill-btn studio-btn">🏢</button>
+                    <button onclick="setTheme('parchment')" title="Parchment Mode" class="theme-pill-btn parchment-btn">📜</button>
+                    <button onclick="setTheme('library')" title="Midnight Library" class="theme-pill-btn library-btn">🌙</button>
+                    <button onclick="setTheme('lab')" title="Sterile Lab" class="theme-pill-btn lab-btn">🧪</button>
+                    <button onclick="setTheme('default')" title="Standard Studio" class="theme-pill-btn studio-btn">🏢</button>
                 </div>
-                <a href="/auth/logout" class="auth-btn" style="background:transparent !important; border:none !important; opacity:0.5; font-size:0.75rem !important;">Logout</a>
+                <a href="/auth/logout" style="font-size: 0.75rem; font-weight: 700; color: white; opacity: 0.4; text-decoration: none; text-transform: uppercase; letter-spacing: 1px;">Sign Out</a>
             </div>
         </nav>
     </header>
 
     <main class="container">
-        <!-- HORIZONTAL WORKSPACE NAV -->
+        <!-- SEGMENTED WORKSPACE NAV (Redesigned) -->
         <div class="workspace-tabs">
-            <button class="nav-pill tab-notebook active" onclick="switchTab('notebook')"><i class="fas fa-book"></i> Notebook</button>
-            <button class="nav-pill tab-mindmap" onclick="switchTab('mindmap')"><i class="fas fa-brain"></i> Mind Map</button>
-            <button class="nav-pill tab-flashcards" onclick="switchTab('flashcards')"><i class="fas fa-clone"></i> Flashcards</button>
-            <button class="nav-pill tab-slides" onclick="switchTab('slides')"><i class="fas fa-tv"></i> Slides</button>
-            <button class="nav-pill tab-infographic" onclick="switchTab('infographic')"><i class="fas fa-chart-pie"></i> Infographics</button>
-            <button class="nav-pill tab-quiz" onclick="switchTab('quiz')"><i class="fas fa-vial"></i> Practice Quiz</button>
+            <button class="nav-pill tab-notebook active" onclick="switchTab('notebook')"><i class="fas fa-book-open"></i> Notebook</button>
+            <button class="nav-pill tab-mindmap" onclick="switchTab('mindmap')"><i class="fas fa-project-diagram"></i> Mind Map</button>
+            <button class="nav-pill tab-flashcards" onclick="switchTab('flashcards')"><i class="fas fa-layer-group"></i> Flashcards</button>
+            <button class="nav-pill tab-slides" onclick="switchTab('slides')"><i class="fas fa-presentation-screen"></i> Slides</button>
+            <button class="nav-pill tab-infographic" onclick="switchTab('infographic')"><i class="fas fa-chart-line"></i> Analytics</button>
+            <button class="nav-pill tab-quiz" onclick="switchTab('quiz')"><i class="fas fa-vial"></i> Quiz</button>
         </div>
 
         <div class="binder-frame premium-shadow" id="binder-frame">
