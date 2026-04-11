@@ -13,7 +13,10 @@ const app = express();
 // Multer — memory storage, 20 MB limit
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 20 * 1024 * 1024 }
+    limits: { 
+        fileSize: 20 * 1024 * 1024,
+        fieldSize: 20 * 1024 * 1024 // Allow up to 20MB for pasted text and other fields
+    }
 });
 
 // Load Passport Configuration
@@ -44,8 +47,8 @@ process.on('uncaughtException', (err) => {
 });
 
 // Middleware - shifted static below auth for safety
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: false, limit: '20mb' }));
 
 // Health Check (for debugging 404s)
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
@@ -399,18 +402,38 @@ app.post('/api/projects', parseUpload, async (req, res) => {
         }
 
     } catch (err) {
-        console.error('[POST /api/projects Outer Catch]', err);
+        console.error('[POST /api/projects Outer Catch Error]', {
+            message: err.message,
+            stack: err.stack,
+            bodyKeys: Object.keys(req.body || {}),
+            filesCount: (req.files || []).length
+        });
         res.status(500).json({ error: 'Server error: ' + err.message });
     }
 });
 
 // Global Error Handler (must be registered before listen in Express 5)
 app.use((err, req, res, next) => {
-    console.error('SERVER ERROR:', err.stack);
-    res.status(500).json({ 
-        error: 'Internal Server Error', 
+    // Log detailed error on server
+    console.error('--- SERVER-SIDE ERROR LOG ---');
+    console.error('Time:', new Date().toISOString());
+    console.error('URL:', req.originalUrl);
+    console.error('Method:', req.method);
+    console.error('IP:', req.ip);
+    console.error('Headers:', JSON.stringify(req.headers, null, 2));
+    console.error('Error Message:', err.message);
+    console.error('Error Stack:', err.stack);
+    console.error('-----------------------------');
+
+    const status = err.status || err.statusCode || 500;
+    
+    // TEMPORARILY exposing stack for diagnostics
+    res.status(status).json({ 
+        error: status >= 500 ? 'Internal Server Error' : (err.name || 'Bad Request'), 
         message: err.message,
-        stack: process.env.NODE_ENV === 'production' ? null : err.stack
+        stack: err.stack,  // EXPOSED for user debugging
+        path: req.originalUrl,
+        timestamp: new Date().toISOString()
     });
 });
 
