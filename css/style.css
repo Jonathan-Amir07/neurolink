@@ -151,11 +151,65 @@ header {
     border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-/* ── THEME SELECTOR PILL (Visual match to reference) ── */
-.theme-selector-pill {
+/* ── UNIFIED HEADER (Consistency Sync) ── */
+#nav-links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.user-menu {
     display: flex;
     align-items: center;
     gap: 12px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+}
+
+.user-menu #user-name, .user-menu #user-display-name {
+    opacity: 0.9;
+}
+
+.auth-btn {
+    background: #ffffff !important;
+    color: #111111 !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    padding: 6px 16px !important;
+    text-decoration: none !important;
+    font-size: 0.85rem !important;
+    border: none !important;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.auth-btn:hover {
+    transform: translateY(-1px);
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.breadcrumb .sep {
+    opacity: 0.4;
+    font-weight: 400;
+}
+
+.breadcrumb .current {
+    opacity: 0.8;
+}
+
+.theme-selector-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .theme-pill-btn {
@@ -175,7 +229,7 @@ header {
 
 .theme-pill-btn:hover {
     opacity: 1;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* Active State Styles (Modern Pill) */
@@ -202,7 +256,7 @@ header {
 
 .active-lab {
     opacity: 1;
-    background: #4f46e5 !important; /* Vivid Blue as seen in image */
+    background: #0ea5e9 !important; /* Sterile Lab Blue */
     color: white !important;
     font-size: 0.85rem;
     font-weight: 800;
@@ -213,19 +267,13 @@ header {
 
 .active-default {
     opacity: 1;
-    background: rgba(255,255,255,0.15) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
     color: white !important;
     font-size: 0.85rem;
     font-weight: 800;
     padding: 8px 16px !important;
 }
 .active-default::after { content: " Studio"; }
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-header .breadcrumb a { color: #aaa; text-decoration: none; font-size: 0.8rem; }
-header .breadcrumb span { color: #666; margin: 0 5px; }
-header #project-title-header { font-family: 'Permanent Marker', cursive; font-size: 1.2rem; color: var(--paper-bg); }
 
 /* ── BINDER CONTAINER ── */
 .binder-frame {

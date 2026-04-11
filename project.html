@@ -12,28 +12,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="paper-texture">
-    <header style="padding: 1rem 2.5rem; display: flex; align-items: center; justify-content: space-between;">
-        <div class="breadcrumb" style="display: flex; align-items: center; gap: 8px;">
-            <a href="dashboard.html" style="font-weight: 800; font-size: 1.2rem; color: var(--accent-color); text-decoration: none;">NeuroLink</a>
-            <span style="opacity: 0.5;">/</span>
-            <span style="opacity: 0.8;" id="breadcrumb-project">Project View</span>
+    <header>
+        <div class="breadcrumb">
+            <a href="dashboard.html" class="brand" style="font-weight: 800; font-size: 1.2rem; color: var(--accent-color); text-decoration: none;">NeuroLink</a>
+            <span class="sep">/</span>
+            <span class="current" id="breadcrumb-project">Project View</span>
         </div>
         
-        <nav id="nav-links" style="display:flex; align-items:center; gap:24px;">
-            <!-- THEME TOGGLES (Visual Match to reference) -->
-            <div class="theme-selector-pill" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:6px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);">
+        <nav id="nav-links">
+            <div class="theme-selector-pill">
                 <button onclick="setTheme('parchment')" title="Parchment" class="theme-pill-btn parchment-btn">📜</button>
                 <button onclick="setTheme('library')" title="Library" class="theme-pill-btn library-btn">🌙</button>
                 <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn">🧪</button>
                 <button onclick="setTheme('default')" title="Studio" class="theme-pill-btn studio-btn">🏢</button>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 12px; font-family: 'Inter', sans-serif;">
-                <span id="user-display-name" style="font-weight: 600; opacity: 0.9;">My Workspace</span>
-                <a href="/auth/logout" class="auth-btn" style="background:#ffffff !important; color:#000000 !important; font-weight:700; border-radius:6px; padding: 6px 16px; text-decoration:none; font-size:0.85rem;">Logout</a>
+            <div class="user-menu">
+                <span id="user-display-name">My Workspace</span>
+                <a href="/auth/logout" class="auth-btn">Logout</a>
             </div>
             
-            <button class="auth-btn" id="regen-btn" onclick="regenerateCurrentTab()" style="border:1px solid var(--accent-color) !important; color:var(--accent-color) !important; border-radius:6px; padding: 6px 14px; font-size:0.85rem;">↺ Regenerate</button>
+            <button class="auth-btn" id="regen-btn" onclick="regenerateCurrentTab()">↺ Regenerate</button>
         </nav>
     </header>
 
