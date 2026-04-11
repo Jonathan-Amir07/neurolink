@@ -16,7 +16,7 @@
     --radius: 12px;
     --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     
-    /* Global Binder Accents (Themeable) */
+    /* Global Binder Accents (Default) */
     --binder-edge: #020617;
     --rings-silver: linear-gradient(135deg, #cbd5e1 0%, #f1f5f9 50%, #64748b 100%);
     --bg-texture: radial-gradient(rgba(78, 70, 229, 0.1) 1.5px, transparent 1.5px);
@@ -29,6 +29,62 @@
     --slides-accent: #e36414;
     --infographic-accent: #5f0f40;
     --quiz-accent: #0f4c5c;
+}
+
+/* 📜 REAL PARCHMENT DESIGN (Aged Tan & Burnt Ink) */
+[data-theme="parchment"] {
+    --bg-paper: #e4d5b7; /* Classic Antique Parchment */
+    --accent-color: #5c4033; /* Burnt Umber */
+    --accent-color-rgb: 92, 64, 51;
+    --line-color: #d2c19e;
+    --dot-color: rgba(92, 64, 51, 0.12);
+    --ruled-line: rgba(92, 64, 51, 0.08);
+    --glass-bg: rgba(244, 234, 213, 0.96);
+    --paper-bg: #f4ead5; /* Warm Aged Paper */
+    --sidebar-bg: #3d2b1f; /* Dark Ebony Wood/Leather */
+    --ink-color: #1a0f0a;
+    --binder-edge: #c6b595;
+    --rings-silver: linear-gradient(135deg, #b8860b 0%, #ffd700 50%, #8b4513 100%); /* Antique Brass/Gold */
+    --bg-texture: url("https://www.transparenttextures.com/patterns/parchment.png");
+    --sidebar-text: #f4ead5;
+    --shadow-soft: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+/* 🕯️ MOODY LIBRARY (Obsidian & Mahogany) */
+[data-theme="library"] {
+    --bg-paper: #050505; /* True Midnight */
+    --accent-color: #c5a059; /* Library Gold */
+    --accent-color-rgb: 197, 160, 89;
+    --line-color: #222;
+    --dot-color: rgba(197, 160, 89, 0.08);
+    --ruled-line: rgba(197, 160, 89, 0.08);
+    --glass-bg: rgba(15, 15, 15, 0.98);
+    --paper-bg: #121212;
+    --sidebar-bg: #1a0f0a; /* Polished Mahogany */
+    --ink-color: #d1c4a8; /* Aged Book Paper tint */
+    --binder-edge: #000;
+    --rings-silver: linear-gradient(135deg, #bf953f 0%, #fcf6ba 50%, #b38728 100%); /* Polished Brass */
+    --bg-texture: url("https://www.transparenttextures.com/patterns/dark-leather.png");
+    --sidebar-text: #c5a059;
+}
+
+/* 🧪 STERILE LAB (High-Tech Modern Environment) */
+[data-theme="lab"] {
+    --bg-paper: #f8fafc; /* Sterile White */
+    --accent-color: #4f46e5; /* Indigo HUD */
+    --accent-color-rgb: 79, 70, 229;
+    --line-color: #e2e8f0;
+    --dot-color: rgba(79, 70, 229, 0.15);
+    --ruled-line: rgba(79, 70, 229, 0.12);
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --paper-bg: #ffffff;
+    --sidebar-bg: #0f172a; /* Tech Navy */
+    --ink-color: #0f172a;
+    --binder-edge: #cbd5e1; /* Brushed Steel */
+    --rings-silver: linear-gradient(135deg, #64748b 0%, #f1f5f9 50%, #475569 100%); /* Chrome */
+    --bg-texture: radial-gradient(#cbd5e1 1px, transparent 1px);
+    --sidebar-text: #38bdf8; /* Cyan Tech Glow */
+    --shadow-soft: 0 20px 50px rgba(0,0,0,0.05);
 }
 
 /* ── PAPER TEXTURE OVERLAY ── */
