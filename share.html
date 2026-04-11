@@ -124,12 +124,13 @@
             const output = currentProject.outputs && currentProject.outputs.find(o => o.type === type);
             const legacyContent = currentProject[type];
             
-            const content = (output && output.content) || legacyContent;
-            if (!content) return;
+                if (!content || (typeof content === 'string' && content.length < 5)) {
+                    showEmptyState(type);
+                    return;
+                }
 
-            const data = ensureJSON(content);
+                const data = ensureJSON(content);
 
-            try {
                 if (type === 'notebook') {
                     renderNotebook(data);
                 } else {
@@ -146,6 +147,34 @@
                 }
             } catch (err) {
                 console.error(`[Share Renderer] Failed for ${type}:`, err);
+            }
+        }
+
+        function showEmptyState(type) {
+            const icons = {
+                notebook: '📓',
+                mindmap: '🧠',
+                flashcards: '🃏',
+                slides: '📊',
+                infographic: '🖼️',
+                quiz: '📝'
+            };
+            const icon = icons[type] || '✨';
+            const name = type.charAt(0).toUpperCase() + type.slice(1);
+            
+            const html = `
+                <div class="empty-state-card premium-shadow" style="padding: 4rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">${icon}</div>
+                    <h3 style="font-family: 'Permanent Marker'; color: var(--accent-color); font-size: 1.8rem;">${name} not shared yet</h3>
+                    <p style="font-family: 'Patrick Hand'; font-size: 1.2rem;">The owner of this project hasn't generated this material yet.</p>
+                </div>
+            `;
+
+            if (type === 'notebook') {
+                document.getElementById('notebook-view').innerHTML = html;
+            } else {
+                const el = document.getElementById(`${type}-view`);
+                if (el) el.innerHTML = html;
             }
         }
 

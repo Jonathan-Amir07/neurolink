@@ -232,9 +232,12 @@
                     return;
                 }
 
-                const output = currentProject.outputs.find(o => o.type === type);
-                if (!output || !output.content) {
-                    showEmptyState(type, `No ${type} generated yet.`, 'There might have been a timeout or generation error.');
+                const output = currentProject.outputs && currentProject.outputs.find(o => o.type === type);
+                const legacyContent = currentProject[type];
+                const content = (output && output.content) || legacyContent;
+                
+                if (!content || (typeof content === 'string' && content.length < 5)) {
+                    showEmptyState(type);
                     return;
                 }
 
@@ -288,15 +291,29 @@
             return data;
         }
 
-        function showEmptyState(type, title, subtitle) {
+        function showEmptyState(type) {
+            const icons = {
+                notebook: '📓',
+                mindmap: '🧠',
+                flashcards: '🃏',
+                slides: '📊',
+                infographic: '🖼️',
+                quiz: '📝'
+            };
+            const icon = icons[type] || '✨';
+            const name = type.charAt(0).toUpperCase() + type.slice(1);
+            
+            const html = `
+                <div class="empty-state-card premium-shadow">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">${icon}</div>
+                    <h3 style="font-family: 'Permanent Marker'; color: var(--accent-color); font-size: 1.8rem;">${name} not generated yet</h3>
+                    <p style="font-family: 'Patrick Hand'; font-size: 1.2rem; margin-bottom: 2rem;">Wanna generate it now with AI?</p>
+                    <button class="auth-btn" style="background-color: var(--accent-color); padding: 15px 40px; font-size: 1.1rem; border-radius: 50px;" onclick="regenerateCurrentTab()">✨ Generate ${name} Now</button>
+                </div>
+            `;
+
             if (type === 'notebook') {
-                document.getElementById('notebook-content-area').innerHTML = `
-                    <div class="empty-state-card">
-                        <h3>${title}</h3>
-                        <p>${subtitle}</p>
-                        <button class="auth-btn" style="background-color: var(--accent-color);" onclick="regenerateCurrentTab()">✨ Generate Now</button>
-                    </div>
-                `;
+                document.getElementById('notebook-content-area').innerHTML = html;
                 document.getElementById('notebook-toc').innerHTML = '';
             } else {
                 const containerId = {
@@ -308,13 +325,7 @@
                 }[type];
                 const el = document.getElementById(containerId);
                 if (el) {
-                    el.innerHTML = `
-                        <div class="empty-state-card">
-                            <h3>${title}</h3>
-                            <p>${subtitle}</p>
-                            <button class="auth-btn" style="background-color: var(--accent-color);" onclick="regenerateCurrentTab()">✨ Generate Now</button>
-                        </div>
-                    `;
+                    el.innerHTML = html;
                 }
             }
         }
