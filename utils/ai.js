@@ -208,18 +208,27 @@ Content: ${prepareContext(text, INPUT_CHAR_LIMITS.slides)}`;
 
 
 async function generateInfographic(text) {
-    const prompt = `Create infographic sections from the following academic content.
-Return ONLY a valid JSON object with this exact shape:
-{"infographic": [{"icon": "📌", "title": "Section Title", "content": "2-3 sentence summary of this concept"}]}
+    const prompt = `You are an AI Visual Educator, Infographic Designer, and Knowledge Simplification Expert.
+Your task is to take a structured study notebook and transform it into a visually rich infographic JSON structure.
+
+INFOGRAPHIC STRUCTURE:
+1. title: { main: "Topic name", tagline: "1 line impact summary" }
+2. core_concepts: Array of { icon: "emoji", title: "Concept", summary: "Concise summary" }
+3. detailed_blocks: Array of { icon: "emoji", title: "Chapter Title", points: ["Point 1", "Point 2", "Point 3"] }
+4. relationships: { summary: "Brief flow/connection overview", connections: ["A -> B", "Concept C depends on D"] }
+5. takeaways: Array of "impactful bullet points"
+
+Return ONLY a valid JSON object with the shape:
+{"infographic": { "title": {...}, "core_concepts": [...], "detailed_blocks": [...], "relationships": {...}, "takeaways": [...] }}
 
 Guidelines:
-- Generate 5-7 sections
-- Use relevant emojis for icons (📌📚🔑⚡🎯🧪🔬💡📐🔄)
-- Each section covers one core concept
-- Content should be scannable, not dense prose
+- Extract key ideas and reduce into concise insights.
+- Each core concept = 1 idea.
+- Focus on clarity and visual structure.
+- Use symbolic emojis for all icons.
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.infographic)}`;
-    return await callAI(prompt, MODEL_VARIANTS.length - 1, 2000);
+    return await callAI(prompt, MODEL_VARIANTS.length - 1, 3000);
 }
 
 async function generateQuiz(text) {
