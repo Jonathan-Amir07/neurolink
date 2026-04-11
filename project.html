@@ -14,27 +14,21 @@
 <body class="paper-texture">
     <header>
         <div class="breadcrumb">
-            <a href="dashboard.html" class="brand" style="font-weight: 800; font-size: 1.25rem; color: var(--accent-color); text-decoration: none; letter-spacing: -0.5px;">NeuroLink</a>
-            <span class="sep">/</span>
-            <span class="current" id="breadcrumb-project" style="font-weight: 400; opacity: 0.6;">Project Studio</span>
+            <a href="dashboard.html" class="action-pill" style="margin-right: 1.5rem;">
+                <i class="fas fa-chevron-left"></i> Studio
+            </a>
+            <span class="current" id="breadcrumb-project" style="font-weight: 800; font-family: 'Permanent Marker', cursive; color: var(--accent-color); font-size: 1.2rem; letter-spacing: 1px;">Academic Archives</span>
         </div>
         
         <nav id="nav-links">
-            <div id="gen-progress" class="gen-progress-bar"></div>
-            
             <!-- PROJECT PULSE HUD -->
             <div class="project-pulse-hud">
                 <div class="hud-item">
                     <div class="ai-pulse-indicator"></div>
-                    <span id="ai-status-text" style="text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem;">Archiving...</span>
+                    <span id="ai-status-text" style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem; font-weight: 800; opacity: 0.8;">Syncing Archival Data...</span>
                 </div>
-                <div class="action-capsule">
-                    <button class="action-btn" id="regen-btn" onclick="regenerateCurrentTab()" title="Refine Content">
-                        <i class="fas fa-magic"></i>
-                    </button>
-                    <button class="action-btn active-primary" onclick="exportProject()" title="Export Workspace">
-                        <i class="fas fa-file-export"></i> <span>Export</span>
-                    </button>
+                <div id="gen-progress-container" style="width: 120px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 4px; margin: 0 1rem; overflow: hidden;">
+                    <div id="gen-progress" style="width: 0%; height: 100%; background: var(--accent-color); transition: width 0.5s ease;"></div>
                 </div>
             </div>
 
@@ -45,8 +39,8 @@
                     <button onclick="setTheme('lab')" title="Sterile Lab" class="theme-pill-btn lab-btn">🧪</button>
                     <button onclick="setTheme('default')" title="Standard Studio" class="theme-pill-btn studio-btn">🏢</button>
                 </div>
-                <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.1); margin: 0 0.5rem;"></div>
-                <a href="/auth/logout" style="font-size: 0.7rem; font-weight: 800; color: white; opacity: 0.4; text-decoration: none; text-transform: uppercase;">Exit</a>
+                <div style="width: 1px; height: 20px; background: rgba(0,0,0,0.1); margin: 0 0.5rem;"></div>
+                <a href="/auth/logout" class="action-pill" style="padding: 0.4rem 1rem; font-size: 0.65rem;">Sign Out</a>
             </div>
         </nav>
     </header>
@@ -72,11 +66,11 @@
             </button>
             <button class="tab-btn tab-infographic" onclick="switchTab('infographic')">
                 <i class="fas fa-chart-line"></i>
-                <span class="tab-label">Analytics</span>
+                <span class="tab-label">Infographic</span>
             </button>
             <button class="tab-btn tab-quiz" onclick="switchTab('quiz')">
                 <i class="fas fa-vial"></i>
-                <span class="tab-label">Knowledge Quiz</span>
+                <span class="tab-label">Quiz</span>
             </button>
         </div>
 
