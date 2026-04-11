@@ -118,21 +118,26 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="breadcrumb">
-            <span style="font-weight: 800; letter-spacing: 0.5px;">NeuroLink</span>
-            <span>/</span>
-            <span>Dashboard</span>
+    <header style="padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;">
+        <div class="breadcrumb" style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-weight: 800; font-size: 1.2rem; color: var(--accent-color);">NeuroLink</span>
+            <span style="opacity: 0.5;">/</span>
+            <span style="opacity: 0.8;">Dashboard</span>
         </div>
-        <div id="project-title-header" style="font-family: 'Permanent Marker', cursive; font-size: 1.5rem;">Academic Pipeline</div>
-        <nav id="nav-links" style="display:flex; align-items:center; gap:12px;">
-            <div class="theme-selector" style="display:flex; gap:8px; background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:30px;">
-                <button onclick="setTheme('parchment')" title="Parchment Design" style="background:#e4d5b7; width:22px; height:22px; border-radius:50%; border:1px solid rgba(0,0,0,0.2); cursor:pointer;"></button>
-                <button onclick="setTheme('library')" title="Dark Library" style="background:#1a0f0a; width:22px; height:22px; border-radius:50%; border:1px solid #c5a059; cursor:pointer;"></button>
-                <button onclick="setTheme('lab')" title="Modern Lab" style="background:#010409; width:22px; height:22px; border-radius:50%; border:1px solid #00f2ff; cursor:pointer;"></button>
-                <button onclick="setTheme('default')" title="Digital Studio" style="background:#4f46e5; width:22px; height:22px; border-radius:50%; border:1px solid white; cursor:pointer;"></button>
+        
+        <nav id="nav-links" style="display:flex; align-items:center; gap:20px;">
+            <!-- THEME TOGGLES (Visual Match to reference) -->
+            <div class="theme-selector-pill" style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:6px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);">
+                <button onclick="setTheme('parchment')" title="Parchment" class="theme-pill-btn parchment-btn">📜</button>
+                <button onclick="setTheme('library')" title="Library" class="theme-pill-btn library-btn">🌙</button>
+                <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn active-lab">🧪 Modern Lab</button>
+                <button onclick="setTheme('default')" title="Studio" class="theme-pill-btn studio-btn">🏢</button>
             </div>
-            <a href="/auth/logout" class="auth-btn" style="background:var(--sidebar-bg) !important; color:white !important;">Logout</a>
+
+            <div style="display: flex; align-items: center; gap: 12px; font-family: 'Inter', sans-serif;">
+                <span id="user-name" style="font-weight: 600; opacity: 0.9;">Hello, User</span>
+                <a href="/auth/logout" class="auth-btn" style="background:#ffffff !important; color:#000000 !important; font-weight:700; border-radius:6px; padding: 6px 16px;">Logout</a>
+            </div>
         </nav>
     </header>
 
@@ -294,6 +299,15 @@
                 document.documentElement.setAttribute('data-theme', theme);
             }
             localStorage.setItem('artisan-theme', theme);
+            
+            // Update UI
+            document.querySelectorAll('.theme-pill-btn').forEach(btn => {
+                btn.classList.remove('active-parchment', 'active-library', 'active-lab', 'active-default');
+            });
+            const themeMap = { 'parchment': 'parchment-btn', 'library': 'library-btn', 'lab': 'lab-btn', 'default': 'studio-btn' };
+            const btnClass = themeMap[theme];
+            const activeBtn = document.querySelector(`.${btnClass}`);
+            if (activeBtn) activeBtn.classList.add(`active-${theme}`);
         }
         
         // Initial Theme Load

@@ -142,12 +142,84 @@ body {
 header {
     background: var(--ink-color);
     color: white;
-    padding: 0.6rem 2rem;
+    padding: 0.8rem 2.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: relative;
     z-index: 1000;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ── THEME SELECTOR PILL (Visual match to reference) ── */
+.theme-selector-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.theme-pill-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.6;
+}
+
+.theme-pill-btn:hover {
+    opacity: 1;
+    background: rgba(255,255,255,0.1);
+}
+
+/* Active State Styles (Modern Pill) */
+.active-parchment {
+    opacity: 1;
+    background: #e4d5b7 !important;
+    color: #3d2b1f !important;
+    font-size: 0.85rem;
+    font-weight: 800;
+    padding: 8px 16px !important;
+}
+.active-parchment::after { content: " Parchment"; }
+
+.active-library {
+    opacity: 1;
+    background: #1a0f0a !important;
+    color: #c5a059 !important;
+    border: 1px solid #c5a059 !important;
+    font-size: 0.85rem;
+    font-weight: 800;
+    padding: 8px 16px !important;
+}
+.active-library::after { content: " Library"; }
+
+.active-lab {
+    opacity: 1;
+    background: #4f46e5 !important; /* Vivid Blue as seen in image */
+    color: white !important;
+    font-size: 0.85rem;
+    font-weight: 800;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+}
+.active-lab::after { content: " Modern Lab"; }
+
+.active-default {
+    opacity: 1;
+    background: rgba(255,255,255,0.15) !important;
+    color: white !important;
+    font-size: 0.85rem;
+    font-weight: 800;
+    padding: 8px 16px !important;
+}
+.active-default::after { content: " Studio"; }
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
