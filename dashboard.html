@@ -126,16 +126,19 @@
         </div>
         
         <nav id="nav-links">
-            <div class="theme-selector-pill">
-                <button onclick="setTheme('parchment')" title="Parchment" class="theme-pill-btn parchment-btn">📜</button>
-                <button onclick="setTheme('library')" title="Library" class="theme-pill-btn library-btn">🌙</button>
-                <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn">🧪</button>
-                <button onclick="setTheme('default')" title="Studio" class="theme-pill-btn studio-btn">🏢</button>
-            </div>
-
             <div class="user-menu">
-                <span id="user-name">Loading...</span>
-                <a href="/auth/logout" class="auth-btn">Logout</a>
+                <!-- THEME SELECTOR PILL (Luxury Capsule) -->
+                <div class="theme-selector-pill">
+                    <button onclick="setTheme('parchment')" title="Parchment" class="theme-pill-btn parchment-btn">📜</button>
+                    <button onclick="setTheme('library')" title="Library" class="theme-pill-btn library-btn">🌙</button>
+                    <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn">🧪</button>
+                    <button onclick="setTheme('default')" title="Studio" class="theme-pill-btn studio-btn">🏢</button>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 12px; margin-left: 1rem;">
+                    <span id="user-name" style="font-size: 0.85rem; opacity: 0.7; font-weight: 600;">Loading...</span>
+                    <a href="/auth/logout" class="auth-btn">Logout</a>
+                </div>
             </div>
         </nav>
     </header>

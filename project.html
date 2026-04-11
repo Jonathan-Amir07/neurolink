@@ -20,20 +20,20 @@
         </div>
         
         <nav id="nav-links">
-            <!-- PROJECT PULSE HUD (UX Consolidated) -->
+            <!-- PROJECT PULSE HUD (Luxury Glass) -->
             <div class="project-pulse-hud">
-                <div class="hud-item" title="AI Status">
+                <div class="hud-item" title="AI Core Connectivity">
                     <div class="ai-pulse-indicator"></div>
-                    <span id="ai-status-text">AI Synced</span>
+                    <span id="ai-status-text" style="font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">Syncing</span>
                 </div>
-                <div class="hud-item" title="Generation Progress">
-                    <div style="background:rgba(255,255,255,0.1); height:6px; width:80px; border-radius:10px; position:relative; overflow:hidden;">
-                        <div id="gen-progress" style="background:var(--accent-color); height:100%; width:0%; transition:width 0.5s;"></div>
+                <div class="hud-item">
+                    <div style="background:rgba(255,255,255,0.1); height:4px; width:60px; border-radius:10px; position:relative; overflow:hidden;">
+                        <div id="gen-progress" style="background:var(--accent-color); height:100%; width:0%; transition:width 1s;"></div>
                     </div>
                 </div>
-                <div class="hud-item" style="border-left:1px solid rgba(255,255,255,0.1); padding-left:1rem;">
-                    <button class="auth-btn" id="regen-btn" onclick="regenerateCurrentTab()" style="background:transparent !important; color:white !important; border:1px solid rgba(255,255,255,0.2) !important;">↺ Regenerate</button>
-                    <button class="auth-btn" onclick="exportProject()">📥 Export PDF</button>
+                <div class="hud-item" style="border-left:1px solid rgba(255,255,255,0.1); padding-left:1rem; gap:10px;">
+                    <button class="auth-btn" id="regen-btn" onclick="regenerateCurrentTab()" title="Regenerate Current Tab">↺</button>
+                    <button class="auth-btn" onclick="exportProject()" title="Export as PDF">📥 Export</button>
                 </div>
             </div>
 
@@ -44,7 +44,7 @@
                     <button onclick="setTheme('lab')" title="Lab" class="theme-pill-btn lab-btn">🧪</button>
                     <button onclick="setTheme('default')" title="Studio" class="theme-pill-btn studio-btn">🏢</button>
                 </div>
-                <a href="/auth/logout" class="auth-btn" style="background:transparent !important; color:white !important; opacity:0.6;">Logout</a>
+                <a href="/auth/logout" class="auth-btn" style="background:transparent !important; border:none !important; opacity:0.5; font-size:0.75rem !important;">Logout</a>
             </div>
         </nav>
     </header>
