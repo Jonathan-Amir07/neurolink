@@ -16,7 +16,8 @@
         <div class="breadcrumb">
             <a href="dashboard.html" class="brand" style="font-weight: 800; font-size: 1.2rem; color: var(--accent-color); text-decoration: none;">NeuroLink</a>
             <span class="sep">/</span>
-            <span class="current" id="breadcrumb-project">Project View</span>
+            <span class="current" id="breadcrumb-project">Project Studio</span>
+            <div id="gen-progress" class="gen-progress-bar" style="width: 0%;"></div>
         </div>
         
         <nav id="nav-links">
@@ -38,7 +39,10 @@
 
     <main class="container">
         <div class="header-controls">
-            <h1 id="project-title-disp" style="font-family: 'Permanent Marker', cursive; font-size: 2.2rem; color: var(--ink-color); margin: 0;">Study Project</h1>
+            <div style="display:flex; align-items:center;">
+                <h1 id="project-title-disp" style="font-family: 'Permanent Marker', cursive; font-size: 2.2rem; color: var(--ink-color); margin: 0;">Study Project</h1>
+                <div class="ai-pulse-indicator" title="AI Core Synced"></div>
+            </div>
             <div class="header-right-btns" style="display:flex; gap:12px;">
                 <div class="sharing-badge-container" id="share-badge">
                     <i class="fas fa-share-alt"></i>
@@ -71,12 +75,13 @@
                 <div id="notebook-view">
                     <div class="notebook-inner-layout">
                         <aside class="notebook-sidebar">
-                            <h1 id="notebook-sidebar-title">INDEX</h1>
+                            <h1>STUDY INDEX</h1>
                             <nav id="notebook-toc"></nav>
                         </aside>
                         <main id="notebook-content-area" class="notebook-main">
                             <div class="empty-state-card">
-                                <h3>Opening Notebook...</h3>
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">📓</div>
+                                <h3>Opening Archives...</h3>
                             </div>
                         </main>
                     </div>
@@ -168,13 +173,17 @@
                     document.getElementById('project-title-disp').innerText = currentProject.title || 'Untitled Project';
                     document.title = `${currentProject.title} - NeuroLink`;
                     
-                    // Smart Material Detection
+                    // Update Progress HUD
                     const priority = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
                     const hasMaterial = (type) => {
                         if (!currentProject.outputs) return !!currentProject[type];
                         const o = currentProject.outputs.find(out => out.type === type);
                         return (o && o.content && o.content.length > 5);
                     };
+
+                    const count = priority.filter(hasMaterial).length;
+                    const progPct = (count / 6) * 100;
+                    document.getElementById('gen-progress').style.width = `${progPct}%`;
 
                     let defaultTab = priority.find(hasMaterial) || 'notebook';
                     switchTab(defaultTab);
@@ -242,20 +251,39 @@
             area.innerHTML = content;
             toc.innerHTML = '';
             
-            // Logic to build TOC from H2 and H3 tags
-            const headers = area.querySelectorAll('h2, h3');
-            headers.forEach((h, i) => {
-                const id = `sec-${i}`;
-                h.id = id;
-                const link = document.createElement('a');
-                link.href = `#${id}`;
-                link.className = h.tagName === 'H2' ? 'toc-title' : 'toc-link';
-                link.innerText = h.innerText;
-                link.onclick = (e) => {
-                    e.preventDefault();
-                    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-                };
-                toc.appendChild(link);
+            const h2s = area.querySelectorAll('h2');
+            h2s.forEach((h2, i) => {
+                const id = `ch-${i}`;
+                h2.id = id;
+
+                const group = document.createElement('div');
+                group.className = 'toc-group';
+                
+                const title = document.createElement('span');
+                title.className = 'toc-title';
+                title.innerText = h2.innerText;
+                group.appendChild(title);
+
+                // Find H3s for this group
+                let next = h2.nextElementSibling;
+                while(next && next.tagName !== 'H2') {
+                    if (next.tagName === 'H3') {
+                        const subId = `${id}-s-${Math.random().toString(36).substr(2, 5)}`;
+                        next.id = subId;
+                        const link = document.createElement('a');
+                        link.className = 'toc-link';
+                        link.innerText = next.innerText;
+                        link.onclick = (e) => {
+                            e.preventDefault();
+                            document.getElementById(subId).scrollIntoView({ behavior: 'smooth' });
+                            document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+                            link.classList.add('active');
+                        };
+                        group.appendChild(link);
+                    }
+                    next = next.nextElementSibling;
+                }
+                toc.appendChild(group);
             });
         }
 
@@ -269,13 +297,20 @@
         }
 
         function showEmptyState(type) {
+            const icons = { notebook: '📓', mindmap: '🧠', flashcards: '🃏', slides: '📊', infographic: '🖼️', quiz: '📝' };
             const containerId = type === 'notebook' ? 'notebook-content-area' : {
                 mindmap: 'tree-root', flashcards: 'flashcard-container',
                 slides: 'slides-container', infographic: 'infographic-container',
                 quiz: 'quiz-container'
             }[type];
             const el = document.getElementById(containerId);
-            if (el) el.innerHTML = `<div class="empty-state-card"><h3>${type.toUpperCase()} not found</h3><button class="auth-btn" onclick="regenerateCurrentTab()">Generate Now</button></div>`;
+            if (el) el.innerHTML = `
+                <div class="empty-state-card premium-shadow" style="padding: 3rem; text-align: center;">
+                    <div style="font-size: 4rem; margin-bottom: 2rem; opacity: 0.8;">${icons[type]||'✨'}</div>
+                    <h3 style="font-family: 'Permanent Marker'; color: var(--accent-color); font-size: 2rem;">Material Not Found</h3>
+                    <p style="font-family: 'Patrick Hand'; font-size: 1.3rem; margin-bottom: 2rem;">Wanna generate it now with AI?</p>
+                    <button class="auth-btn" style="background: var(--accent-color); padding: 15px 40px; font-size: 1.1rem; border-radius: 50px;" onclick="regenerateCurrentTab()">✨ Generate ${type.toUpperCase()} Now</button>
+                </div>`;
         }
 
         function showLoading(text) {
