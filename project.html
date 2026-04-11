@@ -341,31 +341,28 @@
             contentArea.innerHTML = content;
             toc.innerHTML = '';
 
-            // TOC Logic with Legacy Fallback
-            let chapters = contentArea.querySelectorAll('section.notebook-page');
+            // TOC Logic with Legacy Fallback (Resilient Implementation)
+            let chapters = Array.from(contentArea.querySelectorAll('section.notebook-page'));
             
-            // Fallback: If no modern notebook-page sections found, use standard h2 tags
+            // Fallback: If no modern notebook-page sections found, wrap top-level block appropriately
             if (chapters.length === 0) {
-                const genericChapters = contentArea.querySelectorAll('h2');
-                genericChapters.forEach((h2, index) => {
-                    const chapterId = `legacy-chapter-${index}`;
+                const h2s = Array.from(contentArea.querySelectorAll('h2'));
+                h2s.forEach((h2, index) => {
                     const wrapper = document.createElement('section');
                     wrapper.className = 'notebook-page legacy-structure';
-                    wrapper.id = chapterId;
+                    wrapper.id = `legacy-chapter-${index}`;
                     
-                    // Move contents until next H2
-                    let next = h2.nextSibling;
-                    wrapper.appendChild(h2.cloneNode(true));
-                    h2.parentNode.replaceChild(wrapper, h2);
+                    // Use a safe range-based wrap instead of a nextSibling loop
+                    const range = document.createRange();
+                    let nextH2 = h2s[index + 1] || null;
+                    range.setStartBefore(h2);
+                    if (nextH2) range.setEndBefore(nextH2);
+                    else range.setEndAfter(contentArea.lastChild);
                     
-                    while (next && next.tagName !== 'H2') {
-                        let toMove = next;
-                        next = next.nextSibling;
-                        wrapper.appendChild(toMove);
-                    }
+                    range.surroundContents(wrapper);
                 });
                 // Re-query now that we've wrapped them
-                chapters = contentArea.querySelectorAll('section.notebook-page');
+                chapters = Array.from(contentArea.querySelectorAll('section.notebook-page'));
             }
 
             chapters.forEach((chapter, index) => {
