@@ -532,124 +532,13 @@ header {
     border-radius: 0 0 0 12px;
 }
 
-/* ── INFOGRAPHIC (VISUAL EDUCATOR) ── */
+/* ── INFOGRAPHIC ── */
 #infographic-container {
     display: flex;
     flex-direction: column;
-    gap: 50px;
+    gap: 40px;
     align-items: center;
-    padding: 3rem 1rem;
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-.infographic-header {
-    text-align: center;
-    padding: 3rem 2rem !important;
-    background: #fffef0 !important;
-}
-
-.infographic-main-title {
-    font-family: 'Permanent Marker', cursive;
-    font-size: 2.8rem;
-    color: var(--ink-color);
-    margin-bottom: 0.5rem;
-}
-
-.infographic-tagline {
-    font-family: 'Patrick Hand', cursive;
-    font-size: 1.4rem;
-    color: var(--accent-color);
-    font-weight: 600;
-}
-
-.infographic-overview-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem;
-    width: 90%;
-    margin-bottom: 1rem;
-}
-
-.concept-pill {
-    background: var(--glass-bg);
-    border: 2px solid var(--dot-color);
-    padding: 0.6rem 1.2rem;
-    border-radius: 50px;
-    font-size: 0.95rem;
-    color: var(--ink-color);
-    font-family: 'Patrick Hand', cursive;
-    transition: all 0.3s ease;
-}
-
-.concept-pill:hover {
-    border-color: var(--accent-color);
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-}
-
-.infographic-list {
-    list-style: none;
-    padding-left: 0;
-}
-
-.infographic-list li {
-    padding-left: 1.5rem;
-    position: relative;
-    margin-bottom: 0.8rem;
-    font-size: 1.1rem;
-    font-family: 'Patrick Hand', cursive;
-}
-
-.infographic-list li::before {
-    content: "📓";
-    position: absolute;
-    left: 0;
-    top: 0;
-    font-size: 0.9rem;
-}
-
-.relation-card {
-    border: 2px dashed rgba(var(--accent-color-rgb), 0.3) !important;
-    background: rgba(var(--accent-color-rgb), 0.02) !important;
-}
-
-.relation-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
-}
-
-.relation-item {
-    background: var(--paper-bg);
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid var(--dot-color);
-    text-align: center;
-    font-weight: 700;
-    font-family: 'Indie Flower', cursive;
-    position: relative;
-    box-shadow: 2px 2px 0 var(--dot-color);
-}
-
-.takeaway-card {
-    background-color: #fffacd !important; /* Post-it yellow */
-    border-left: 8px solid #f1c40f !important;
-}
-
-.takeaway-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.takeaway-item {
-    font-family: 'Patrick Hand', cursive;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #444;
+    padding: 2rem 0;
 }
 
 .paper-card {
@@ -657,7 +546,7 @@ header {
     padding: 30px 40px;
     box-shadow: 5px 10px 20px rgba(0,0,0,0.1);
     position: relative;
-    width: 100%;
+    width: 90%;
     max-width: 850px;
     border-radius: 2px;
     word-wrap: break-word;
@@ -679,8 +568,8 @@ header {
     background-color: rgba(231, 76, 60, 0.2);
 }
 
-.rot-left { transform: rotate(-0.5deg); }
-.rot-right { transform: rotate(0.5deg); }
+.rot-left { transform: rotate(-1deg); }
+.rot-right { transform: rotate(1deg); }
 
 .tape {
     position: absolute;
@@ -700,6 +589,12 @@ header {
     border-bottom: 2px solid var(--accent-color);
     padding-bottom: 10px;
     margin-bottom: 15px;
+}
+
+.infographic-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #444;
 }
 
 /* ── NOTEBOOK LAYOUT ── */
