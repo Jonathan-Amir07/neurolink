@@ -1,4 +1,4 @@
-const CACHE_NAME = 'neurolink-cache-v2';
+const CACHE_NAME = 'neurolink-cache-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/dashboard',
@@ -15,8 +15,26 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    Promise.all([
+      clients.claim(),
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((name) => {
+            if (name !== CACHE_NAME) {
+              return caches.delete(name);
+            }
+          })
+        );
+      })
+    ])
   );
 });
 
@@ -55,7 +73,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request, { ignoreSearch: true }).then((response) => {
       return response || fetch(event.request).catch(() => {
-        // If everything fails, we could return a custom offline page or 404
         return caches.match('/'); 
       });
     })
