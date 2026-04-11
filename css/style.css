@@ -68,23 +68,23 @@
     --sidebar-text: #c5a059;
 }
 
-/* 🧪 STERILE LAB (High-Tech Modern Environment) */
+/* 🧪 CYBER LAB (High-Tech Modern Environment) */
 [data-theme="lab"] {
-    --bg-paper: #f8fafc; /* Sterile White */
-    --accent-color: #4f46e5; /* Indigo HUD */
-    --accent-color-rgb: 79, 70, 229;
-    --line-color: #e2e8f0;
-    --dot-color: rgba(79, 70, 229, 0.15);
-    --ruled-line: rgba(79, 70, 229, 0.12);
-    --glass-bg: rgba(255, 255, 255, 0.9);
-    --paper-bg: #ffffff;
-    --sidebar-bg: #0f172a; /* Tech Navy */
-    --ink-color: #0f172a;
-    --binder-edge: #cbd5e1; /* Brushed Steel */
-    --rings-silver: linear-gradient(135deg, #64748b 0%, #f1f5f9 50%, #475569 100%); /* Chrome */
-    --bg-texture: radial-gradient(#cbd5e1 1px, transparent 1px);
-    --sidebar-text: #38bdf8; /* Cyan Tech Glow */
-    --shadow-soft: 0 20px 50px rgba(0,0,0,0.05);
+    --bg-paper: #010409; /* Deep Tech Black */
+    --accent-color: #00f2ff; /* Neon Cyan */
+    --accent-color-rgb: 0, 242, 255;
+    --line-color: #0d1117;
+    --dot-color: rgba(0, 242, 255, 0.15);
+    --ruled-line: rgba(0, 242, 255, 0.1);
+    --glass-bg: rgba(13, 17, 23, 0.9);
+    --paper-bg: #0d1117;
+    --sidebar-bg: #161b22;
+    --ink-color: #c9d1d9;
+    --binder-edge: #30363d; /* Brushed Steel */
+    --rings-silver: linear-gradient(135deg, #00f2ff 0%, #ffffff 50%, #00d4e3 100%); /* Neon Cyan Rings */
+    --bg-texture: radial-gradient(rgba(0, 242, 255, 0.1) 1px, transparent 1px);
+    --sidebar-text: #00f2ff;
+    --shadow-soft: 0 20px 50px rgba(0,0,0,0.5);
 }
 
 /* ── PAPER TEXTURE OVERLAY ── */
