@@ -9,6 +9,7 @@ const OutputSchema = new mongoose.Schema({
 const ProjectSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     title: { type: String, required: true },
+    tags: [{ type: String }],
     raw_input: String, // Original text or source
     outputs: [OutputSchema],
     created_at: { type: Date, default: Date.now }

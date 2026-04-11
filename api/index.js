@@ -192,6 +192,11 @@ app.post('/api/projects', parseUpload, async (req, res) => {
     try {
         const title = (req.body.title || '').trim();
 
+        let tagsArray = [];
+        if (req.body.tags) {
+            tagsArray = req.body.tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+        }
+
         // selectedTypes arrives as a JSON string from FormData
         let selectedTypes;
         try {
@@ -241,6 +246,7 @@ app.post('/api/projects', parseUpload, async (req, res) => {
         const project = new Project({
             user: req.user.id,
             title,
+            tags: tagsArray,
             raw_input: content.substring(0, 500000) // Support up to 500k chars (~125k tokens)
         });
 
