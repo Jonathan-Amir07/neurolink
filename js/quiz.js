@@ -38,7 +38,7 @@ function renderQuizQuestion() {
                 <h2 style="margin-bottom: 1rem; color: var(--ink-color);">Quiz Complete</h2>
                 <div class="quiz-score-display">${quizScore} / ${currentQuizData.length} (${percentage}%)</div>
                 <p style="color: #666; font-size: 1.1rem; margin-bottom: 2rem;">${feedback}</p>
-                <button class="auth-btn" style="padding: 1rem 2rem; font-size: 1.1rem;" onclick="initQuiz({quiz: currentQuizData})">↻ Retake Quiz</button>
+                <button class="auth-btn" style="padding: 1rem 2rem; font-size: 1.1rem;" onclick="initQuiz(currentQuizData)">↻ Retake Quiz</button>
             </div>
         `;
         return;
