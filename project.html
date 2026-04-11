@@ -180,17 +180,22 @@
                     // Smart Material Detection: Find first available material (Legacy Compatible)
                     const priority = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
                     
-                    // Helper to check for content in legacy or modern fields
+                    // Improved helper: Be more strict about what counts as "available"
                     const hasMaterial = (type) => {
-                        const o = currentProject.outputs && currentProject.outputs.find(out => out.type === type);
-                        return (o && o.content) || currentProject[type]; // Check direct field fallback
+                        if (!currentProject.outputs) return !!currentProject[type];
+                        const o = currentProject.outputs.find(out => out.type === type);
+                        return (o && o.content && o.content.length > 5); // Must have actual content
                     };
 
                     let defaultTab = priority.find(hasMaterial) || 'notebook';
+                    
+                    // Load chosen tab
                     switchTab(defaultTab);
+                    
+                    // CRITICAL: Ensure loader is hidden even if renderContent finishes too fast or is delayed
+                    setTimeout(hideLoading, 500); 
                 } else {
                     document.getElementById('project-title-header').innerText = "Project Not Found (404)";
-                    console.error("Failed to fetch project");
                     hideLoading();
                 }
             } catch (error) {

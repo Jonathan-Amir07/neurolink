@@ -368,6 +368,10 @@ app.post('/api/projects', parseUpload, async (req, res) => {
                     }
                 } catch (err) {
                     console.error(`[AI] ❌ Error in ${type}:`, err.message);
+                    results.push({ 
+                        type, 
+                        content: `<div class="empty-state-card"><h3>Generation Error</h3><p>The AI failed to generate the ${type} (Error: ${err.message}). This usually happens due to rate limits or unreadable source content. Please click Regenerate below.</p><button class="auth-btn" onclick="regenerateCurrentTab()">↺ Try Again</button></div>` 
+                    });
                 }
 
                 // Add delay to prevent Gemini free-tier rate limiting (15 RPM), except for the final item
