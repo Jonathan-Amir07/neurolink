@@ -150,16 +150,25 @@ Content: ${prepareContext(text, INPUT_CHAR_LIMITS.notebook)}`;
 }
 
 async function generateMindmap(text) {
-    const prompt = `Create a hierarchical mind map from the following academic content.
+    const prompt = `You are an AI Knowledge Mapper, Visual Learning Architect, and UI Designer. 
+Your task is to take a structured study notebook and convert it into a detailed, interactive mind map JSON that preserves the physical notebook aesthetic.
+
+STRUCTURE RULES:
+1. ROOT NODE: The notebook title becomes the central/root node.
+2. CHAPTER NODES: Each chapter becomes a first-level node.
+3. SECTION NODES: Each section becomes a child node.
+4. NODE CONTENT: Each node MUST include:
+   - title: (Clear heading)
+   - desc: (ONE concise explanation sentence only)
+   - icon: (A single symbolic emoji: 📌, 📚, 🔑, ⚡, 🎯, 🧪, 🔬, 💡, 📐, 🔄)
+
 Return ONLY a valid JSON object with this exact shape:
-{"mindmap": {"title": "Root Topic", "icon": "🧠", "desc": "Short description", "children": [{"title": "Branch", "icon": "📚", "desc": "Description", "children": []}]}}
+{"mindmap": {"title": "Root Topic", "icon": "🧠", "desc": "One sentence overview", "children": [{"title": "Chapter", "icon": "📚", "desc": "Concise summary", "children": [...]}]}}
 
 Guidelines:
-- Root node is the main topic
-- 3-6 main branches covering core concepts
-- Each branch can have 2-4 children
-- Use relevant emojis for icons
-- Keep desc fields concise (one sentence)
+- Do NOT include long paragraphs.
+- Focus on clarity and hierarchical relationships.
+- Use meaningful icons for every node.
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.mindmap)}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 2500);
