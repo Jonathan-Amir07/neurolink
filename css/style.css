@@ -17,14 +17,8 @@
     --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     
     /* Global Studio Accents (Modernized) */
-    --bg-texture: radial-gradient(rgba(79, 70, 229, 0.05) 1.5px, transparent 1.5px);
+    --bg-texture: radial-gradient(rgba(79, 70, 229, 0.1) 1.5px, transparent 1.5px);
     --sidebar-text: #f8fafc;
-    --glass-blur: 16px;
-    --glass-border: 1px solid rgba(255, 255, 255, 0.15);
-    /* Luxury Gradients */
-    --grad-indigo: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    --grad-surface: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
-}
     
     /* Material Specific Accents (Muted & Professional) */
     --notebook-accent: #3d5a80;
@@ -143,18 +137,15 @@ body {
 }
 
 header {
-    background: rgba(var(--sidebar-bg), 0.8);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: var(--ink-color);
     color: white;
-    padding: 1rem 2.5rem;
+    padding: 0.8rem 2.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 1000;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 2px solid rgba(var(--accent-color-rgb), 0.3);
 }
 
 /* ── PROJECT PULSE HUD ── */
@@ -240,35 +231,27 @@ header {
     box-shadow: 0 4px 10px rgba(var(--accent-color-rgb), 0.3);
 }
 
-.breadcrumb .brand {
-    font-weight: 800;
-    font-size: 1.25rem;
-    color: var(--accent-color);
-    letter-spacing: -0.5px;
-    text-decoration: none;
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .breadcrumb .sep {
-    opacity: 0.2;
+    opacity: 0.4;
     font-weight: 400;
-    margin: 0 0.5rem;
 }
 
 .breadcrumb .current {
-    opacity: 0.6;
-    font-weight: 400;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    opacity: 0.8;
 }
 
 .theme-selector-pill {
     display: flex;
     align-items: center;
-    gap: 4px;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
-    padding: 4px;
+    padding: 2px;
     border-radius: 50px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -277,11 +260,11 @@ header {
     background: transparent;
     border: none;
     color: white;
-    font-size: 1rem;
+    font-size: 1.1rem;
     cursor: pointer;
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
@@ -380,41 +363,27 @@ header {
 }
 
 .notebook-sidebar h1 {
-    font-weight: 800;
-    font-size: 0.75rem;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.1rem;
     color: var(--sidebar-text);
-    margin-bottom: 2rem;
-    text-align: left;
-    letter-spacing: 2px;
-    opacity: 0.4;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    letter-spacing: 3px;
+    opacity: 0.5;
     text-transform: uppercase;
 }
 
 .toc-group {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    padding: 1rem;
-    border-radius: 12px;
-    margin-bottom: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--paper-bg);
+    padding: 1.2rem;
+    border-radius: 4px;
+    margin-bottom: 1.2rem;
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.1);
+    transform: rotate(-1.5deg);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid var(--line-color);
     position: relative;
     overflow: hidden;
-}
-
-.toc-group::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; width: 3px; height: 100%;
-    background: var(--accent-color);
-    opacity: 0.3;
-}
-
-.toc-group:hover {
-    background: rgba(255, 255, 255, 0.07);
-    transform: translateX(5px);
-    border-color: rgba(var(--accent-color-rgb), 0.3);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
 
 .toc-group::before {
@@ -430,38 +399,29 @@ header {
     box-shadow: 10px 10px 20px rgba(0,0,0,0.1);
 }
 
-.sidebar-title {
+.toc-title {
     font-weight: 800;
-    font-size: 0.7rem;
-    color: var(--sidebar-text);
-    margin-bottom: 2rem;
-    text-align: left;
-    letter-spacing: 2px;
-    opacity: 0.3;
+    font-size: 0.85rem;
+    color: var(--ink-color);
+    margin-bottom: 0.8rem;
     text-transform: uppercase;
+    display: block;
 }
 
 .toc-link {
     display: block;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: var(--sidebar-text);
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.1rem;
+    color: var(--ink-color);
     text-decoration: none;
-    margin-bottom: 0.5rem;
-    padding: 10px 14px;
-    border-radius: 10px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0.55;
-    background: transparent;
+    margin-bottom: 0.4rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    opacity: 0.7;
 }
 
 .toc-link:hover, .toc-link.active {
-    opacity: 1;
-    background: rgba(255, 255, 255, 0.08);
-    color: white;
-    transform: translateX(4px);
-}
     opacity: 1;
     background: rgba(var(--accent-color-rgb), 0.1);
     color: var(--accent-color);
@@ -620,7 +580,16 @@ header {
     pointer-events: none;
 }
 
-/* Corner flip detail removed for modern digital studio aesthetic */
+/* Corner flip detail */
+.notebook-inner-layout::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.05) 51%, rgba(0,0,0,0.1) 100%);
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+    border-radius: 0 0 8px 0;
+}
 
 /* ── TOP ACTION TOOLBAR ── */
 .header-controls {

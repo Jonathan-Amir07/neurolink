@@ -88,8 +88,6 @@ async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2
                 jsonStr = jsonStr.replace(/[\u0000-\u0009\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
                 // Fix common AI mistakes: trailing commas before } or ]
                 jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
-                // Fix case where AI used single quotes for keys
-                jsonStr = jsonStr.replace(/'([^']+)':/g, '"$1":');
                 try {
                     const parsed = JSON.parse(jsonStr);
                     workingModelIndex = modelIndex;
@@ -201,7 +199,6 @@ Guidelines:
 - 3-5 bullet points per slide
 - Keep bullets short and scannable
 - Avoid double quotes " inside bullet points if possible—use single quotes '
-- Ensure the output strictly follows the JSON structure.
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.slides)}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 4000);
@@ -218,7 +215,6 @@ Guidelines:
 - Use relevant emojis for icons (📌📚🔑⚡🎯🧪🔬💡📐🔄)
 - Each section covers one core concept
 - Content should be scannable, not dense prose
-- Ensure the output is high-fidelity and uses single quotes for nested HTML if any.
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.infographic)}`;
     return await callAI(prompt, MODEL_VARIANTS.length - 1, 2000);

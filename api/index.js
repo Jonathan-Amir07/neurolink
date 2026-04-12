@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const session = require('express-session');
-const { MongoStore } = require('connect-mongo');
+const MongoStore = require('connect-mongo').default || require('connect-mongo').MongoStore || require('connect-mongo');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const path = require('path');
@@ -422,7 +422,7 @@ app.post('/api/projects', parseUpload, async (req, res) => {
             }
 
             project.outputs = results;
-            console.log(`[AI] Workspace generation complete! Total time: ${Date.now() - tStart}ms — ${results.filter(r => r.content).length}/${selectedTypes.length} materials successfully generated.`);
+            console.log(`[AI] TOTAL generation time: ${Date.now() - tStart}ms — ${results.length}/${selectedTypes.length} materials saved`);
 
             await project.save();
             res.json(project);

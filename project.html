@@ -14,9 +14,9 @@
 <body>
     <header>
         <div class="breadcrumb">
-            <span class="brand" style="font-weight: 800; font-size: 1.25rem; color: var(--accent-color); letter-spacing: -0.5px;">NeuroLink</span>
+            <a href="dashboard.html" class="brand" style="font-weight: 800; font-size: 1.25rem; color: var(--accent-color); letter-spacing: -0.5px; text-decoration:none;">NeuroLink</a>
             <span class="sep">/</span>
-            <span class="current" id="breadcrumb-project" style="font-weight: 400; opacity: 0.6;">Dashboard</span>
+            <span class="current" id="breadcrumb-project" style="font-weight: 400; opacity: 0.6;">IMPERIAL ARCHIVE</span>
         </div>
         
         <nav id="nav-links">
@@ -26,19 +26,19 @@
                     <span id="ai-status-text" style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem; font-weight: 800; opacity: 0.8;">PROJECT SYNCED</span>
                     <div class="ai-pulse-indicator"></div>
                 </div>
-                <div id="gen-progress-container" style="width: 80px; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 0 0.5rem; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
-                    <div id="gen-progress" style="width: 100%; height: 100%; background: var(--grad-indigo); box-shadow: 0 0 10px rgba(var(--accent-color-rgb), 0.5); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                <div id="gen-progress-container" style="width: 100px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; margin: 0 0.5rem; overflow: hidden;">
+                    <div id="gen-progress" style="width: 100%; height: 100%; background: var(--accent-color); transition: width 0.5s ease;"></div>
                 </div>
             </div>
 
-        <div class="user-menu">
-            <!-- THEME SELECTOR PILL (Luxury Capsule) -->
-            <div class="theme-selector-pill">
-                <button onclick="setTheme('parchment')" title="Parchment Mode" class="theme-pill-btn parchment-btn">📜</button>
-                <button onclick="setTheme('library')" title="Midnight Library" class="theme-pill-btn library-btn">🌙</button>
-                <button onclick="setTheme('lab')" title="Sterile Lab" class="theme-pill-btn lab-btn">🧪</button>
-                <button onclick="setTheme('default')" title="Standard Studio" class="theme-pill-btn studio-btn">🏙️</button>
-            </div>
+            <div class="user-menu" style="gap: 1.5rem;">
+                <!-- THEME SELECTOR PILL (Luxury Capsule) -->
+                <div class="theme-selector-pill">
+                    <button onclick="setTheme('parchment')" title="Parchment Mode" class="theme-pill-btn parchment-btn">📜</button>
+                    <button onclick="setTheme('library')" title="Midnight Library" class="theme-pill-btn library-btn">🌙</button>
+                    <button onclick="setTheme('lab')" title="Sterile Lab" class="theme-pill-btn lab-btn">🧪</button>
+                    <button onclick="setTheme('default')" title="Standard Studio" class="theme-pill-btn studio-btn">🏙️</button>
+                </div>
 
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <a href="/auth/logout" style="font-size: 0.75rem; font-weight: 700; color: white; opacity: 0.3; text-decoration: none; text-transform: uppercase;">Sign Out</a>
@@ -70,15 +70,17 @@
             </button>
         </div>
 
-        <div class="card premium-shadow" id="studio-frame" style="position: relative; padding: 0; min-height: 82vh; overflow: hidden; background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); border: var(--glass-border);">
+        <div class="card premium-shadow" id="studio-frame" style="position: relative; padding: 0; min-height: 80vh; overflow: hidden;">
             <div class="viewer-container">
-                <div id="loading-overlay" class="loading-overlay hidden" style="background: rgba(var(--sidebar-bg), 0.9); z-index: 2000;">
+                <div id="loading-overlay" class="loading-overlay hidden">
                     <div class="spinner"></div>
-                    <p id="loading-text" style="font-weight: 800; letter-spacing: 2px;">SYNCING ARCHIVES...</p>
+                    <p id="loading-text">SYNCING...</p>
                 </div>
 
+                <div id="notebook-view">
+                    <div class="notebook-inner-layout" id="notebook-layout">
                         <aside class="notebook-sidebar">
-                            <h1 class="sidebar-title">Study Index</h1>
+                            <h1>STUDY INDEX</h1>
                             <nav id="notebook-toc"></nav>
                         </aside>
                         <main id="notebook-content-area" class="notebook-main">
