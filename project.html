@@ -20,15 +20,21 @@
         </div>
         
         <nav id="nav-links">
-            <!-- PROJECT PULSE HUD -->
+            <!-- PROJECT PULSE HUD (Luxury Status Capsule) -->
             <div class="project-pulse-hud">
                 <div class="hud-item">
-                    <span id="ai-status-text" style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem; font-weight: 800; opacity: 0.8;">PROJECT SYNCED</span>
                     <div class="ai-pulse-indicator"></div>
+                    <span id="ai-status-text" style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.65rem; font-weight: 800; opacity: 0.9;">System Online</span>
                 </div>
-                <div id="gen-progress-container" style="width: 100px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; margin: 0 0.5rem; overflow: hidden;">
-                    <div id="gen-progress" style="width: 100%; height: 100%; background: var(--accent-color); transition: width 0.5s ease;"></div>
+                <div class="hud-item" style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 12px;">
+                    <span id="gen-count" style="font-size: 0.7rem; font-weight: 800; color: var(--accent-color);">0/6</span>
+                    <div id="gen-progress-container" style="width: 60px; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 0 0.5rem; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                        <div id="gen-progress" style="width: 0%; height: 100%; background: var(--accent-color); box-shadow: 0 0 10px var(--accent-color); transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
+                    </div>
                 </div>
+                <button class="hud-regen-btn" onclick="regenerateCurrentTab()" title="Re-sync current view">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
             </div>
 
             <div class="user-menu" style="gap: 1.5rem;">
@@ -70,18 +76,28 @@
             </button>
         </div>
 
-        <div class="card premium-shadow" id="studio-frame" style="position: relative; padding: 0; min-height: 80vh; overflow: hidden;">
+        <div class="card premium-shadow" id="studio-frame" style="position: relative; padding: 0; min-height: 85vh; overflow: hidden; background: none; border: none;">
             <div class="viewer-container">
                 <div id="loading-overlay" class="loading-overlay hidden">
-                    <div class="spinner"></div>
-                    <p id="loading-text">SYNCING...</p>
+                    <div class="ai-brain-anim">
+                        <div class="brain-pulse"></div>
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <p id="loading-text" style="font-family: 'Permanent Marker'; font-size: 1.5rem; color: var(--accent-color); letter-spacing: 2px;">SYNCING ARCHIVES...</p>
+                    <div class="loading-bar-mini"><div class="loading-bar-fill"></div></div>
                 </div>
 
-                <div id="notebook-view">
+                <div id="notebook-view" class="tab-view">
                     <div class="notebook-inner-layout" id="notebook-layout">
                         <aside class="notebook-sidebar">
+                            <div class="binder-ornament top"></div>
                             <h1>STUDY INDEX</h1>
+                            <div class="toc-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Find in notes..." onkeyup="filterTOC(this.value)">
+                            </div>
                             <nav id="notebook-toc"></nav>
+                            <div class="binder-ornament bottom"></div>
                         </aside>
                         <main id="notebook-content-area" class="notebook-main">
                             <!-- Content -->
@@ -89,20 +105,25 @@
                     </div>
                 </div>
 
-                <div id="mindmap-view" class="hidden"><div id="tree-root"></div></div>
-                <div id="flashcards-view" class="hidden">
-                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:500px;">
+                <div id="mindmap-view" class="tab-view hidden"><div id="tree-root"></div></div>
+                <div id="flashcards-view" class="tab-view hidden">
+                    <div class="study-card-view">
+                        <div class="flashcard-progress-bar"><div id="flash-progress" class="flashcard-progress-fill"></div></div>
+                        <div class="flashcard-counter" id="card-counter">1 / 10</div>
                         <div id="flashcard-container"></div>
-                        <div style="margin-top:2rem; display:flex; gap:1rem;">
-                            <button class="auth-btn" onclick="prevCard()">← Back</button>
-                            <button class="auth-btn" id="flip-btn" onclick="flipCard()">Flip</button>
-                            <button class="auth-btn" onclick="nextCard()">Next →</button>
+                        <div class="card-controls">
+                            <button class="nav-control-btn prev" onclick="prevCard()"><i class="fas fa-chevron-left"></i></button>
+                            <button class="flip-action-btn" id="flip-btn" onclick="flipCard()">
+                                <span class="btn-scan"></span>
+                                <i class="fas fa-redo"></i> REVEAL
+                            </button>
+                            <button class="nav-control-btn next" onclick="nextCard()"><i class="fas fa-chevron-right"></i></button>
                         </div>
                     </div>
                 </div>
-                <div id="slides-view" class="hidden"><div id="slides-container"></div></div>
-                <div id="infographic-view" class="hidden"><div id="infographic-container"></div></div>
-                <div id="quiz-view" class="hidden"><div id="quiz-container"></div></div>
+                <div id="slides-view" class="tab-view hidden"><div id="slides-container"></div></div>
+                <div id="infographic-view" class="tab-view hidden"><div id="infographic-container"></div></div>
+                <div id="quiz-view" class="tab-view hidden"><div id="quiz-container"></div></div>
             </div>
         </div>
     </main>
@@ -128,8 +149,8 @@
                 const project = await res.json();
                 if (project && project._id) {
                     currentProject = project;
-                    document.getElementById('ai-status-text').innerText = "Project Synced";
-                    document.getElementById('breadcrumb-project').innerText = project.title || "IMPERIAL ARCHIVE";
+                    document.getElementById('ai-status-text').innerText = "System Synced";
+                    document.getElementById('breadcrumb-project').innerText = project.title || "STUDY WORKSPACE";
                     
                     const priority = ['notebook', 'mindmap', 'flashcards', 'slides', 'infographic', 'quiz'];
                     const hasMaterial = (type) => {
@@ -139,11 +160,16 @@
                     };
 
                     const count = priority.filter(hasMaterial).length;
-                    document.getElementById('gen-progress').style.width = `${Math.max(10, (count / 6) * 100)}%`;
+                    document.getElementById('gen-progress').style.width = `${(count / 6) * 100}%`;
+                    document.getElementById('gen-count').innerText = `${count}/6`;
 
-                    // Default to notebook or the first available material
-                    const firstAvailable = priority.find(hasMaterial) || 'notebook';
-                    switchTab(firstAvailable);
+                    // If we just loaded, or the current active doesn't have content, find the best tab
+                    if (!hasMaterial(activeTab)) {
+                        const firstAvailable = priority.find(hasMaterial) || 'notebook';
+                        switchTab(firstAvailable);
+                    } else {
+                        renderContent(activeTab);
+                    }
                     hideLoading();
                 } else {
                     console.warn('Project not found or invalid data structure');
@@ -194,7 +220,13 @@
             area.innerHTML = content;
             toc.innerHTML = '';
             
-            area.querySelectorAll('h2').forEach((h2, i) => {
+            const headings = area.querySelectorAll('h2');
+            if (headings.length === 0) {
+                toc.innerHTML = '<p style="opacity:0.3; font-size:0.8rem; text-align:center; padding-top:2rem;">No chapters found</p>';
+                return;
+            }
+
+            headings.forEach((h2, i) => {
                 const id = `ch-${i}`; h2.id = id;
                 const group = document.createElement('div');
                 group.className = 'toc-group';
@@ -210,6 +242,8 @@
                         link.innerText = next.innerText;
                         link.onclick = (e) => {
                             e.preventDefault();
+                            document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+                            link.classList.add('active');
                             document.getElementById(subId).scrollIntoView({ behavior: 'smooth' });
                         };
                         group.appendChild(link);
@@ -217,6 +251,23 @@
                     next = next.nextElementSibling;
                 }
                 toc.appendChild(group);
+            });
+        }
+
+        function filterTOC(query) {
+            const links = document.querySelectorAll('.toc-link');
+            const groups = document.querySelectorAll('.toc-group');
+            query = query.toLowerCase();
+            
+            links.forEach(link => {
+                const visible = link.innerText.toLowerCase().includes(query);
+                link.style.display = visible ? 'block' : 'none';
+            });
+
+            groups.forEach(group => {
+                const hasVisibleLinks = Array.from(group.querySelectorAll('.toc-link')).some(l => l.style.display !== 'none');
+                const titleMatch = group.querySelector('.toc-title').innerText.toLowerCase().includes(query);
+                group.style.display = (hasVisibleLinks || titleMatch) ? 'block' : 'none';
             });
         }
 

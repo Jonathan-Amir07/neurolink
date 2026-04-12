@@ -130,7 +130,10 @@ async function generateNotebook(text) {
 CONTENT REQUIREMENTS:
 - Create 1-2 CHAPTERS of dense, structured study material.
 - Each chapter MUST have exactly 4 sections: 1. Overview, 2. Core Explanation, 3. Key Concepts, 4. Summary & Quiz.
+- Use RICH HTML elements: <ul>, <ol>, <table> (for comparisons), and <strong> for Emphasis.
 - Focus strictly on conceptual clarity and pedagogical depth.
+- Do NOT use markdown in the HTML content—use pure HTML tags.
+
 OUTPUT FORMAT:
 Return ONLY a valid JSON object: {"notebook": "html_content"}.
 HTML STRUCTURE (Use single quotes ' for all CSS classes):
@@ -138,9 +141,9 @@ HTML STRUCTURE (Use single quotes ' for all CSS classes):
     <div class='tape-strip'></div>
     <h2>Chapter Number. Chapter Title</h2>
     <div class='notebook-section'><h3>1. Overview</h3><p>Detailed overview...</p></div>
-    <div class='notebook-section'><h3>2. Core Explanation</h3><p>Deep dive into mechanics...</p></div>
-    <div class='notebook-section'><h3>3. Key Concepts</h3><p>Definitions and relationships...</p></div>
-    <div class='notebook-section'><h3>4. Summary & Quiz</h3><p>Recap and 3 review questions...</p></div>
+    <div class='notebook-section'><h3>2. Core Explanation</h3><p>Deep dive into mechanics with <ul><li>key point</li></ul>...</p></div>
+    <div class='notebook-section'><h3>3. Key Concepts</h3><div class='complexity-list'><strong>Concept</strong>: Definition...</div></div>
+    <div class='notebook-section'><h3>4. Summary & Quiz</h3><p>Recap...</p><div class='quiz-box'>Review Question?</div></div>
 </section>
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.notebook)}`;
@@ -272,8 +275,14 @@ async function generateStudyMaterials(text, selectedTypes = ['notebook', 'mindma
 
     for (const type of selectedTypes) {
         if (generators[type]) {
+            console.log(`[AI] Generating ${type}...`);
             const data = await generators[type](text);
             results[type] = data?.[type] ?? null;
+            
+            // Sequential delay to prevent concurrent rate limiting on free tier
+            if (selectedTypes.length > 1) {
+                await new Promise(r => setTimeout(r, 1500));
+            }
         }
     }
     return results;
