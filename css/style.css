@@ -392,16 +392,22 @@ header {
     box-shadow: inset 20px 0 30px -15px rgba(0,0,0,0.08); /* Page C-CURVE shadow */
 }
 
-/* ── PAPER CARDS SIDEBAR (Physical Index) ── */
+/* ── PAPER CARDS SIDEBAR (Luxury Physical Index) ── */
 .notebook-sidebar {
-    width: 250px;
+    width: 280px;
+    min-width: 280px;
     padding: 2.5rem 1.5rem;
-    border-right: 2px solid var(--line-color);
-    background: var(--sidebar-bg); /* Dark Wood/Leather color from theme */
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border-right: 1px solid rgba(var(--accent-color-rgb), 0.1);
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     height: 100%;
+    position: relative;
+    z-index: 10;
+    transition: var(--transition);
 }
 
 .notebook-sidebar h1 {
@@ -443,11 +449,13 @@ header {
 
 .toc-title {
     font-weight: 800;
-    font-size: 0.85rem;
-    color: var(--ink-color);
+    font-size: 0.75rem;
+    color: var(--accent-color);
     margin-bottom: 0.8rem;
     text-transform: uppercase;
     display: block;
+    letter-spacing: 1px;
+    opacity: 0.8;
 }
 
 .toc-link {
@@ -508,19 +516,19 @@ header {
 /* ── SEGMENTED WORKSPACE TRACK (Luxury UX) ── */
 .workspace-tabs {
     display: flex;
-    gap: 4px;
-    margin-bottom: 2rem;
-    padding: 6px;
-    margin-bottom: 2.5rem;
+    gap: 8px;
+    margin: 1.5rem auto 2.5rem auto;
     padding: 8px;
-    background: rgba(var(--accent-color-rgb), 0.05);
-    backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--line-color);
+    background: rgba(var(--accent-color-rgb), 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(var(--accent-color-rgb), 0.1);
     border-radius: 60px;
     max-width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
-    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+    box-shadow: 
+        0 10px 40px -10px rgba(0,0,0,0.1),
+        inset 0 0 20px rgba(var(--accent-color-rgb), 0.02);
+    position: relative;
 }
 
 .nav-pill {
@@ -568,14 +576,7 @@ header {
 .notebook-inner-layout {
     display: flex;
     height: 100%;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.notebook-sidebar {
-    width: 280px;
-    min-width: 280px;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
+    transition: var(--transition);
 }
 
 .notebook-inner-layout.collapsed .notebook-sidebar {

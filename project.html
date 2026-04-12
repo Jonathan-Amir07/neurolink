@@ -90,14 +90,16 @@
                 <div id="notebook-view" class="tab-view">
                     <div class="notebook-inner-layout" id="notebook-layout">
                         <aside class="notebook-sidebar">
-                            <div class="binder-ornament top"></div>
+                            <div class="sidebar-toggle" onclick="toggleSidebar()">
+                                <i class="fas fa-chevron-left" id="toggle-icon"></i>
+                            </div>
+                            <div class="sidebar-gloss"></div>
                             <h1>STUDY INDEX</h1>
                             <div class="toc-search">
                                 <i class="fas fa-search"></i>
                                 <input type="text" placeholder="Find in notes..." onkeyup="filterTOC(this.value)">
                             </div>
                             <nav id="notebook-toc"></nav>
-                            <div class="binder-ornament bottom"></div>
                         </aside>
                         <main id="notebook-content-area" class="notebook-main">
                             <!-- Content -->
@@ -339,6 +341,16 @@
                 statusText.innerText = "CONNECTION ERROR";
             } finally { 
                 hideLoading(); 
+            }
+        }
+
+        function toggleSidebar() {
+            const layout = document.getElementById('notebook-layout');
+            const icon = document.getElementById('toggle-icon');
+            layout.classList.toggle('collapsed');
+            sidebarCollapsed = !sidebarCollapsed;
+            if (icon) {
+                icon.className = sidebarCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
             }
         }
 
