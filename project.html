@@ -365,6 +365,9 @@
     <script>
         window.onload = () => {
             setTheme(localStorage.getItem('neurolink-theme') || 'default');
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
             loadProject();
         };
     </script>

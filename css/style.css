@@ -2290,3 +2290,52 @@ header {
     opacity: 1;
 }
 
+
+/* ── RESPONSIVE REFINEMENTS ── */
+@media (max-width: 768px) {
+    .workspace-tabs {
+        width: 100%;
+        overflow-x: auto;
+        justify-content: flex-start;
+        border-radius: 12px;
+        padding: 4px;
+        gap: 4px;
+    }
+    
+    .nav-pill {
+        padding: 8px 16px;
+        font-size: 0.65rem;
+    }
+
+    .notebook-sidebar {
+        position: absolute;
+        width: 280px;
+        z-index: 1000;
+        box-shadow: 20px 0 50px rgba(0,0,0,0.3);
+    }
+
+    .notebook-inner-layout:not(.collapsed) .notebook-sidebar {
+        width: 280px;
+        min-width: 280px;
+    }
+
+    .notebook-inner-layout.collapsed .notebook-sidebar {
+        width: 0;
+        min-width: 0;
+        padding: 0;
+        border: none;
+    }
+
+    .notebook-main {
+        width: 100% !important;
+        flex: 1;
+    }
+    
+    .sidebar-toggle {
+        right: -40px;
+        background: var(--accent-color);
+        width: 40px;
+        height: 40px;
+        border-radius: 0 8px 8px 0;
+    }
+}
