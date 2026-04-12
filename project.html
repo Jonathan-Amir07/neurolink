@@ -4,7 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeuroLink - Study Project</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=1.2">
+    <style>
+        /* 💎 Critical Redesign & Cache Preservation */
+        :root { 
+            --accent-color: #4f46e5 !important; 
+            --accent-color-rgb: 79, 70, 229 !important;
+            --glass-bg: rgba(255, 255, 255, 0.9) !important;
+            --glass-blur: 15px !important;
+        }
+        [data-theme="parchment"] { --accent-color: #5c4033 !important; --accent-color-rgb: 92, 64, 51 !important; }
+        [data-theme="library"] { --accent-color: #c5a059 !important; --accent-color-rgb: 197, 160, 89 !important; }
+        [data-theme="lab"] { --accent-color: #0ea5e9 !important; --accent-color-rgb: 14, 165, 233 !important; }
+
+        /* Branding fix for orange cache issues */
+        .brand { color: var(--accent-color) !important; font-weight: 800 !important; }
+        
+        .workspace-tabs { display: flex !important; }
+        .notebook-sidebar { background: var(--glass-bg) !important; }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Patrick+Hand&family=Permanent+Marker&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'neurolink-cache-v2';
+const CACHE_NAME = 'neurolink-cache-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/dashboard',
@@ -39,7 +39,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy for Static Assets: Cache first, then network
+  // Strategy for HTML & CSS: Network first, then cache (to ensure UI updates show immediately)
+  if (url.pathname.endsWith('.html') || url.pathname.endsWith('.css') || url.pathname === '/project' || url.pathname === '/dashboard') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clonedResponse = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, clonedResponse);
+          });
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Strategy for Static Assets (Images, fonts, etc): Cache first, then network
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request);
