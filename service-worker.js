@@ -1,4 +1,4 @@
-const CACHE_NAME = 'neurolink-cache-v3';
+const CACHE_NAME = 'neurolink-cache-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/dashboard',
@@ -20,18 +20,34 @@ self.addEventListener('install', (event) => {
   );
 });
 
+self.addEventListener('activate', (event) => {
+  // Clean up old cache versions
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    )
+  );
+});
+
 self.addEventListener('fetch', (event) => {
+  // CRITICAL: Cache API only supports GET requests.
+  // HEAD, POST, PUT, DELETE etc. must always go to the network.
+  if (event.request.method !== 'GET') {
+    return; // Let the browser handle it normally — no caching
+  }
+
   const url = new URL(event.request.url);
 
-  // Strategy for API calls: Network first, then cache
+  // API calls: Network first, cache as fallback (GET-only)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          const clonedResponse = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, clonedResponse);
-          });
+          // Only cache successful responses
+          if (response && response.status === 200) {
+            const cloned = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
+          }
           return response;
         })
         .catch(() => caches.match(event.request))
@@ -39,15 +55,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy for HTML & CSS: Network first, then cache (to ensure UI updates show immediately)
-  if (url.pathname.endsWith('.html') || url.pathname.endsWith('.css') || url.pathname === '/project' || url.pathname === '/dashboard') {
+  // HTML & CSS: Network first, then cache (ensures UI updates show immediately)
+  if (
+    url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('.css') ||
+    url.pathname === '/project' ||
+    url.pathname === '/dashboard'
+  ) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          const clonedResponse = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, clonedResponse);
-          });
+          if (response && response.status === 200) {
+            const cloned = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
+          }
           return response;
         })
         .catch(() => caches.match(event.request))
@@ -55,10 +76,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy for Static Assets (Images, fonts, etc): Cache first, then network
+  // Static assets (images, fonts, JS): Cache first, then network
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+    caches.match(event.request).then((cached) => cached || fetch(event.request))
   );
 });

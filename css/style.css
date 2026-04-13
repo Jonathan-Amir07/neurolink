@@ -49,7 +49,20 @@
     --ink-color: #1a0f0a;
     --binder-edge: #c6b595;
     --rings-silver: linear-gradient(135deg, #b8860b 0%, #ffd700 50%, #8b4513 100%); /* Antique Brass/Gold */
-    --bg-texture: url("https://www.transparenttextures.com/patterns/parchment.png");
+    --bg-texture: repeating-linear-gradient(
+        45deg,
+        rgba(139, 90, 43, 0.04) 0px,
+        rgba(139, 90, 43, 0.04) 1px,
+        transparent 1px,
+        transparent 8px
+    ),
+    repeating-linear-gradient(
+        -45deg,
+        rgba(139, 90, 43, 0.03) 0px,
+        rgba(139, 90, 43, 0.03) 1px,
+        transparent 1px,
+        transparent 8px
+    );
     --sidebar-text: #f4ead5;
     --shadow-soft: 0 10px 40px rgba(0,0,0,0.15);
 }
@@ -68,7 +81,20 @@
     --ink-color: #d1c4a8; /* Aged Book Paper tint */
     --binder-edge: #000;
     --rings-silver: linear-gradient(135deg, #bf953f 0%, #fcf6ba 50%, #b38728 100%); /* Polished Brass */
-    --bg-texture: url("https://www.transparenttextures.com/patterns/dark-leather.png");
+    --bg-texture: repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,0.015) 0px,
+        rgba(255,255,255,0.015) 1px,
+        transparent 1px,
+        transparent 4px
+    ),
+    repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.01) 0px,
+        rgba(255,255,255,0.01) 1px,
+        transparent 1px,
+        transparent 4px
+    );
     --sidebar-text: #c5a059;
 }
 
@@ -101,7 +127,7 @@
     top: 0; left: 0; right: 0; bottom: 0;
     pointer-events: none;
     opacity: 0.05;
-    background-image: url("https://www.transparenttextures.com/patterns/felt.png");
+    background-image: radial-gradient(rgba(0,0,0,0.06) 1px, transparent 1px);
     z-index: 1;
 }
 
