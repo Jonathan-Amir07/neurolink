@@ -416,8 +416,8 @@ app.post('/api/projects', parseUpload, async (req, res) => {
 
                 // Add delay to prevent Gemini free-tier rate limiting (15 RPM), except for the final item
                 if (i < selectedTypes.length - 1) {
-                    console.log(`[AI] Waiting 2 seconds before next generation to prevent rate limits...`);
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    console.log(`[AI] Waiting 800ms before next generation...`);
+                    await new Promise(resolve => setTimeout(resolve, 800));
                 }
             }
 

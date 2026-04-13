@@ -3,9 +3,9 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // Model priority: standard SDK names first (work across all environments),
 // full-path names as fallback (confirmed working locally).
 const MODEL_VARIANTS = [
-    "gemini-1.5-flash", 
-    "gemini-1.5-pro", 
-    "gemini-2.0-flash"
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+    "gemini-1.5-pro"
 ];
 
 // Cache the index of the last known-working model to skip failed ones on subsequent calls
@@ -67,8 +67,10 @@ async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2
                 model: currentModel,
                 generationConfig: { 
                     maxOutputTokens: maxTokens, 
-                    temperature: 0.7,
-                    responseMimeType: "application/json"
+                    temperature: 0.7
+                    // Note: responseMimeType removed — not universally supported across
+                    // all Gemini model variants and causes silent failures on free tier.
+                    // The prompts already explicitly request JSON output.
                 } 
             });
 
