@@ -1,4 +1,4 @@
-const CACHE_NAME = 'neurolink-cache-v4';
+const CACHE_NAME = 'neurolink-cache-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/dashboard',
@@ -15,18 +15,19 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Force the waiting service worker to become the active service worker
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
 });
 
 self.addEventListener('activate', (event) => {
-  // Clean up old cache versions
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     )
   );
+  return self.clients.claim(); // Ensure the new service worker takes control of all clients immediately
 });
 
 self.addEventListener('fetch', (event) => {
