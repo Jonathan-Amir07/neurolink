@@ -1,11 +1,13 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Model priority: standard SDK names first (work across all environments),
-// full-path names as fallback (confirmed working locally).
+// Model priority order — verified working as of April 2026.
+// gemini-1.5-flash and gemini-1.5-pro are 404-deprecated on free-tier keys.
+// gemini-2.5-flash confirmed working; 2.0-flash and 2.5-pro used as fallbacks
+// (they 429 under heavy load but recover quickly).
 const MODEL_VARIANTS = [
+    "gemini-2.5-flash",
     "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro"
+    "gemini-2.5-pro"
 ];
 
 // Cache the index of the last known-working model to skip failed ones on subsequent calls
@@ -120,8 +122,8 @@ async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2
             if (i === retries) return null;
             
             const isRateLimit = error.message.includes('429') || error.message.toLowerCase().includes('rate limit') || error.message.toLowerCase().includes('quota');
-            const delay = isRateLimit ? (4000 + (Math.random() * 2000)) : (1000 * Math.pow(2, i));
-            console.log(`[AI] Delaying retries for ${Math.round(delay/1000)}s due to potential rate limits...`);
+            const delay = isRateLimit ? (8000 + (Math.random() * 4000)) : (1500 * Math.pow(2, i));
+            console.log(`[AI] Retrying in ${Math.round(delay/1000)}s...`);
             await new Promise(r => setTimeout(r, delay));
         }
     }
