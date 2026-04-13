@@ -1,28 +1,21 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Model priority order — verified working as of April 2026.
-// gemini-1.5-flash and gemini-1.5-pro are 404-deprecated on free-tier keys.
-// gemini-2.5-flash confirmed working; 2.0-flash and 2.5-pro used as fallbacks
-// (they 429 under heavy load but recover quickly).
-const MODEL_VARIANTS = [
-    "gemini-2.5-flash",
-    "gemini-2.0-flash",
-    "gemini-2.5-pro"
-];
-
-// Cache the index of the last known-working model to skip failed ones on subsequent calls
-let workingModelIndex = 0;
+// ── Model Configuration ───────────────────────────────────────────────────────
+// Verified working as of April 2026.
+// gemini-2.5-flash is the primary model — fast, reliable, and supports responseMimeType.
+// gemini-2.0-flash and gemini-2.5-pro are kept as fallbacks but frequently hit
+// free-tier daily quotas (429/limit:0), so we heavily prioritize gemini-2.5-flash.
+const PRIMARY_MODEL = "gemini-2.5-flash";
+const FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-2.5-pro"];
 
 // ── Smart Context Preparation ─────────────────────────────────────────────────
-// Gemini free-tier safe limit: ~100k characters (≈25k tokens)
-// We proportionally sample from each file section to fit under this ceiling
 const INPUT_CHAR_LIMITS = {
-    notebook:    70000,   // Needs most detail
-    mindmap:     40000,   // Structural overview
-    flashcards:  40000,   // Q&A pairs
-    slides:      40000,   // Key points
-    infographic: 30000,   // Short summaries
-    quiz:        50000    // Detailed testing
+    notebook:    70000,
+    mindmap:     40000,
+    flashcards:  40000,
+    slides:      40000,
+    infographic: 30000,
+    quiz:        50000
 };
 
 /**
@@ -34,45 +27,115 @@ function prepareContext(text, maxChars) {
     if (!text) return '';
     if (text.length <= maxChars) return text;
 
-    // Detect file sections created by backend aggregation
     const fileSections = text.split(/\n\n---\n\n/);
     if (fileSections.length <= 1) {
-        // Single source — just truncate at a sentence boundary
         const truncated = text.substring(0, maxChars);
         const lastPeriod = truncated.lastIndexOf('.');
         return lastPeriod > maxChars * 0.9 ? truncated.substring(0, lastPeriod + 1) : truncated;
     }
 
-    // Multiple files — give each file an equal share of the budget
     const perFileLimit = Math.floor(maxChars / fileSections.length);
     return fileSections
         .map(section => section.substring(0, perFileLimit))
         .join('\n\n---\n\n');
 }
 
-async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2000) {
+/**
+ * Parse a JSON object from AI text output. Handles markdown fences,
+ * control characters, trailing commas, and other common AI quirks.
+ */
+function extractJSON(text) {
+    // Strip markdown code fences
+    let cleaned = text.trim()
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/```\s*$/, '')
+        .trim();
+
+    // Find outermost { }
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    if (start === -1 || end === -1 || end <= start) {
+        return null;
+    }
+
+    let jsonStr = cleaned.substring(start, end + 1);
+    // Clean control characters
+    jsonStr = jsonStr.replace(/[\u0000-\u0009\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
+    // Fix trailing commas
+    jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
+
+    try {
+        return JSON.parse(jsonStr);
+    } catch (e) {
+        // Aggressive cleaning attempt
+        const ultraCleaned = jsonStr
+            .replace(/[\u0000-\u001F\u007F-\u009F]/g, "")
+            .replace(/\n/g, " ")
+            .replace(/\r/g, " ")
+            .replace(/\t/g, " ");
+        try {
+            return JSON.parse(ultraCleaned);
+        } catch (e2) {
+            // Last resort: try to repair truncated JSON by closing open brackets
+            try {
+                let repaired = ultraCleaned;
+                // Count open/close braces and brackets
+                const openBraces = (repaired.match(/{/g) || []).length;
+                const closeBraces = (repaired.match(/}/g) || []).length;
+                const openBrackets = (repaired.match(/\[/g) || []).length;
+                const closeBrackets = (repaired.match(/\]/g) || []).length;
+                
+                // Remove any trailing comma or incomplete value
+                repaired = repaired.replace(/,\s*$/, '');
+                repaired = repaired.replace(/:\s*"[^"]*$/, ': ""');
+                repaired = repaired.replace(/,\s*"[^"]*$/, '');
+                
+                // Close missing brackets/braces
+                for (let i = 0; i < openBrackets - closeBrackets; i++) repaired += ']';
+                for (let i = 0; i < openBraces - closeBraces; i++) repaired += '}';
+                
+                return JSON.parse(repaired);
+            } catch (e3) {
+                return null;
+            }
+        }
+    }
+}
+
+/**
+ * Core AI call function with smart retry logic.
+ * 
+ * Strategy:
+ * 1. Try PRIMARY_MODEL up to 3 times (with delays for rate limits)
+ * 2. Only fall back to FALLBACK_MODELS if the primary is truly down
+ * 3. Use responseMimeType: 'application/json' for clean output
+ */
+async function callAI(prompt, maxRetries = 4, maxTokens = 2000) {
     if (!process.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY === 'your_gemini_api_key') {
         console.error('[AI] No valid GOOGLE_API_KEY configured');
         return null;
     }
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
-    // Try starting from the last known-working model
-    const startIndex = workingModelIndex;
+    // Build the ordered list of attempts:
+    // Primary model gets 3 tries, then each fallback gets 1 try
+    const attempts = [
+        PRIMARY_MODEL,
+        PRIMARY_MODEL,
+        PRIMARY_MODEL,
+        ...FALLBACK_MODELS
+    ].slice(0, maxRetries + 1);
 
-    for (let i = 0; i <= retries; i++) {
-        const modelIndex = (startIndex + i) % MODEL_VARIANTS.length;
-        const currentModel = MODEL_VARIANTS[modelIndex];
+    for (let i = 0; i < attempts.length; i++) {
+        const currentModel = attempts[i];
         try {
-            console.log(`[AI] Trying model: ${currentModel} (maxTokens: ${maxTokens})`);
+            console.log(`[AI] Attempt ${i + 1}/${attempts.length}: ${currentModel} (maxTokens: ${maxTokens})`);
             const model = genAI.getGenerativeModel({ 
                 model: currentModel,
                 generationConfig: { 
                     maxOutputTokens: maxTokens, 
-                    temperature: 0.7
-                    // Note: responseMimeType removed — not universally supported across
-                    // all Gemini model variants and causes silent failures on free tier.
-                    // The prompts already explicitly request JSON output.
+                    temperature: 0.7,
+                    responseMimeType: "application/json"
                 } 
             });
 
@@ -80,53 +143,46 @@ async function callAI(prompt, retries = MODEL_VARIANTS.length - 1, maxTokens = 2
             const response = await result.response;
             let text = response.text().trim();
 
-            // Strip markdown code fences
-            text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
-
-            // Robust JSON extraction — find outermost { }
-            const start = text.indexOf('{');
-            const end = text.lastIndexOf('}');
-            if (start !== -1 && end !== -1 && end > start) {
-                let jsonStr = text.substring(start, end + 1);
-                // Clean control characters that break JSON.parse
-                jsonStr = jsonStr.replace(/[\u0000-\u0009\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
-                // Fix common AI mistakes: trailing commas before } or ]
-                jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
-                try {
-                    const parsed = JSON.parse(jsonStr);
-                    workingModelIndex = modelIndex;
-                    console.log(`[AI] ✅ Success with: ${currentModel}`);
-                    return parsed;
-                } catch (parseErr) {
-                    console.warn(`[AI] JSON parse failed: ${parseErr.message}. Cleaning...`);
-                    // Second attempt: aggressive cleaning
-                    const cleaned = jsonStr
-                        .replace(/[\u0000-\u001F\u007F-\u009F]/g, "") // Remove control chars
-                        .replace(/\n/g, " ") // Flatten newlines
-                        .replace(/\r/g, " ")
-                        .replace(/\\"/g, '"') // In case AI double-escaped
-                        .replace(/\\'/g, "'");
-                    try {
-                        const parsed = JSON.parse(cleaned);
-                        workingModelIndex = modelIndex;
-                        return parsed;
-                    } catch (finalErr) {
-                        console.error("[AI] Final JSON parse failed after cleaning.");
-                        throw finalErr;
-                    }
-                }
+            if (!text || text.length < 5) {
+                throw new Error("Empty response from AI model.");
             }
-            throw new Error("No valid JSON object found in AI response.");
+
+            const parsed = extractJSON(text);
+            if (parsed) {
+                console.log(`[AI] ✅ Success with ${currentModel} on attempt ${i + 1}`);
+                return parsed;
+            }
+
+            throw new Error(`Could not parse JSON from response (${text.length} chars). Preview: ${text.substring(0, 100)}`);
         } catch (error) {
-            console.error(`[AI] ❌ ${currentModel} failed:`, error.message);
-            if (i === retries) return null;
+            const msg = error.message || '';
+            console.error(`[AI] ❌ ${currentModel} attempt ${i + 1} failed:`, msg.substring(0, 150));
             
-            const isRateLimit = error.message.includes('429') || error.message.toLowerCase().includes('rate limit') || error.message.toLowerCase().includes('quota');
-            const delay = isRateLimit ? (8000 + (Math.random() * 4000)) : (1500 * Math.pow(2, i));
-            console.log(`[AI] Retrying in ${Math.round(delay/1000)}s...`);
+            if (i >= attempts.length - 1) {
+                console.error('[AI] All attempts exhausted. Returning null.');
+                return null;
+            }
+            
+            // Calculate delay based on error type
+            const is429 = msg.includes('429') || msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('quota');
+            const is503 = msg.includes('503') || msg.toLowerCase().includes('overloaded') || msg.toLowerCase().includes('high demand');
+            
+            let delay;
+            if (is429) {
+                // Extract retry delay from error if available
+                const retryMatch = msg.match(/retry in (\d+)/i);
+                delay = retryMatch ? (parseInt(retryMatch[1]) + 2) * 1000 : 10000 + Math.random() * 5000;
+            } else if (is503) {
+                delay = 5000 + Math.random() * 3000;
+            } else {
+                delay = 2000 * Math.pow(1.5, i);
+            }
+            
+            console.log(`[AI] Waiting ${Math.round(delay / 1000)}s before retry...`);
             await new Promise(r => setTimeout(r, delay));
         }
     }
+    return null;
 }
 
 async function generateNotebook(text) {
@@ -151,7 +207,7 @@ HTML STRUCTURE (Use single quotes ' for all CSS classes):
 </section>
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.notebook)}`;
-    return await callAI(prompt, MODEL_VARIANTS.length - 1, 5000);
+    return await callAI(prompt, 4, 8000);
 }
 
 async function generateMindmap(text) {
@@ -176,7 +232,7 @@ Guidelines:
 - Use meaningful icons for every node.
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.mindmap)}`;
-    return await callAI(prompt, MODEL_VARIANTS.length - 1, 2500);
+    return await callAI(prompt, 4, 4000);
 }
 
 async function generateFlashcards(text) {
@@ -191,7 +247,7 @@ Guidelines:
 - Cover the most important concepts
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.flashcards)}`;
-    return await callAI(prompt, MODEL_VARIANTS.length - 1, 2500);
+    return await callAI(prompt, 4, 4000);
 }
 
 async function generateSlides(text) {
@@ -208,7 +264,7 @@ Guidelines:
 - Avoid double quotes " inside bullet points if possible—use single quotes '
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.slides)}`;
-    return await callAI(prompt, MODEL_VARIANTS.length - 1, 4000);
+    return await callAI(prompt, 4, 4000);
 }
 
 
@@ -224,7 +280,7 @@ Guidelines:
 - Content should be scannable, not dense prose
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.infographic)}`;
-    return await callAI(prompt, MODEL_VARIANTS.length - 1, 2000);
+    return await callAI(prompt, 4, 3000);
 }
 
 async function generateQuiz(text) {
@@ -241,7 +297,7 @@ Guidelines:
 - Avoid tricky phrasing; focus on actual learning validation.
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.quiz)}`;
-    return await callAI(prompt, MODEL_VARIANTS.length - 1, 3000);
+    return await callAI(prompt, 4, 4000);
 }
 
 
@@ -259,15 +315,24 @@ NeuroLink Study Mate:`;
     // chat doesn't need JSON enforcement
     if (!process.env.GOOGLE_API_KEY) return { reply: "API Key missing." };
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-    const currentModel = MODEL_VARIANTS[workingModelIndex];
 
     try {
-        const model = genAI.getGenerativeModel({ model: currentModel });
+        const model = genAI.getGenerativeModel({ model: PRIMARY_MODEL });
         const result = await model.generateContent(prompt);
         const response = await result.response;
         return { reply: response.text().trim() };
     } catch (err) {
         console.error('[AI Chat] Failed:', err.message);
+        // Try fallback
+        for (const fallback of FALLBACK_MODELS) {
+            try {
+                const model = genAI.getGenerativeModel({ model: fallback });
+                const result = await model.generateContent(prompt);
+                return { reply: result.response.text().trim() };
+            } catch (e) {
+                continue;
+            }
+        }
         return { reply: "I'm having trouble thinking right now. Please try again later." };
     }
 }
