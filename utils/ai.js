@@ -6,7 +6,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // gemini-2.0-flash and gemini-2.5-pro are kept as fallbacks but frequently hit
 // free-tier daily quotas (429/limit:0), so we heavily prioritize gemini-2.5-flash.
 const PRIMARY_MODEL = "gemini-2.5-flash";
-const FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-2.5-pro"];
+const FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-2.5-pro"];
 
 // ── Smart Context Preparation ─────────────────────────────────────────────────
 const INPUT_CHAR_LIMITS = {
@@ -122,84 +122,92 @@ function extractJSON(text) {
 }
 
 /**
- * Core AI call function with smart retry logic.
+ * Core AI call function with multi-key rotation and smart retry logic.
  * 
  * Strategy:
- * 1. Try PRIMARY_MODEL up to 3 times (with delays for rate limits)
- * 2. Only fall back to FALLBACK_MODELS if the primary is truly down
- * 3. Use responseMimeType: 'application/json' for clean output
+ * 1. Collect all available API keys (GOOGLE_API_KEY, GOOGLE_API_KEY_2, GOOGLE_API_KEY_3)
+ * 2. For each key: try PRIMARY_MODEL first, then fallbacks
+ * 3. If ALL keys are quota-exhausted (429 on every attempt), fail fast with clear message
+ * 4. Use responseMimeType: 'application/json' for clean output
  */
+function getApiKeys() {
+    const keys = [];
+    const k1 = process.env.GOOGLE_API_KEY;
+    const k2 = process.env.GOOGLE_API_KEY_2;
+    const k3 = process.env.GOOGLE_API_KEY_3;
+    if (k1 && k1 !== 'your_gemini_api_key') keys.push(k1);
+    if (k2 && k2 !== 'your_gemini_api_key') keys.push(k2);
+    if (k3 && k3 !== 'your_gemini_api_key') keys.push(k3);
+    return keys;
+}
+
 async function callAI(prompt, maxRetries = 3, maxTokens = 2000) {
-    if (!process.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY === 'your_gemini_api_key') {
+    const apiKeys = getApiKeys();
+    if (apiKeys.length === 0) {
         console.error('[AI] No valid GOOGLE_API_KEY configured');
         return null;
     }
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
-    // Fast-fail strategy: Primary gets 2 tries, then jump to fallbacks immediately
-    const attempts = [
-        PRIMARY_MODEL,
-        PRIMARY_MODEL,
-        ...FALLBACK_MODELS
-    ].slice(0, maxRetries + 1);
+    // Try each API key
+    for (let keyIdx = 0; keyIdx < apiKeys.length; keyIdx++) {
+        const genAI = new GoogleGenerativeAI(apiKeys[keyIdx]);
+        const keyLabel = apiKeys.length > 1 ? ` [Key ${keyIdx + 1}/${apiKeys.length}]` : '';
+        
+        // For each key: try primary model, then fallbacks
+        const models = [PRIMARY_MODEL, ...FALLBACK_MODELS];
+        let allQuotaExhausted = true;
 
-    for (let i = 0; i < attempts.length; i++) {
-        const currentModel = attempts[i];
-        try {
-            console.log(`[AI] Attempt ${i + 1}/${attempts.length}: ${currentModel} (maxTokens: ${maxTokens})`);
-            const model = genAI.getGenerativeModel({ 
-                model: currentModel,
-                generationConfig: { 
-                    maxOutputTokens: maxTokens, 
-                    temperature: 0.7,
-                    responseMimeType: "application/json"
-                } 
-            });
+        for (let i = 0; i < models.length; i++) {
+            const currentModel = models[i];
+            try {
+                console.log(`[AI]${keyLabel} Trying ${currentModel} (maxTokens: ${maxTokens})`);
+                const model = genAI.getGenerativeModel({ 
+                    model: currentModel,
+                    generationConfig: { 
+                        maxOutputTokens: maxTokens, 
+                        temperature: 0.7,
+                        responseMimeType: "application/json"
+                    } 
+                });
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            let text = response.text().trim();
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                let text = response.text().trim();
 
-            if (!text || text.length < 5) {
-                throw new Error("Empty response from AI model.");
+                if (!text || text.length < 5) {
+                    throw new Error("Empty response from AI model.");
+                }
+
+                const parsed = extractJSON(text);
+                if (parsed) {
+                    console.log(`[AI]${keyLabel} ✅ Success with ${currentModel}`);
+                    return parsed;
+                }
+
+                throw new Error(`Could not parse JSON from response (${text.length} chars)`);
+            } catch (error) {
+                const msg = error.message || '';
+                const is429 = msg.includes('429') || msg.toLowerCase().includes('quota');
+                
+                console.error(`[AI]${keyLabel} ❌ ${currentModel} failed:`, msg.substring(0, 120));
+                
+                if (!is429) {
+                    allQuotaExhausted = false;
+                    // Non-quota error: wait briefly and try next model
+                    if (i < models.length - 1) {
+                        await new Promise(r => setTimeout(r, 1500));
+                    }
+                }
+                // For 429: skip immediately to next model/key (no wait)
             }
-
-            const parsed = extractJSON(text);
-            if (parsed) {
-                console.log(`[AI] ✅ Success with ${currentModel} on attempt ${i + 1}`);
-                return parsed;
-            }
-
-            throw new Error(`Could not parse JSON from response (${text.length} chars). Preview: ${text.substring(0, 100)}`);
-        } catch (error) {
-            const msg = error.message || '';
-            console.error(`[AI] ❌ ${currentModel} attempt ${i + 1} failed:`, msg.substring(0, 150));
-            
-            if (i >= attempts.length - 1) {
-                console.error('[AI] All attempts exhausted. Returning null.');
-                return null;
-            }
-            
-            // Calculate delay based on error type
-            const is429 = msg.includes('429') || msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('quota');
-            const is503 = msg.includes('503') || msg.toLowerCase().includes('overloaded') || msg.toLowerCase().includes('high demand');
-            
-            let delay;
-            if (is429) {
-                // Fast retry — don't wait the full suggested time, just enough to clear burst limit
-                delay = 3000 + Math.random() * 2000; // 3-5s
-            } else if (is503) {
-                delay = 2000 + Math.random() * 2000; // 2-4s
-            } else {
-                delay = 1500 * (i + 1); // 1.5s, 3s, 4.5s
-            }
-            // Hard cap: never wait more than 8 seconds
-            delay = Math.min(delay, 8000);
-            
-            console.log(`[AI] Waiting ${Math.round(delay / 1000)}s before retry...`);
-            await new Promise(r => setTimeout(r, delay));
+        }
+        
+        if (allQuotaExhausted && keyIdx < apiKeys.length - 1) {
+            console.log(`[AI] Key ${keyIdx + 1} quota exhausted, rotating to next key...`);
         }
     }
+    
+    console.error('[AI] All API keys and models exhausted. Returning null.');
     return null;
 }
 
