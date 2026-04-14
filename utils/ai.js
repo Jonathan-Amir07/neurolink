@@ -141,7 +141,7 @@ function getApiKeys() {
     return keys;
 }
 
-async function callAI(prompt, maxRetries = 3, maxTokens = 2000) {
+async function callAI(prompt, maxRetries = 3, maxTokens = 2000, expectJson = true) {
     const apiKeys = getApiKeys();
     if (apiKeys.length === 0) {
         console.error('[AI] No valid GOOGLE_API_KEY configured');
@@ -161,13 +161,16 @@ async function callAI(prompt, maxRetries = 3, maxTokens = 2000) {
             const currentModel = models[i];
             try {
                 console.log(`[AI]${keyLabel} Trying ${currentModel} (maxTokens: ${maxTokens})`);
+                
+                const genConfig = { 
+                    maxOutputTokens: maxTokens, 
+                    temperature: 0.7 
+                };
+                if (expectJson) genConfig.responseMimeType = "application/json";
+
                 const model = genAI.getGenerativeModel({ 
                     model: currentModel,
-                    generationConfig: { 
-                        maxOutputTokens: maxTokens, 
-                        temperature: 0.7,
-                        responseMimeType: "application/json"
-                    } 
+                    generationConfig: genConfig
                 });
 
                 const result = await model.generateContent(prompt);
@@ -176,6 +179,11 @@ async function callAI(prompt, maxRetries = 3, maxTokens = 2000) {
 
                 if (!text || text.length < 5) {
                     throw new Error("Empty response from AI model.");
+                }
+
+                if (!expectJson) {
+                    console.log(`[AI]${keyLabel} ✅ Success with ${currentModel} (Raw Text)`);
+                    return text;
                 }
 
                 const parsed = extractJSON(text);
@@ -219,8 +227,7 @@ Your task is to transform the provided content into a deeply structured study no
 ━━━━━━━━━━━━━━━━━━━━━━━━
 OUTPUT FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━
-Return ONLY a valid JSON object: {"notebook": "html_content"}
-Use SINGLE QUOTES for all HTML attribute values to avoid breaking JSON. Do NOT use markdown—use pure HTML tags only.
+Return ONLY raw HTML. Do NOT wrap the output in JSON, markdown code blocks, or any other formatting.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 CONTENT REQUIREMENTS
@@ -250,10 +257,11 @@ QUALITY RULES:
 - EVERY single section must contain deep technical or conceptual explanations. NO filler or one-liners.
 - Do NOT use markdown. Use raw HTML tags with single quotes ONLY.
 - End the final notebook page with a comprehensive Practice Quiz utilizing BOTH the quiz-box and answer-box divs.
-- Do not add random extra properties. Ensure valid JSON encoding.
+- Output pure HTML directly without any surrounding backticks or JSON wrappers.
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.notebook)}`;
-    return await callAI(prompt, 4, 16000);
+    // Pass expectJson = false to receive the raw huge HTML string without escaping errors
+    return await callAI(prompt, 4, 16000, false);
 }
 
 async function generateMindmap(text, notebookHtml = null) {
