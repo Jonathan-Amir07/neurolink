@@ -281,29 +281,50 @@ Content: ${prepareContext(text, INPUT_CHAR_LIMITS.notebook)}`;
     return await callAI(prompt, 4, 16000);
 }
 
-async function generateMindmap(text) {
-    const prompt = `You are an AI Knowledge Mapper, Visual Learning Architect, and UI Designer. 
-Your task is to take a structured study notebook and convert it into a detailed, interactive mind map JSON that preserves the physical notebook aesthetic.
+async function generateMindmap(text, notebookHtml = null) {
+    const context = notebookHtml ? `Take this structured HTML study notebook and convert it into a mind map: ${notebookHtml}` : text;
+    const prompt = `You are an AI Knowledge Mapper, Visual Learning Architect, and UI Designer.
+Your task is to take study content and convert it into a detailed, interactive mind map that preserves a physical "handwritten study notebook" aesthetic.
 
-STRUCTURE RULES:
-1. ROOT NODE: The notebook title becomes the central/root node.
-2. CHAPTER NODES: Each chapter becomes a first-level node.
-3. SECTION NODES: Each section becomes a child node.
-4. NODE CONTENT: Each node MUST include:
-   - title: (Clear heading)
-   - desc: (ONE concise explanation sentence only)
-   - icon: (A single symbolic emoji: 📌, 📚, 🔑, ⚡, 🎯, 🧪, 🔬, 💡, 📐, 🔄)
+━━━━━━━━━━━━━━━━━━
+GOAL
+━━━━━━━━━━━━━━━━━━
+Convert the content into a visual, interactive mind map that:
+- Preserves the logical structure of topics
+- Uses notebook-style visuals (paper cards, hand-drawn connections)
+- Shows relationships between concepts
+- Allows collapsing and expanding nodes using embedded JavaScript
+- USES SINGLE QUOTES for all HTML attributes to avoid breaking JSON strings.
+
+━━━━━━━━━━━━━━━━━━
+NODE REQUIREMENTS
+━━━━━━━━━━━━━━━━━━
+Each node MUST look like a "Paper Card" and include:
+- Title (Heading)
+- ONE short explanation (1 concise sentence only)
+- A visual element (icon/diagram/emoji)
+- DO NOT use long paragraphs.
+
+━━━━━━━━━━━━━━━━━━
+INTERACTIVITY
+━━━━━━━━━━━━━━━━━━
+- Nodes must be collapsible/expandable via clicking.
+- Parent nodes remain visible; collapsed nodes hide descendants.
+- Use smooth CSS transitions and a "+" / "–" indicator on parent nodes.
+
+━━━━━━━━━━━━━━━━━━
+NOTEBOOK STYLE
+━━━━━━━━━━━━━━━━━━
+- Background: Off-white paper with subtle grid or ruled pattern.
+- Fonts: 'Patrick Hand' for text, 'Indie Flower' for special blocks.
+- Connectors: Hand-drawn style curved lines (SVG paths).
+- Cards: Box-shadow, slight rotate() transforms (random -1 to 1 deg), and paper-like borders.
 
 Return ONLY a valid JSON object with this exact shape:
-{"mindmap": {"title": "Root Topic", "icon": "🧠", "desc": "One sentence overview", "children": [{"title": "Chapter", "icon": "📚", "desc": "Concise summary", "children": [...]}]}}
+{"mindmap": "html_string_containing_everything_style_and_js"}
 
-Guidelines:
-- Do NOT include long paragraphs.
-- Focus on clarity and hierarchical relationships.
-- Use meaningful icons for every node.
-
-Content: ${prepareContext(text, INPUT_CHAR_LIMITS.mindmap)}`;
-    return await callAI(prompt, 4, 4000);
+Content to Map: ${prepareContext(context, INPUT_CHAR_LIMITS.mindmap)}`;
+    return await callAI(prompt, 4, 12000);
 }
 
 async function generateFlashcards(text) {
@@ -413,10 +434,22 @@ async function generateStudyMaterials(text, selectedTypes = ['notebook', 'mindma
     const generators = { notebook: generateNotebook, mindmap: generateMindmap, flashcards: generateFlashcards, slides: generateSlides, infographic: generateInfographic, quiz: generateQuiz };
     const results = {};
 
+    // Prioritize notebook generation so it can serve as context for the mindmap
+    if (selectedTypes.includes('notebook')) {
+        console.log(`[AI] Generating notebook (Primary Context)...`);
+        results.notebook = (await generateNotebook(text))?.notebook ?? null;
+        if (selectedTypes.length > 1) await new Promise(r => setTimeout(r, 1500));
+    }
+
     for (const type of selectedTypes) {
+        if (type === 'notebook') continue; // Already done
         if (generators[type]) {
             console.log(`[AI] Generating ${type}...`);
-            const data = await generators[type](text);
+            // Pass notebook context to mindmap if it exists
+            const data = (type === 'mindmap' && results.notebook) 
+                ? await generateMindmap(text, results.notebook)
+                : await generators[type](text);
+            
             results[type] = data?.[type] ?? null;
             
             // Sequential delay to prevent concurrent rate limiting on free tier

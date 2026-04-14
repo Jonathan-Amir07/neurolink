@@ -243,10 +243,18 @@
             if (!content || content.length < 5) { showEmptyState(type); return; }
 
             if (type === 'notebook') renderNotebook(content);
-            else {
+            else if (type === 'mindmap') {
+                const view = document.getElementById('mindmap-view');
+                // Check if it's new-style HTML (starts with <) or old-style JSON
+                if (content.trim().startsWith('<')) {
+                    view.innerHTML = content;
+                } else {
+                    const data = ensureJSON(content);
+                    if (window.initMindMap) initMindMap(data);
+                }
+            } else {
                 const data = ensureJSON(content);
-                if (type === 'mindmap' && window.initMindMap) initMindMap(data);
-                else if (type === 'flashcards' && window.initFlashcards) initFlashcards(data);
+                if (type === 'flashcards' && window.initFlashcards) initFlashcards(data);
                 else if (type === 'slides' && window.initSlides) initSlides(data);
                 else if (type === 'infographic' && window.initInfographic) initInfographic(data);
                 else if (type === 'quiz' && window.initQuiz) initQuiz(data);
