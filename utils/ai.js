@@ -46,9 +46,13 @@ function prepareContext(text, maxChars) {
  */
 function getNotebookStructure(html) {
     if (!html) return '';
-    // Extract H2 (Chapters) and H3 (Sections)
-    const matches = html.match(/<(h2|h3)[^>]*>([\s\S]*?)<\/\1>/gi) || [];
-    return matches.map(m => m.replace(/<[^>]+>/g, '').trim()).join('\n');
+    // Extract H2 (Chapters), H3 (Sections), and strong/bold terms (sub-concepts)
+    const matches = html.match(/<(h2|h3|strong|li)[^>]*>([\s\S]*?)<\/\1>/gi) || [];
+    // Filter out very long strings to keep it structural
+    return matches
+        .map(m => m.replace(/<[^>]+>/g, '').trim())
+        .filter(t => t.length > 2 && t.length < 100)
+        .join('\n');
 }
 
 /**
@@ -324,9 +328,16 @@ Return ONLY a valid JSON object with this exact shape:
       {
         "title": "Chapter Title",
         "icon": "📚",
-        "desc": "Summary",
+        "desc": "Detailed summary",
         "children": [
-          { "title": "Section Title", "icon": "🔑", "desc": "Key detail", "children": [] }
+          { 
+            "title": "Section/Sub-point", 
+            "icon": "🔑", 
+            "desc": "Specific detail", 
+            "children": [
+               { "title": "Deep Insight", "icon": "💡", "desc": "Granular point", "children": [] }
+            ] 
+          }
         ]
       }
     ]
@@ -335,7 +346,8 @@ Return ONLY a valid JSON object with this exact shape:
 
 Guidelines:
 - Maintain the hierarchy from the provided structure.
-- Do NOT include long paragraphs.
+- Try to extract DEEP sub-points (Level 3 or 4) where the content allows.
+- Do NOT include long paragraphs—stay concise.
 - Focus on technical and conceptual relationships.
 
 Content Structure:
