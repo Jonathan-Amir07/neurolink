@@ -4,12 +4,6 @@ let translateY = 0;
 let isDragging = false;
 let startX, startY;
 let mindmapData = null;
-let nodeMeta = new Map(); // Stores {x, y, collapsed}
-
-const NODE_WIDTH = 250;
-const NODE_HEIGHT = 100;
-const LEVEL_GAP = 350;
-const SIBLING_GAP = 140;
 
 function initMindMap(data) {
     const container = document.getElementById('mindmap-view');
@@ -17,10 +11,9 @@ function initMindMap(data) {
     
     // Create new structure for pan/zoom
     container.innerHTML = `
-        <div id="mindmap-viewport" style="width: 100%; height: 100%; overflow: hidden; cursor: grab; position: relative;">
-            <div id="mindmap-content" style="transform-origin: 0 0; transition: transform 0.1s ease-out;">
-                <svg class="mindmap-svg-layer" id="mindmap-svg"></svg>
-                <div id="tree-root" style="position: absolute; top: 0; left: 0;"></div>
+        <div id="mindmap-viewport" class="tree-viewport" style="width: 100%; height: 100%; overflow: hidden; cursor: grab; position: relative; padding: 0;">
+            <div id="mindmap-content" style="transform-origin: 0 0; transition: transform 0.1s ease-out; position: absolute; left: 0; top: 0; padding: 80px;">
+                <div id="tree-root" class="tree-container"></div>
             </div>
         </div>
         <div class="mindmap-controls" style="position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 1000;">
@@ -31,28 +24,23 @@ function initMindMap(data) {
     `;
     
     initPanZoom(document.getElementById('mindmap-viewport'));
-    
     mindmapData = data;
-    nodeMeta.clear();
     
     if (!data || !data.title) {
         container.innerHTML += '<div class="empty-state-card"><h3>No mind map available</h3><p>Click "Regenerate Tab" to generate a mind map.</p></div>';
         return;
     }
 
-    // Initialize metadata
-    initNodeMeta(mindmapData, 0);
-    
-    // Initial layout
+    // Initial Layout via recursive DOM
+    const treeRootContainer = document.getElementById('tree-root');
+    treeRootContainer.appendChild(renderNode(mindmapData, true));
+
     requestAnimationFrame(() => {
-        layoutAndRender();
         resetView();
     });
 }
 
 function initPanZoom(viewport) {
-    const content = document.getElementById('mindmap-content');
-    
     viewport.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return; // Left click only
         isDragging = true;
@@ -104,9 +92,9 @@ function adjustZoom(delta, centerX, centerY) {
 }
 
 function resetView() {
-    zoomScale = 0.6; // Start slightly zoomed out
+    zoomScale = 0.8;
     translateX = 50;
-    translateY = 150;
+    translateY = 50;
     updateTransform();
 }
 
@@ -117,171 +105,108 @@ function updateTransform() {
     }
 }
 
-function initNodeMeta(node, depth) {
-    const id = getNodePath(node);
-    nodeMeta.set(id, {
-        collapsed: depth >= 2, // Collapse deeper levels by default
-        x: 0,
-        y: 0,
-        depth: depth
-    });
-    if (node && node.children && Array.isArray(node.children)) {
-        node.children.forEach(child => initNodeMeta(child, depth + 1));
-    }
-}
+/**
+ * Recursively renders the tree structure using pure DOM elements and CSS logic.
+ */
+function renderNode(nodeData, isRoot = false) {
+    const branch = document.createElement('div');
+    branch.className = 'tree-branch';
 
-function getNodePath(node) {
-    return node._path || node.title; // Simple path for demo, should be more robust in real recursion
-}
+    const nodeItem = document.createElement('div');
+    nodeItem.className = 'node-item';
 
-function layoutAndRender() {
-    const container = document.getElementById('tree-root');
-    const svg = document.getElementById('mindmap-svg');
-    
-    if (!container || !svg) return;
-
-    // 1. Calculate Positions (Hierarchical Layout)
-    calculatePositions(mindmapData, 0, 0); 
-    
-    // 2. Clear current nodes (except SVG)
-    container.innerHTML = '';
-    
-    // 3. Render Nodes
-    renderNodes(mindmapData, container);
-    
-    // 4. Render Links
-    svg.innerHTML = '';
-    const bounds = calculateBounds(mindmapData);
-    svg.setAttribute('width', bounds.width + 500);
-    svg.setAttribute('height', bounds.height + 500);
-    renderLinks(mindmapData, svg);
-}
-
-function calculateBounds(node) {
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    nodeMeta.forEach(m => {
-        minX = Math.min(minX, m.x);
-        maxX = Math.max(maxX, m.x + NODE_WIDTH);
-        minY = Math.min(minY, m.y);
-        maxY = Math.max(maxY, m.y + NODE_HEIGHT);
-    });
-    return { width: maxX - minX, height: maxY - minY };
-}
-
-// recursive position calculation
-function calculatePositions(node, x, yStart) {
-    const id = getNodePath(node);
-    const meta = nodeMeta.get(id);
-    meta.x = x;
-    
-    const visibleChildren = (!meta.collapsed && node.children) ? node.children : [];
-    
-    if (visibleChildren.length === 0) {
-        meta.y = yStart;
-        return NODE_HEIGHT + SIBLING_GAP;
+    // Connection line into this node (from its parent's backbone)
+    if (!isRoot) {
+        const childConn = document.createElement('div');
+        childConn.className = 'child-connector';
+        nodeItem.appendChild(childConn);
     }
 
-    let totalHeight = 0;
-    let currentY = yStart;
-    
-    visibleChildren.forEach((child, index) => {
-        if (!child) return;
-        // Tag children with unique paths to avoid collisions in the map
-        child._path = id + '->' + (child.title || index);
-        const childHeight = calculatePositions(child, x + LEVEL_GAP, currentY);
-        totalHeight += childHeight;
-        currentY += childHeight;
-    });
-
-    // Center parent relative to children
-    meta.y = yStart + (totalHeight - SIBLING_GAP) / 2;
-    return totalHeight;
-}
-
-function renderNodes(node, container) {
-    const id = getNodePath(node);
-    const meta = nodeMeta.get(id);
-    
-    const nodeEl = document.createElement('div');
-    nodeEl.className = 'mindmap-node' + (meta.collapsed ? ' collapsed' : '');
-    nodeEl.style.left = `${meta.x}px`;
-    nodeEl.style.top = `${meta.y}px`;
-    
-    // Randomized rotation for notebook feel
-    const rotation = (Math.random() * 2 - 1).toFixed(1);
-    
     const card = document.createElement('div');
-    card.className = 'mindmap-card' + (meta.depth === 0 ? ' root' : '');
-    card.style.transform = `rotate(${rotation}deg)`;
-    
-    card.innerHTML = `
-        <h4>${node.icon || '📌'} ${node.title}</h4>
-        <p>${node.desc || ''}</p>
-        <div class='visual-element'>${node.icon || '📍'}</div>
-    `;
-    
-    if (node.children && node.children.length > 0) {
-        const toggle = document.createElement('div');
-        toggle.className = 'node-toggle';
-        toggle.innerText = meta.collapsed ? '+' : '−';
-        card.appendChild(toggle);
+    card.className = \`node-card \${isRoot ? 'root' : (nodeData.children ? 'category' : 'leaf')}\`;
+    card.innerHTML = \`
+        <div class="node-header">
+            <span>\${nodeData.icon || '📌'}</span>
+            <span>\${nodeData.title}</span>
+        </div>
+        <div class="node-desc">\${nodeData.desc || ''}</div>
+    \`;
+
+    nodeItem.appendChild(card);
+
+    if (nodeData.children && Array.isArray(nodeData.children) && nodeData.children.length > 0) {
+        // Add expand indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'toggle-indicator';
+        indicator.innerText = '+'; // Default collapsed representation? No wait, default to expanded!
+        indicator.innerText = '−'; // Let's make level 1 expanded by default
+        card.appendChild(indicator);
+
+        // Add outgoing parent connector
+        const parentConn = document.createElement('div');
+        parentConn.className = 'parent-connector';
+        nodeItem.appendChild(parentConn);
+
+        // Add container for children
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = 'children-container'; // Remove hidden default
         
+        nodeData.children.forEach(child => {
+            childrenContainer.appendChild(renderNode(child));
+        });
+
+        // Initialize with children hidden if not root
+        if (!isRoot) {
+            childrenContainer.classList.add('hidden');
+            parentConn.classList.add('hidden');
+            indicator.innerText = '+';
+        }
+
+        branch.appendChild(nodeItem);
+        branch.appendChild(childrenContainer);
+
+        // Interaction Logic
         card.onclick = (e) => {
             e.stopPropagation();
-            meta.collapsed = !meta.collapsed;
-            requestAnimationFrame(layoutAndRender);
+            const isNowHidden = childrenContainer.classList.toggle('hidden');
+            parentConn.classList.toggle('hidden');
+            indicator.innerText = isNowHidden ? '+' : '−';
+            
+            // Allow DOM to flow then update backbone
+            requestAnimationFrame(() => updateBackbone(childrenContainer));
         };
+
+        // Initial backbone measurement
+        requestAnimationFrame(() => updateBackbone(childrenContainer));
+    } else {
+        branch.appendChild(nodeItem);
     }
 
-    nodeEl.appendChild(card);
-    container.appendChild(nodeEl);
-
-    if (!meta.collapsed && node.children && Array.isArray(node.children)) {
-        node.children.forEach(child => {
-            if (child) renderNodes(child, container);
-        });
-    }
+    return branch;
 }
 
-function renderLinks(node, svg) {
-    const id = getNodePath(node);
-    const meta = nodeMeta.get(id);
-    
-    const visibleChildren = (!meta.collapsed && node.children) ? node.children : [];
-    
-    visibleChildren.forEach(child => {
-        const childMeta = nodeMeta.get(getNodePath(child));
+/**
+ * Adjusts the vertical backbone height to perfectly connect first and last visible children.
+ */
+function updateBackbone(container) {
+    if (container.classList.contains('hidden')) return;
+
+    const children = Array.from(container.children).filter(c => c.classList.contains('tree-branch'));
+    if (children.length > 0) {
+        const firstChild = children[0];
+        const lastChild = children[children.length - 1];
         
-        // Offset to center points
-        const x1 = meta.x + NODE_WIDTH - 20;
-        const y1 = meta.y + NODE_HEIGHT / 2;
-        const x2 = childMeta.x + 10;
-        const y2 = childMeta.y + NODE_HEIGHT / 2;
+        // Calculate distance between the centers of first and last child node-items
+        const firstNode = firstChild.querySelector('.node-item');
+        const lastNode = lastChild.querySelector('.node-item');
         
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        
-        // Organic organic curve with a mid-point wobble
-        const cp1x = x1 + (x2 - x1) * 0.4;
-        const cp2x = x1 + (x2 - x1) * 0.6;
-        const d = `M ${x1} ${y1} C ${cp1x} ${y1}, ${cp2x} ${y2}, ${x2} ${y2}`;
-        
-        path.setAttribute('d', d);
-        path.setAttribute('class', 'mindmap-connection');
-        path.style.stroke = 'var(--ink-color)';
-        path.style.opacity = '0.2';
-        path.style.strokeWidth = '2';
-        
-        // Randomly add a slightly offset companion path for "ink" feel
-        svg.appendChild(path);
-        
-        if (Math.random() > 0.5) {
-            const secondPath = path.cloneNode();
-            const d2 = `M ${x1} ${y1+1} C ${cp1x+2} ${y1+1}, ${cp2x-2} ${y2+1}, ${x2} ${y2+1}`;
-            secondPath.setAttribute('d', d2);
-            secondPath.style.opacity = '0.2';
-            svg.appendChild(secondPath);
+        if (firstNode && lastNode) {
+            const topOffset = firstNode.offsetTop + (firstNode.offsetHeight / 2);
+            const bottomOffset = container.offsetHeight - (lastNode.offsetTop + (lastNode.offsetHeight / 2));
+            
+            // Use a dynamic style property to set the backbone span locally
+            container.style.setProperty('--backbone-top', \`\${topOffset}px\`);
+            container.style.setProperty('--backbone-bottom', \`\${bottomOffset}px\`);
         }
-        
-        renderLinks(child, svg);
-    });
+    }
 }

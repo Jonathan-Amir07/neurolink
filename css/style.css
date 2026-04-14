@@ -2705,119 +2705,152 @@ header {
     align-items: center;
     min-height: 800px;
 }
+/* ── NEW DOM-BASED MIND MAP (example mindmap.html) ── */
+:root {
+    --bg-paper: #f9f7f1;
+    --ink-color: #2c3e50;
+    --accent-color: #e67e22;
+    --line-color: #8e959b;
+    --dot-color: rgba(44, 62, 80, 0.1);
+    --line-width: 2px;
+    --gap-size: 60px;
+}
 
-.mindmap-node {
-    position: relative;
+.tree-viewport {
+    padding: 80px;
+    min-width: 100vw;
     display: flex;
-    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.tree-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center; 
+    min-width: max-content;
+}
+
+.tree-branch {
+    display: flex;
     align-items: center;
-    gap: 20px;
+    position: relative;
+}
+
+.node-item {
+    display: flex;
+    align-items: center;
+    position: relative;
     z-index: 10;
 }
 
-.mindmap-card {
-    background: #fdfdf5;
-    padding: 20px 25px;
-    border-radius: 4px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.05);
-    max-width: 280px;
-    min-width: 200px;
-    text-align: center;
+.node-card {
+    background: white;
+    border: 2px solid var(--ink-color);
+    border-radius: 12px;
+    padding: 12px 18px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.2s ease;
+    width: 210px;
     position: relative;
+    text-align: left;
+    user-select: none;
+    flex-shrink: 0;
+    z-index: 5;
     font-family: 'Patrick Hand', cursive;
 }
 
-.mindmap-card:hover {
-    transform: scale(1.05) rotate(0deg) !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    z-index: 100;
+.node-card:hover {
+    transform: scale(1.03);
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.15);
+    border-color: var(--accent-color);
 }
 
-.mindmap-card h4 {
-    font-family: 'Permanent Marker', cursive;
-    margin: 0 0 10px 0;
-    font-size: 1.1rem;
-    color: #003366;
+.node-card.root {
+    background: var(--surface);
+    border-width: 3px;
+    width: 240px;
+}
+
+.node-card.category {
+    background: var(--surface);
+}
+
+.node-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    justify-content: center;
+    gap: 10px;
+    font-weight: bold;
+    font-size: 1.15rem;
+    color: var(--text-primary);
 }
 
-.mindmap-card p {
-    font-size: 1rem;
-    margin: 0;
-    line-height: 1.4;
-    color: #2c3e50;
-    opacity: 0.9;
+.node-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    line-height: 1.3;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 6px;
 }
 
-.mindmap-card .visual-element {
-    margin-top: 10px;
-    font-size: 1.5rem;
-    opacity: 0.8;
+.children-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    padding-left: var(--gap-size);
+    position: relative;
 }
 
-.node-toggle {
+.children-container::before {
+    content: '';
     position: absolute;
-    bottom: -12px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    top: var(--backbone-top, 25px);
+    bottom: var(--backbone-bottom, 25px);
+    width: var(--line-width);
+    background: var(--line-color);
+    z-index: 0;
+}
+
+.parent-connector {
+    position: absolute;
+    right: calc(var(--gap-size) * -1);
+    top: 50%;
+    width: var(--gap-size);
+    height: var(--line-width);
+    background: var(--line-color);
+    z-index: 0;
+    transform: translateY(-50%);
+}
+
+.child-connector {
+    position: absolute;
+    left: calc(var(--gap-size) * -1);
+    top: 50%;
+    width: var(--gap-size);
+    height: var(--line-width);
+    background: var(--line-color);
+    z-index: 0;
+    transform: translateY(-50%);
+}
+
+.toggle-indicator {
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 24px;
     height: 24px;
-    background: var(--accent-color);
-    color: white;
+    background: white;
+    border: 2px solid var(--ink-color);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 16px;
     font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    cursor: pointer;
-    z-index: 50;
-    transition: transform 0.2s;
 }
-
-.mindmap-card:hover .node-toggle {
-    transform: translateX(-50%) scale(1.2);
-}
-
-.mindmap-children {
-    display: flex;
-    gap: 40px;
-    padding-top: 40px;
-    position: relative;
-    transition: all 0.5s ease-in-out;
-}
-
-/* Collapsed state */
-.mindmap-node.collapsed > .mindmap-children {
-    display: none;
-}
-
-/* SVG Connectors Base */
-.mindmap-svg-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1;
-}
-
-.mindmap-connection {
-    fill: none;
-    stroke: rgba(0, 51, 102, 0.2);
-    stroke-width: 2;
-    stroke-linecap: round;
-}
-
-
 /* ── Print overrides ── */
 @media print {
     .notebook-main { background: none !important; padding: 0 !important; }

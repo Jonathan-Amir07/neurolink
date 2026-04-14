@@ -130,6 +130,9 @@
                             </div>
                             <nav id="notebook-toc"></nav>
                             <div class="sidebar-actions">
+                                <button class="secondary-action-btn" onclick="exportHTML()" title="Export generated content as HTML file">
+                                    <i class="fas fa-file-code"></i> Export HTML
+                                </button>
                                 <button class="secondary-action-btn" onclick="copyActiveContent()" title="Copy generated HTML to clipboard">
                                     <i class="fas fa-copy"></i> Copy HTML
                                 </button>
@@ -400,6 +403,134 @@
             } catch (err) {
                 console.error('Copy failed:', err);
                 showToast("Failed to copy", "fa-times-circle");
+            }
+        }
+
+        async function exportHTML() {
+            showToast("Preparing HTML Export...", "fa-spinner fa-spin");
+            
+            // Map active tab to container ID
+            const containerMap = {
+                notebook: 'notebook-content-area',
+                mindmap: 'mindmap-view',
+                flashcards: 'flashcard-container',
+                slides: 'slides-container',
+                infographic: 'infographic-container',
+                quiz: 'quiz-container'
+            };
+            
+            const containerId = containerMap[activeTab];
+            const element = document.getElementById(containerId);
+            
+            if (!element || element.innerHTML.trim() === '' || element.querySelector('.empty-state-card')) {
+                showToast("No content to export", "fa-exclamation-triangle");
+                return;
+            }
+
+            try {
+                // Fetch current styles to embed them for offline use
+                const cssResponse = await fetch('/css/style.css');
+                const cssText = await cssResponse.text();
+                
+                // Get the current HTML structure
+                // We clone the node to avoid mutating the live DOM while preparing
+                const clone = element.cloneNode(true);
+                
+                // For mindmap, we want to strip the pan/zoom inline transforms so it's readable when opened offline
+                if (activeTab === 'mindmap') {
+                    const contentWrap = clone.querySelector('#mindmap-content');
+                    if (contentWrap) contentWrap.style.transform = 'none';
+                    const controls = clone.querySelector('.mindmap-controls');
+                    if (controls) controls.remove();
+                }
+
+                const fontAwesome = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css';
+                const googleFonts = 'https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Permanent+Marker&family=Patrick+Hand&family=Roboto+Mono:wght@400;500;600&display=swap';
+
+                const htmlDoc = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${currentProject.title} - ${activeTab.toUpperCase()}</title>
+    <link href="${googleFonts}" rel="stylesheet">
+    <link rel="stylesheet" href="${fontAwesome}">
+    <style>
+        /* Base reset for offline view */
+        body {
+            background-color: var(--bg-color, #f4f7fa);
+            margin: 0;
+            padding: 40px;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+        ${cssText}
+        
+        /* Export specific overrides */
+        #notebook-content-area, #mindmap-view, .flashcard-container, .slides-container, .infographic-container, .quiz-container {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body data-theme="\${document.documentElement.getAttribute('data-theme') || 'default'}">
+    \${clone.outerHTML}
+    
+    <script>
+        // Minimal interactive logic injected for specific offline modules (like Mindmap toggle)
+        if ('${activeTab}' === 'mindmap') {
+            document.querySelectorAll('.node-card').forEach(card => {
+                card.onclick = (e) => {
+                    e.stopPropagation();
+                    const branch = card.closest('.tree-branch');
+                    const childrenContainer = branch.querySelector('.children-container');
+                    const parentConn = branch.querySelector('.parent-connector');
+                    const indicator = card.querySelector('.toggle-indicator');
+                    
+                    if(childrenContainer && parentConn && indicator) {
+                        const isNowHidden = childrenContainer.classList.toggle('hidden');
+                        parentConn.classList.toggle('hidden');
+                        indicator.innerText = isNowHidden ? '+' : '−';
+                        
+                        // Update backbone span visually locally
+                        if(!isNowHidden) {
+                            const validChildren = Array.from(childrenContainer.children).filter(c => c.classList.contains('tree-branch'));
+                            if(validChildren.length > 0) {
+                                const firstNode = validChildren[0].querySelector('.node-item');
+                                const lastNode = validChildren[validChildren.length-1].querySelector('.node-item');
+                                if(firstNode && lastNode) {
+                                    const topOffset = firstNode.offsetTop + (firstNode.offsetHeight / 2);
+                                    const bottomOffset = childrenContainer.offsetHeight - (lastNode.offsetTop + (lastNode.offsetHeight / 2));
+                                    childrenContainer.style.setProperty('--backbone-top', topOffset + 'px');
+                                    childrenContainer.style.setProperty('--backbone-bottom', bottomOffset + 'px');
+                                }
+                            }
+                        }
+                    }
+                };
+            });
+        }
+    </script>
+</body>
+</html>
+                `.trim();
+
+                const blob = new Blob([htmlDoc], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${currentProject.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${activeTab}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast("HTML Exported successfully!", "fa-check-circle");
+            } catch (err) {
+                console.error("HTML Export failed:", err);
+                showToast("Failed to export HTML", "fa-times-circle");
             }
         }
 
