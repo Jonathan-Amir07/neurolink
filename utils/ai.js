@@ -225,79 +225,32 @@ Use SINGLE QUOTES for all HTML attribute values to avoid breaking JSON. Do NOT u
 ━━━━━━━━━━━━━━━━━━━━━━━━
 CONTENT REQUIREMENTS
 ━━━━━━━━━━━━━━━━━━━━━━━━
-Break the topic into 2-3 RICH CHAPTERS. Each chapter MUST explore a single concept in massive depth.
+Break the topic into sensible, logically flowing CHAPTERS based naturally on the provided source text.
 Write at university-level depth. Do NOT produce short summaries.
-If a concept introduces a complex subtopic, expand it immediately as a detailed subsection.
-Explain every mechanism and theory thoroughly before moving to the next.
-Avoid redundant filler; focus on technical and conceptual density.
+If a concept introduces a complex subtopic, expand it naturally as a detailed <h3> subsection.
+Do NOT force an artificial or repetitive structure. Let the content dictate the flow just like a real handwritten study notebook.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
-CHAPTER STRUCTURE — Each chapter MUST contain ALL 10 sections:
+HTML STRUCTURE STYLES (use single quotes only):
 ━━━━━━━━━━━━━━━━━━━━━━━━
-1. Introduction — What is this concept and why does it matter?
-2. Core Concept Explanation — Deep conceptual explanation with <p> and <ul>/<ol> tags.
-3. Technical Breakdown — How does it work internally? Use <ul> with <strong> labels.
-4. Step-by-Step Mechanism — Numbered <ol> steps with detailed explanation per step.
-5. Diagrams or Visual Explanation — Use an HTML <table> or structured <ul class='complexity-list'> to visualize relationships.
-6. Code or Pseudocode Example — Use a <div class='chalkboard'><pre>...</pre></div> block with <span class='keyword'>, <span class='type'>, <span class='comment'> spans for syntax highlighting.
-7. Real-World Applications — Concrete use-cases using <ul> with <strong> headings.
-8. Common Mistakes or Edge Cases — Use <ul> with <strong>Mistake:</strong> labels.
-9. Comparison with Related Concepts — Use a <table> comparing this concept vs similar ones (columns: Concept, Key Difference, Use Case).
-10. Summary & Key Takeaways — Use a <ul class='complexity-list'> for key bullet points, then a <div class='quiz-box'> with 2-3 review questions.
-
-━━━━━━━━━━━━━━━━━━━━━━━━
-HTML STRUCTURE TEMPLATE (use single quotes only):
-━━━━━━━━━━━━━━━━━━━━━━━━
-<section class='notebook-page ruled'>
-  <div class='tape-strip'></div>
-  <h2>1. Chapter Title Here</h2>
-
-  <h3>1. Introduction</h3>
-  <p>Thorough introduction paragraph...</p>
-
-  <h3>2. Core Concept Explanation</h3>
-  <p>Several sentences of deep conceptual explanation...</p>
-  <ul><li><strong>Key idea:</strong> explanation</li></ul>
-
-  <h3>3. Technical Breakdown</h3>
-  <ul><li><strong>Component:</strong> what it does and how</li></ul>
-
-  <h3>4. Step-by-Step Mechanism</h3>
-  <ol><li><strong>Step 1:</strong> Detailed description of what happens...</li></ol>
-
-  <h3>5. Visual Explanation</h3>
-  <table><tr><th>Term</th><th>Meaning</th><th>Example</th></tr><tr><td>...</td><td>...</td><td>...</td></tr></table>
-
-  <h3>6. Code Example</h3>
-  <div class='chalkboard'><pre><span class='comment'>// Descriptive comment</span>
-<span class='keyword'>function</span> <span class='type'>example</span>(param) {
-  <span class='keyword'>return</span> param;
-}</pre></div>
-
-  <h3>7. Real-World Applications</h3>
-  <ul><li><strong>Use Case:</strong> explanation of how this concept is applied</li></ul>
-
-  <h3>8. Common Mistakes & Edge Cases</h3>
-  <ul><li><strong>Mistake:</strong> description and how to avoid it</li></ul>
-
-  <h3>9. Comparison with Related Concepts</h3>
-  <table><tr><th>Concept</th><th>Key Difference</th><th>Best Used When</th></tr><tr><td>...</td><td>...</td><td>...</td></tr></table>
-
-  <h3>10. Summary & Key Takeaways</h3>
-  <ul class='complexity-list'><li><strong>Takeaway 1</strong>: recap sentence</li></ul>
-  <div class='quiz-box'><p><strong>Review Questions:</strong></p><ol><li>Question one?</li><li>Question two?</li></ol></div>
-</section>
+Use these structures where appropriate to enhance readability:
+1. Chapters: <section class='notebook-page ruled'><div class='tape-strip'></div><h2>...</h2>...content...</section>
+2. Subtopics: <h3>...</h3>
+3. Complexity/Feature lists (Left Border Highlight): <ul class='complexity-list'><li><strong>Keyword:</strong> description</li></ul>
+4. Code Blocks (Chalkboard style): <div class='chalkboard'><pre><span class='comment'>// comment</span>
+<span class='type'>type</span> <span class='keyword'>name</span>() { ... }</pre></div>
+5. Tables: Use standard HTML tables with <th> headers for comparisons or tabular data.
+6. End-of-Notebook Quizzes MUST strictly use this exact format:
+   <div class='quiz-box'><h3>Questions:</h3><ol><li>Question?</li></ol></div>
+   <div class='answer-box'><h3>Answers:</h3><ul><li><strong>A1:</strong> Answer.</li></ul></div>
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 QUALITY RULES:
 ━━━━━━━━━━━━━━━━━━━━━━━━
-- Every section must have substantial content — no one-liners.
-- Code blocks MUST use the chalkboard div with syntax-colored spans.
-- Tables MUST have <th> headers and at least 3 data rows.
-- The complexity-list class is for key concept lists (no bullet markers, left-bordered style).
-- The quiz-box class is for review questions (yellow-tinted box).
-- Do NOT skip any of the 10 sections in any chapter.
-- Use only single quotes in HTML attributes to keep JSON valid.
+- EVERY single section must contain deep technical or conceptual explanations. NO filler or one-liners.
+- Do NOT use markdown. Use raw HTML tags with single quotes ONLY.
+- End the final notebook page with a comprehensive Practice Quiz utilizing BOTH the quiz-box and answer-box divs.
+- Do not add random extra properties. Ensure valid JSON encoding.
 
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.notebook)}`;
     return await callAI(prompt, 4, 16000);
