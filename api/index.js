@@ -251,7 +251,6 @@ app.post('/api/projects/:id/regenerate', async (req, res) => {
             return res.status(400).json({ error: 'No content in project to regenerate from. Please try updating the project source text.' });
         }
 
-        // For mindmap, pass existing notebook content as structural context
         let data;
         if (type === 'mindmap') {
             const notebookOutput = project.outputs.find(o => o.type === 'notebook');
@@ -260,12 +259,14 @@ app.post('/api/projects/:id/regenerate', async (req, res) => {
             data = await generators[type](inputContent);
         }
         
-        if (data && data[type]) {
+        const extractedContent = (data && typeof data === 'object' && !Array.isArray(data)) ? data[type] : data;
+        
+        if (extractedContent) {
             const existingIndex = project.outputs.findIndex(o => o.type === type);
             if (existingIndex !== -1) {
-                project.outputs[existingIndex].content = data[type];
+                project.outputs[existingIndex].content = extractedContent;
             } else {
-                project.outputs.push({ type, content: data[type] });
+                project.outputs.push({ type, content: extractedContent });
             }
             await project.save();
             return res.json({ success: true, project });
