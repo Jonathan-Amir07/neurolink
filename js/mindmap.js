@@ -4,6 +4,12 @@ let translateY = 0;
 let isDragging = false;
 let startX, startY;
 let mindmapData = null;
+let nodeMeta = new Map(); // Stores {x, y, collapsed}
+
+const NODE_WIDTH = 250;
+const NODE_HEIGHT = 100;
+const LEVEL_GAP = 350;
+const SIBLING_GAP = 140;
 
 function initMindMap(data) {
     const container = document.getElementById('mindmap-view');
@@ -11,9 +17,10 @@ function initMindMap(data) {
     
     // Create new structure for pan/zoom
     container.innerHTML = `
-        <div id="mindmap-viewport" class="tree-viewport" style="width: 100%; height: 100%; overflow: hidden; cursor: grab; position: relative; padding: 0;">
-            <div id="mindmap-content" style="transform-origin: 0 0; transition: transform 0.1s ease-out; position: absolute; left: 0; top: 0; padding: 80px;">
-                <div id="tree-root" class="tree-container"></div>
+        <div id="mindmap-viewport" style="width: 100%; height: 100%; overflow: hidden; cursor: grab; position: relative;">
+            <div id="mindmap-content" style="transform-origin: 0 0; transition: transform 0.1s ease-out;">
+                <svg class="mindmap-svg-layer" id="mindmap-svg"></svg>
+                <div id="tree-root" style="position: absolute; top: 0; left: 0;"></div>
             </div>
         </div>
         <div class="mindmap-controls" style="position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 1000;">
@@ -24,23 +31,28 @@ function initMindMap(data) {
     `;
     
     initPanZoom(document.getElementById('mindmap-viewport'));
+    
     mindmapData = data;
+    nodeMeta.clear();
     
     if (!data || !data.title) {
         container.innerHTML += '<div class="empty-state-card"><h3>No mind map available</h3><p>Click "Regenerate Tab" to generate a mind map.</p></div>';
         return;
     }
 
-    // Initial Layout via recursive DOM
-    const treeRootContainer = document.getElementById('tree-root');
-    treeRootContainer.appendChild(renderNode(mindmapData, true));
-
+    // Initialize metadata
+    initNodeMeta(mindmapData, 0);
+    
+    // Initial layout
     requestAnimationFrame(() => {
+        layoutAndRender();
         resetView();
     });
 }
 
 function initPanZoom(viewport) {
+    const content = document.getElementById('mindmap-content');
+    
     viewport.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return; // Left click only
         isDragging = true;
@@ -92,9 +104,9 @@ function adjustZoom(delta, centerX, centerY) {
 }
 
 function resetView() {
-    zoomScale = 0.8;
+    zoomScale = 0.6; // Start slightly zoomed out
     translateX = 50;
-    translateY = 50;
+    translateY = 150;
     updateTransform();
 }
 
@@ -105,10 +117,44 @@ function updateTransform() {
     }
 }
 
+function initNodeMeta(node, depth) {
+    const id = getNodePath(node);
+    nodeMeta.set(id, {
+        collapsed: depth >= 2, // Collapse deeper levels by default
+        x: 0,
+        y: 0,
+        depth: depth
+    });
+    if (node && node.children && Array.isArray(node.children)) {
+        node.children.forEach(child => initNodeMeta(child, depth + 1));
+    }
+}
+
+function getNodePath(node) {
+    return node._path || node.title; // Simple path for demo, should be more robust in real recursion
+}
+
+function layoutAndRender() {
+    const container = document.getElementById('tree-root');
+    const svg = document.getElementById('mindmap-svg');
+
+    if (!container || !mindmapData || !mindmapData.title) return;
+    
+    // Clear old SVG lines because we no longer use them for this DOM-based structure
+    if (svg) svg.innerHTML = '';
+    
+    // Render tree using the orthogonal recursive builder from example mindmap
+    container.innerHTML = '';
+    container.appendChild(renderNode(mindmapData, true));
+}
+
 /**
- * Recursively renders the tree structure using pure DOM elements and CSS logic.
+ * Recursively renders the tree structure.
  */
 function renderNode(nodeData, isRoot = false) {
+    const id = getNodePath(nodeData);
+    const meta = nodeMeta.get(id);
+
     const branch = document.createElement('div');
     branch.className = 'tree-branch';
 
@@ -122,45 +168,55 @@ function renderNode(nodeData, isRoot = false) {
         nodeItem.appendChild(childConn);
     }
 
+    // Randomized rotation for notebook feel
+    const rotation = (Math.random() * 2 - 1).toFixed(1);
+
     const card = document.createElement('div');
-    card.className = \`node-card \${isRoot ? 'root' : (nodeData.children ? 'category' : 'leaf')}\`;
-    card.innerHTML = \`
+    card.className = `node-card ${isRoot ? 'root' : (nodeData.children ? 'category' : 'leaf')}`;
+    card.style.transform = `rotate(${rotation}deg)`;
+    
+    // Ensure titles are formatted consistently whether using new or old payload shapes
+    const displayTitle = nodeData.title || nodeData.text || 'Concept';
+    const displayDesc = nodeData.desc || nodeData.description || '';
+    const displayIcon = nodeData.icon || (isRoot ? '🧠' : '📍');
+
+    card.innerHTML = `
         <div class="node-header">
-            <span>\${nodeData.icon || '📌'}</span>
-            <span>\${nodeData.title}</span>
+            <span>${displayIcon}</span>
+            <span>${displayTitle}</span>
         </div>
-        <div class="node-desc">\${nodeData.desc || ''}</div>
-    \`;
+        ${displayDesc ? `<div class="node-desc">${displayDesc}</div>` : ''}
+    `;
 
     nodeItem.appendChild(card);
 
-    if (nodeData.children && Array.isArray(nodeData.children) && nodeData.children.length > 0) {
+    if (nodeData.children && nodeData.children.length > 0) {
         // Add expand indicator
         const indicator = document.createElement('div');
         indicator.className = 'toggle-indicator';
-        indicator.innerText = '+'; // Default collapsed representation? No wait, default to expanded!
-        indicator.innerText = '−'; // Let's make level 1 expanded by default
+        indicator.innerText = meta.collapsed ? '+' : '−';
+        
         card.appendChild(indicator);
 
-        // Add outgoing parent connector
+        // Add outgoing parent connector (hidden until expanded)
         const parentConn = document.createElement('div');
-        parentConn.className = 'parent-connector';
+        parentConn.className = 'parent-connector' + (meta.collapsed ? ' hidden' : '');
         nodeItem.appendChild(parentConn);
 
-        // Add container for children
+        // Add container for children (hidden until expanded)
         const childrenContainer = document.createElement('div');
-        childrenContainer.className = 'children-container'; // Remove hidden default
+        childrenContainer.className = 'children-container' + (meta.collapsed ? ' hidden' : '');
         
-        nodeData.children.forEach(child => {
+        nodeData.children.forEach((child, idx) => {
+            if (!child) return;
+            // Provide a temporary path so child can be uniquely identified
+            child._path = id + '->' + (child.title || idx);
+            // Ensure meta exists
+            if (!nodeMeta.has(child._path)) {
+                nodeMeta.set(child._path, { collapsed: false, id: child._path });
+            }
             childrenContainer.appendChild(renderNode(child));
         });
-
-        // Initialize with children hidden if not root
-        if (!isRoot) {
-            childrenContainer.classList.add('hidden');
-            parentConn.classList.add('hidden');
-            indicator.innerText = '+';
-        }
 
         branch.appendChild(nodeItem);
         branch.appendChild(childrenContainer);
@@ -168,16 +224,19 @@ function renderNode(nodeData, isRoot = false) {
         // Interaction Logic
         card.onclick = (e) => {
             e.stopPropagation();
+            meta.collapsed = !meta.collapsed;
+            
             const isNowHidden = childrenContainer.classList.toggle('hidden');
             parentConn.classList.toggle('hidden');
             indicator.innerText = isNowHidden ? '+' : '−';
             
-            // Allow DOM to flow then update backbone
+            // Recalculate backbone when toggling
             requestAnimationFrame(() => updateBackbone(childrenContainer));
         };
-
-        // Initial backbone measurement
-        requestAnimationFrame(() => updateBackbone(childrenContainer));
+        // Initialize backbone layout on first frame if not hidden
+        if (!meta.collapsed) {
+            requestAnimationFrame(() => updateBackbone(childrenContainer));
+        }
     } else {
         branch.appendChild(nodeItem);
     }
@@ -204,9 +263,9 @@ function updateBackbone(container) {
             const topOffset = firstNode.offsetTop + (firstNode.offsetHeight / 2);
             const bottomOffset = container.offsetHeight - (lastNode.offsetTop + (lastNode.offsetHeight / 2));
             
-            // Use a dynamic style property to set the backbone span locally
-            container.style.setProperty('--backbone-top', \`\${topOffset}px\`);
-            container.style.setProperty('--backbone-bottom', \`\${bottomOffset}px\`);
+            // Use a dynamic style property to set the backbone span
+            container.style.setProperty('--backbone-top', `${topOffset}px`);
+            container.style.setProperty('--backbone-bottom', `${bottomOffset}px`);
         }
     }
 }

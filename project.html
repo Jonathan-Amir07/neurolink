@@ -130,11 +130,11 @@
                             </div>
                             <nav id="notebook-toc"></nav>
                             <div class="sidebar-actions">
-                                <button class="secondary-action-btn" onclick="exportHTML()" title="Export generated content as HTML file">
-                                    <i class="fas fa-file-code"></i> Export HTML
-                                </button>
                                 <button class="secondary-action-btn" onclick="copyActiveContent()" title="Copy generated HTML to clipboard">
                                     <i class="fas fa-copy"></i> Copy HTML
+                                </button>
+                                <button class="secondary-action-btn" onclick="exportGlobalHTML()" title="Download current tab as an HTML file">
+                                    <i class="fas fa-file-code"></i> Export HTML
                                 </button>
                                 <button class="secondary-action-btn" onclick="window.print()" title="Print or save as PDF">
                                     <i class="fas fa-print"></i> Export PDF
@@ -406,132 +406,82 @@
             }
         }
 
-        async function exportHTML() {
-            showToast("Preparing HTML Export...", "fa-spinner fa-spin");
-            
-            // Map active tab to container ID
-            const containerMap = {
-                notebook: 'notebook-content-area',
-                mindmap: 'mindmap-view',
-                flashcards: 'flashcard-container',
-                slides: 'slides-container',
-                infographic: 'infographic-container',
-                quiz: 'quiz-container'
-            };
-            
-            const containerId = containerMap[activeTab];
-            const element = document.getElementById(containerId);
-            
-            if (!element || element.innerHTML.trim() === '' || element.querySelector('.empty-state-card')) {
+        function exportGlobalHTML() {
+            let output = currentProject.outputs && currentProject.outputs.find(o => o.type === activeTab);
+            if (!output || !output.content) {
                 showToast("No content to export", "fa-exclamation-triangle");
                 return;
             }
 
-            try {
-                // Fetch current styles to embed them for offline use
-                const cssResponse = await fetch('/css/style.css');
-                const cssText = await cssResponse.text();
-                
-                // Get the current HTML structure
-                // We clone the node to avoid mutating the live DOM while preparing
-                const clone = element.cloneNode(true);
-                
-                // For mindmap, we want to strip the pan/zoom inline transforms so it's readable when opened offline
-                if (activeTab === 'mindmap') {
-                    const contentWrap = clone.querySelector('#mindmap-content');
-                    if (contentWrap) contentWrap.style.transform = 'none';
-                    const controls = clone.querySelector('.mindmap-controls');
-                    if (controls) controls.remove();
-                }
+            // Identify the container that holds the rendered visual content
+            let containerId;
+            let themeClass = document.documentElement.getAttribute('data-theme') || '';
+            if (activeTab === 'notebook') containerId = 'notebook-content-area';
+            else if (activeTab === 'mindmap') containerId = 'mindmap-content';
+            else if (activeTab === 'flashcards') containerId = 'flashcard-container';
+            else if (activeTab === 'slides') containerId = 'slides-container';
+            else if (activeTab === 'infographic') containerId = 'infographic-container';
+            else if (activeTab === 'quiz') containerId = 'quiz-container';
 
-                const fontAwesome = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css';
-                const googleFonts = 'https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Permanent+Marker&family=Patrick+Hand&family=Roboto+Mono:wght@400;500;600&display=swap';
+            const container = document.getElementById(containerId);
+            if (!container) return;
 
-                const htmlDoc = `
-<!DOCTYPE html>
-<html lang="en">
+            const htmlContent = `<!DOCTYPE html>
+<html lang="en" data-theme="${themeClass}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${currentProject.title} - ${activeTab.toUpperCase()}</title>
-    <link href="${googleFonts}" rel="stylesheet">
-    <link rel="stylesheet" href="${fontAwesome}">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=Permanent+Marker&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Base reset for offline view */
+        /* Extract root variables depending on theme for accurate standalone color matching */
+        :root {
+            --bg-dark: #0a0e17; --glass-bg: rgba(16, 23, 35, 0.6);
+            --border-light: rgba(94, 114, 228, 0.15); --text-primary: #e2e8f0; --text-secondary: #94a3b8;
+            --accent-color: #5e72e4; --card-bg: rgba(15, 23, 42, 0.7);
+        }
+        [data-theme='light'] {
+            --bg-dark: #f8fafc; --glass-bg: rgba(255, 255, 255, 0.8);
+            --border-light: rgba(94, 114, 228, 0.15); --text-primary: #0f172a; --text-secondary: #475569;
+            --card-bg: #ffffff;
+        }
+        [data-theme='dracula'] {
+            --bg-dark: #282a36; --glass-bg: rgba(40, 42, 54, 0.9);
+            --border-light: #6272a4; --text-primary: #f8f8f2; --text-secondary: #6272a4;
+            --accent-color: #ff79c6; --card-bg: #44475a;
+        }
         body {
-            background-color: var(--bg-color, #f4f7fa);
-            margin: 0;
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
             padding: 40px;
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
+            margin: 0;
+            overflow-x: auto;
         }
-        ${cssText}
-        
-        /* Export specific overrides */
-        #notebook-content-area, #mindmap-view, .flashcard-container, .slides-container, .infographic-container, .quiz-container {
-            display: block !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-            margin: 0 auto;
-        }
+        .mindmap-node, .mindmap-card { font-family: 'Patrick Hand', cursive; }
+        .empty-state-card { font-family: 'Space Grotesk', sans-serif; }
     </style>
+    <!-- Inject core css -->
+    <link rel="stylesheet" href="${window.location.origin}/css/style.css">
 </head>
-<body data-theme="\${document.documentElement.getAttribute('data-theme') || 'default'}">
-    \${clone.outerHTML}
-    
-    <script>
-        // Minimal interactive logic injected for specific offline modules (like Mindmap toggle)
-        if ('${activeTab}' === 'mindmap') {
-            document.querySelectorAll('.node-card').forEach(card => {
-                card.onclick = (e) => {
-                    e.stopPropagation();
-                    const branch = card.closest('.tree-branch');
-                    const childrenContainer = branch.querySelector('.children-container');
-                    const parentConn = branch.querySelector('.parent-connector');
-                    const indicator = card.querySelector('.toggle-indicator');
-                    
-                    if(childrenContainer && parentConn && indicator) {
-                        const isNowHidden = childrenContainer.classList.toggle('hidden');
-                        parentConn.classList.toggle('hidden');
-                        indicator.innerText = isNowHidden ? '+' : '−';
-                        
-                        // Update backbone span visually locally
-                        if(!isNowHidden) {
-                            const validChildren = Array.from(childrenContainer.children).filter(c => c.classList.contains('tree-branch'));
-                            if(validChildren.length > 0) {
-                                const firstNode = validChildren[0].querySelector('.node-item');
-                                const lastNode = validChildren[validChildren.length-1].querySelector('.node-item');
-                                if(firstNode && lastNode) {
-                                    const topOffset = firstNode.offsetTop + (firstNode.offsetHeight / 2);
-                                    const bottomOffset = childrenContainer.offsetHeight - (lastNode.offsetTop + (lastNode.offsetHeight / 2));
-                                    childrenContainer.style.setProperty('--backbone-top', topOffset + 'px');
-                                    childrenContainer.style.setProperty('--backbone-bottom', bottomOffset + 'px');
-                                }
-                            }
-                        }
-                    }
-                };
-            });
-        }
-    </script>
+<body>
+    <div style="background: var(--glass-bg); padding: 2rem; border-radius: 20px; border: 1px solid var(--border-light);">
+        ${container.innerHTML}
+    </div>
 </body>
-</html>
-                `.trim();
+</html>`;
 
-                const blob = new Blob([htmlDoc], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${currentProject.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${activeTab}.html`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showToast("HTML Exported successfully!", "fa-check-circle");
-            } catch (err) {
-                console.error("HTML Export failed:", err);
-                showToast("Failed to export HTML", "fa-times-circle");
-            }
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentProject.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${activeTab}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("HTML Exported!", "fa-check-circle");
         }
 
         function showToast(message, icon = "fa-info-circle") {
