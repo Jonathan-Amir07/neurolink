@@ -186,28 +186,93 @@ async function callAI(prompt, maxRetries = 4, maxTokens = 2000) {
 }
 
 async function generateNotebook(text) {
-    const prompt = `You are a Master Academic Study Architect. Transform the provided content into a highly detailed, professional study notebook.
-CONTENT REQUIREMENTS:
-- Create 1-2 CHAPTERS of dense, structured study material.
-- Each chapter MUST have exactly 4 sections: 1. Overview, 2. Core Explanation, 3. Key Concepts, 4. Summary & Quiz.
-- Use RICH HTML elements: <ul>, <ol>, <table> (for comparisons), and <strong> for Emphasis.
-- Focus strictly on conceptual clarity and pedagogical depth.
-- Do NOT use markdown in the HTML content—use pure HTML tags.
+    const prompt = `You are an AI Study Architect, Curriculum Engineer, and Technical Educator.
 
-OUTPUT FORMAT:
-Return ONLY a valid JSON object: {"notebook": "html_content"}.
-HTML STRUCTURE (Use single quotes ' for all CSS classes):
+Your task is to transform the provided content into a deeply structured study notebook that explains the subject thoroughly and clearly, resembling a handwritten study notebook but containing detailed, textbook-quality explanations.
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━
+Return ONLY a valid JSON object: {"notebook": "html_content"}
+Use SINGLE QUOTES for all HTML attribute values to avoid breaking JSON. Do NOT use markdown—use pure HTML tags only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+CONTENT REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━
+Break the topic into 3-5 logical CHAPTERS. Each chapter covers ONE core concept.
+Write at university-level depth. Do NOT produce short summaries. Explain thoroughly before moving on.
+If a concept introduces a subtopic, expand it as a subsection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+CHAPTER STRUCTURE — Each chapter MUST contain ALL 10 sections:
+━━━━━━━━━━━━━━━━━━━━━━━━
+1. Introduction — What is this concept and why does it matter?
+2. Core Concept Explanation — Deep conceptual explanation with <p> and <ul>/<ol> tags.
+3. Technical Breakdown — How does it work internally? Use <ul> with <strong> labels.
+4. Step-by-Step Mechanism — Numbered <ol> steps with detailed explanation per step.
+5. Diagrams or Visual Explanation — Use an HTML <table> or structured <ul class='complexity-list'> to visualize relationships.
+6. Code or Pseudocode Example — Use a <div class='chalkboard'><pre>...</pre></div> block with <span class='keyword'>, <span class='type'>, <span class='comment'> spans for syntax highlighting.
+7. Real-World Applications — Concrete use-cases using <ul> with <strong> headings.
+8. Common Mistakes or Edge Cases — Use <ul> with <strong>Mistake:</strong> labels.
+9. Comparison with Related Concepts — Use a <table> comparing this concept vs similar ones (columns: Concept, Key Difference, Use Case).
+10. Summary & Key Takeaways — Use a <ul class='complexity-list'> for key bullet points, then a <div class='quiz-box'> with 2-3 review questions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+HTML STRUCTURE TEMPLATE (use single quotes only):
+━━━━━━━━━━━━━━━━━━━━━━━━
 <section class='notebook-page ruled'>
-    <div class='tape-strip'></div>
-    <h2>Chapter Number. Chapter Title</h2>
-    <div class='notebook-section'><h3>1. Overview</h3><p>Detailed overview...</p></div>
-    <div class='notebook-section'><h3>2. Core Explanation</h3><p>Deep dive into mechanics with <ul><li>key point</li></ul>...</p></div>
-    <div class='notebook-section'><h3>3. Key Concepts</h3><div class='complexity-list'><strong>Concept</strong>: Definition...</div></div>
-    <div class='notebook-section'><h3>4. Summary & Quiz</h3><p>Recap...</p><div class='quiz-box'>Review Question?</div></div>
+  <div class='tape-strip'></div>
+  <h2>1. Chapter Title Here</h2>
+
+  <h3>1. Introduction</h3>
+  <p>Thorough introduction paragraph...</p>
+
+  <h3>2. Core Concept Explanation</h3>
+  <p>Several sentences of deep conceptual explanation...</p>
+  <ul><li><strong>Key idea:</strong> explanation</li></ul>
+
+  <h3>3. Technical Breakdown</h3>
+  <ul><li><strong>Component:</strong> what it does and how</li></ul>
+
+  <h3>4. Step-by-Step Mechanism</h3>
+  <ol><li><strong>Step 1:</strong> Detailed description of what happens...</li></ol>
+
+  <h3>5. Visual Explanation</h3>
+  <table><tr><th>Term</th><th>Meaning</th><th>Example</th></tr><tr><td>...</td><td>...</td><td>...</td></tr></table>
+
+  <h3>6. Code Example</h3>
+  <div class='chalkboard'><pre><span class='comment'>// Descriptive comment</span>
+<span class='keyword'>function</span> <span class='type'>example</span>(param) {
+  <span class='keyword'>return</span> param;
+}</pre></div>
+
+  <h3>7. Real-World Applications</h3>
+  <ul><li><strong>Use Case:</strong> explanation of how this concept is applied</li></ul>
+
+  <h3>8. Common Mistakes & Edge Cases</h3>
+  <ul><li><strong>Mistake:</strong> description and how to avoid it</li></ul>
+
+  <h3>9. Comparison with Related Concepts</h3>
+  <table><tr><th>Concept</th><th>Key Difference</th><th>Best Used When</th></tr><tr><td>...</td><td>...</td><td>...</td></tr></table>
+
+  <h3>10. Summary & Key Takeaways</h3>
+  <ul class='complexity-list'><li><strong>Takeaway 1</strong>: recap sentence</li></ul>
+  <div class='quiz-box'><p><strong>Review Questions:</strong></p><ol><li>Question one?</li><li>Question two?</li></ol></div>
 </section>
 
+━━━━━━━━━━━━━━━━━━━━━━━━
+QUALITY RULES:
+━━━━━━━━━━━━━━━━━━━━━━━━
+- Every section must have substantial content — no one-liners.
+- Code blocks MUST use the chalkboard div with syntax-colored spans.
+- Tables MUST have <th> headers and at least 3 data rows.
+- The complexity-list class is for key concept lists (no bullet markers, left-bordered style).
+- The quiz-box class is for review questions (yellow-tinted box).
+- Do NOT skip any of the 10 sections in any chapter.
+- Use only single quotes in HTML attributes to keep JSON valid.
+
 Content: ${prepareContext(text, INPUT_CHAR_LIMITS.notebook)}`;
-    return await callAI(prompt, 4, 8000);
+    return await callAI(prompt, 4, 16000);
 }
 
 async function generateMindmap(text) {

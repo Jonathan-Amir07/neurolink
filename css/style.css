@@ -2365,3 +2365,244 @@ header {
         border-radius: 0 8px 8px 0;
     }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   📓 NOTEBOOK CONTENT RENDERER — Paper, Chalkboard & Quiz Styles
+   Applied when AI-generated notebook HTML is injected into #notebook-content-area
+   ══════════════════════════════════════════════════════════════ */
+
+/* Notebook main scrollable area */
+.notebook-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 60px 40px;
+    background-image: radial-gradient(#c8d3e0 1px, transparent 1px);
+    background-size: 30px 30px;
+    background-color: #dde4ec;
+    scroll-behavior: smooth;
+}
+
+/* ── PAPER PAGE CARDS ── */
+#notebook-content-area .notebook-page {
+    max-width: 920px;
+    margin: 0 auto 80px auto;
+    background: #fdfdf5;
+    padding: 70px 80px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e0ddd5;
+    transform: rotate(-0.4deg);
+    border-radius: 2px;
+    font-family: 'Patrick Hand', cursive;
+    color: #2c3e50;
+}
+
+#notebook-content-area .notebook-page:nth-child(even) {
+    transform: rotate(0.5deg);
+}
+
+/* Ruled paper lines */
+#notebook-content-area .ruled {
+    background-image:
+        linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, transparent 60px, rgba(255,100,100,0.12) 60px, rgba(255,100,100,0.12) 62px, transparent 62px);
+    background-size: 100% 1.8rem, 100% 100%;
+    line-height: 1.8rem;
+}
+
+/* Tape strip at top of each page */
+#notebook-content-area .tape-strip {
+    position: absolute;
+    width: 150px;
+    height: 40px;
+    background: rgba(255, 255, 200, 0.6);
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    border: 1px solid rgba(200,180,100,0.3);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+    border-radius: 2px;
+}
+
+/* ── HEADINGS ── */
+#notebook-content-area h2 {
+    font-family: 'Permanent Marker', cursive;
+    color: #003366;
+    font-size: 2.4rem;
+    margin-bottom: 28px;
+    margin-top: 0;
+    border-bottom: 4px double #003366;
+    display: inline-block;
+    padding-bottom: 4px;
+}
+
+#notebook-content-area h3 {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.65rem;
+    color: #b22222;
+    margin: 44px 0 16px 0;
+    border-left: 6px solid #b22222;
+    padding: 6px 16px;
+    background-color: rgba(255, 255, 255, 0.65);
+    display: block;
+}
+
+/* ── TEXT ── */
+#notebook-content-area p,
+#notebook-content-area li {
+    margin-bottom: 14px;
+    font-size: 1.22rem;
+    text-align: justify;
+    line-height: 1.8rem;
+    color: #2c3e50;
+}
+
+#notebook-content-area ul,
+#notebook-content-area ol {
+    margin: 0 0 22px 36px;
+    font-size: 1.18rem;
+}
+
+#notebook-content-area strong {
+    color: #003366;
+}
+
+/* ── COMPLEXITY LIST (key concept bordered list) ── */
+#notebook-content-area .complexity-list,
+#notebook-content-area ul.complexity-list {
+    list-style-type: none;
+    margin: 14px 0 28px 0 !important;
+    padding: 14px 18px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-left: 5px solid #b22222;
+    border-radius: 4px;
+    font-size: 1.18rem;
+    color: #111;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+#notebook-content-area .complexity-list li {
+    margin-bottom: 8px;
+    font-size: 1.18rem;
+    text-align: left;
+}
+
+#notebook-content-area .complexity-list strong {
+    color: #b22222;
+    display: inline-block;
+    min-width: 120px;
+}
+
+/* ── TABLES ── */
+#notebook-content-area table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0;
+    font-size: 1.12rem;
+    background: rgba(255,255,255,0.85);
+    font-family: 'Patrick Hand', cursive;
+}
+
+#notebook-content-area th,
+#notebook-content-area td {
+    border: 2px solid #bbb;
+    padding: 11px 14px;
+    text-align: left;
+    line-height: 1.5;
+}
+
+#notebook-content-area th {
+    background-color: #dde4f0;
+    color: #003366;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.15rem;
+}
+
+#notebook-content-area tr:nth-child(even) td {
+    background-color: rgba(255,255,255,0.5);
+}
+
+/* ── CHALKBOARD CODE BLOCKS ── */
+#notebook-content-area .chalkboard {
+    background-color: #1e2a1e;
+    color: #f0f0e8;
+    padding: 28px 30px;
+    border-radius: 10px;
+    margin: 28px 0;
+    position: relative;
+    border: 8px solid #4a5a3a;
+    box-shadow: inset 0 0 25px rgba(0,0,0,0.7), 0 6px 20px rgba(0,0,0,0.25);
+    overflow-x: auto;
+}
+
+#notebook-content-area .chalkboard::before {
+    content: "◇ Code";
+    display: block;
+    margin-bottom: 14px;
+    color: #a8d8a8;
+    font-family: 'Patrick Hand', cursive;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border-bottom: 1px dashed #4a5a3a;
+    padding-bottom: 6px;
+    opacity: 0.85;
+}
+
+#notebook-content-area .chalkboard pre {
+    font-family: 'Indie Flower', cursive;
+    font-size: 1.22rem;
+    line-height: 1.7;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Chalk syntax highlight colors */
+#notebook-content-area .comment { color: #88bd88; font-style: italic; }
+#notebook-content-area .keyword { color: #ffda6a; font-weight: bold; }
+#notebook-content-area .type    { color: #87cefa; }
+#notebook-content-area .string  { color: #f4a460; }
+#notebook-content-area .number  { color: #dda0dd; }
+
+/* ── QUIZ BOX ── */
+#notebook-content-area .quiz-box {
+    background: #fffbe6;
+    border: 2px dashed #f0c040;
+    padding: 20px 24px;
+    border-radius: 10px;
+    margin: 18px 0 20px;
+    font-size: 1.15rem;
+}
+
+#notebook-content-area .quiz-box p,
+#notebook-content-area .quiz-box li {
+    font-size: 1.15rem;
+    color: #4a3500;
+    text-align: left;
+}
+
+/* ── ANSWER BOX ── */
+#notebook-content-area .answer-box {
+    background: #eaf7ee;
+    border: 2px dashed #86c19a;
+    padding: 20px 24px;
+    border-radius: 10px;
+    margin: 18px 0 20px;
+    font-size: 1.15rem;
+}
+
+/* ── Print overrides ── */
+@media print {
+    .notebook-main { background: none !important; padding: 0 !important; }
+    #notebook-content-area .notebook-page {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        transform: none !important;
+        margin: 0 !important;
+        page-break-after: always;
+    }
+    #notebook-content-area .tape-strip { display: none !important; }
+}
+
