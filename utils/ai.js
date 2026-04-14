@@ -129,17 +129,15 @@ function extractJSON(text) {
  * 2. Only fall back to FALLBACK_MODELS if the primary is truly down
  * 3. Use responseMimeType: 'application/json' for clean output
  */
-async function callAI(prompt, maxRetries = 4, maxTokens = 2000) {
+async function callAI(prompt, maxRetries = 3, maxTokens = 2000) {
     if (!process.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY === 'your_gemini_api_key') {
         console.error('[AI] No valid GOOGLE_API_KEY configured');
         return null;
     }
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
-    // Build the ordered list of attempts:
-    // Primary model gets 3 tries, then each fallback gets 1 try
+    // Fast-fail strategy: Primary gets 2 tries, then jump to fallbacks immediately
     const attempts = [
-        PRIMARY_MODEL,
         PRIMARY_MODEL,
         PRIMARY_MODEL,
         ...FALLBACK_MODELS
@@ -188,14 +186,15 @@ async function callAI(prompt, maxRetries = 4, maxTokens = 2000) {
             
             let delay;
             if (is429) {
-                // Extract retry delay from error if available
-                const retryMatch = msg.match(/retry in (\d+)/i);
-                delay = retryMatch ? (parseInt(retryMatch[1]) + 2) * 1000 : 10000 + Math.random() * 5000;
+                // Fast retry — don't wait the full suggested time, just enough to clear burst limit
+                delay = 3000 + Math.random() * 2000; // 3-5s
             } else if (is503) {
-                delay = 5000 + Math.random() * 3000;
+                delay = 2000 + Math.random() * 2000; // 2-4s
             } else {
-                delay = 2000 * Math.pow(1.5, i);
+                delay = 1500 * (i + 1); // 1.5s, 3s, 4.5s
             }
+            // Hard cap: never wait more than 8 seconds
+            delay = Math.min(delay, 8000);
             
             console.log(`[AI] Waiting ${Math.round(delay / 1000)}s before retry...`);
             await new Promise(r => setTimeout(r, delay));
@@ -467,23 +466,28 @@ async function generateStudyMaterials(text, selectedTypes = ['notebook', 'mindma
     if (selectedTypes.includes('notebook')) {
         console.log(`[AI] Generating notebook (Primary Context)...`);
         results.notebook = (await generateNotebook(text))?.notebook ?? null;
-        if (selectedTypes.length > 1) await new Promise(r => setTimeout(r, 1500));
+        if (selectedTypes.length > 1) await new Promise(r => setTimeout(r, 500));
     }
 
     for (const type of selectedTypes) {
         if (type === 'notebook') continue; // Already done
         if (generators[type]) {
             console.log(`[AI] Generating ${type}...`);
-            // Pass notebook context to mindmap if it exists
-            const data = (type === 'mindmap' && results.notebook) 
-                ? await generateMindmap(text, results.notebook)
-                : await generators[type](text);
+            try {
+                // Pass notebook context to mindmap if it exists
+                const data = (type === 'mindmap' && results.notebook) 
+                    ? await generateMindmap(text, results.notebook)
+                    : await generators[type](text);
+                
+                results[type] = data?.[type] ?? null;
+            } catch (err) {
+                console.error(`[AI] ❌ ${type} failed:`, err.message?.substring(0, 100));
+                results[type] = null;
+            }
             
-            results[type] = data?.[type] ?? null;
-            
-            // Sequential delay to prevent concurrent rate limiting on free tier
+            // Minimal delay — just enough to avoid burst limits (callAI handles backoff internally)
             if (selectedTypes.length > 1) {
-                await new Promise(r => setTimeout(r, 1500));
+                await new Promise(r => setTimeout(r, 500));
             }
         }
     }

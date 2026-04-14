@@ -251,7 +251,14 @@ app.post('/api/projects/:id/regenerate', async (req, res) => {
             return res.status(400).json({ error: 'No content in project to regenerate from. Please try updating the project source text.' });
         }
 
-        const data = await generators[type](inputContent);
+        // For mindmap, pass existing notebook content as structural context
+        let data;
+        if (type === 'mindmap') {
+            const notebookOutput = project.outputs.find(o => o.type === 'notebook');
+            data = await generateMindmap(inputContent, notebookOutput?.content || null);
+        } else {
+            data = await generators[type](inputContent);
+        }
         
         if (data && data[type]) {
             const existingIndex = project.outputs.findIndex(o => o.type === type);
@@ -391,38 +398,22 @@ app.post('/api/projects', parseUpload, async (req, res) => {
         };
 
         try {
-            console.log(`[AI] Dispatching sequential requests for: ${selectedTypes.join(', ')}`);
+            console.log(`[AI] Generating materials for: ${selectedTypes.join(', ')}`);
             const tStart = Date.now();
+            
+            // Use the optimized generateStudyMaterials pipeline
+            const { generateStudyMaterials } = require('../utils/ai');
+            const aiResults = await generateStudyMaterials(content, selectedTypes);
+            
+            // Convert results to output format
             const results = [];
-
-            for (let i = 0; i < selectedTypes.length; i++) {
-                const type = selectedTypes[i];
-                if (!generators[type]) continue;
-                
-                try {
-                    const cStart = Date.now();
-                    const data = await generators[type](content);
-                    if (data && data[type]) {
-                        results.push({ type, content: data[type] });
-                        console.log(`[AI] ✅ ${type} generated in ${Date.now() - cStart}ms`);
-                    } else {
-                        console.warn(`[AI] ⚠️ ${type} failed: No data returned`);
-                        results.push({ type, content: null });
-                    }
-                } catch (err) {
-                    console.error(`[AI] ❌ Error in ${type}:`, err.message);
-                    results.push({ type, content: null });
-                }
-
-                // Add delay to prevent Gemini free-tier rate limiting (15 RPM), except for the final item
-                if (i < selectedTypes.length - 1) {
-                    console.log(`[AI] Waiting 800ms before next generation...`);
-                    await new Promise(resolve => setTimeout(resolve, 800));
-                }
+            for (const type of selectedTypes) {
+                results.push({ type, content: aiResults[type] || null });
             }
 
             project.outputs = results;
-            console.log(`[AI] TOTAL generation time: ${Date.now() - tStart}ms — ${results.length}/${selectedTypes.length} materials saved`);
+            const successCount = results.filter(r => r.content).length;
+            console.log(`[AI] TOTAL generation time: ${Date.now() - tStart}ms — ${successCount}/${selectedTypes.length} materials saved`);
 
             await project.save();
             res.json(project);
