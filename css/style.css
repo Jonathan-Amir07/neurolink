@@ -1204,19 +1204,7 @@ header {
     box-shadow: 0 40px 100px -20px rgba(0,0,0,0.3);
 }
 
-.notebook-inner-layout::before {
-    content: '';
-    position: absolute;
-    left: 315px;
-    top: 50px;
-    bottom: 50px;
-    width: 10px;
-    background: var(--binder-rings);
-    background-size: 100% 40px;
-    z-index: 1000;
-    border-radius: 5px;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.2), inset 0 0 5px rgba(255,255,255,0.5);
-}
+
 
 .notebook-sidebar {
     width: 320px;
