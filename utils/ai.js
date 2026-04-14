@@ -41,6 +41,17 @@ function prepareContext(text, maxChars) {
 }
 
 /**
+ * Compresses an HTML notebook down to its structural hierarchy (Headings only).
+ * This significantly reduces context token usage for the Mind Map generator.
+ */
+function getNotebookStructure(html) {
+    if (!html) return '';
+    // Extract H2 (Chapters) and H3 (Sections)
+    const matches = html.match(/<(h2|h3)[^>]*>([\s\S]*?)<\/\1>/gi) || [];
+    return matches.map(m => m.replace(/<[^>]+>/g, '').trim()).join('\n');
+}
+
+/**
  * Parse a JSON object from AI text output. Handles markdown fences,
  * control characters, trailing commas, and other common AI quirks.
  */
@@ -282,49 +293,55 @@ Content: ${prepareContext(text, INPUT_CHAR_LIMITS.notebook)}`;
 }
 
 async function generateMindmap(text, notebookHtml = null) {
-    const context = notebookHtml ? `Take this structured HTML study notebook and convert it into a mind map: ${notebookHtml}` : text;
-    const prompt = `You are an AI Knowledge Mapper, Visual Learning Architect, and UI Designer.
-Your task is to take study content and convert it into a detailed, interactive mind map that preserves a physical "handwritten study notebook" aesthetic.
+    const structure = notebookHtml ? getNotebookStructure(notebookHtml) : text;
+    const prompt = `You are an AI Knowledge Mapper and Visual Architect.
+Your task is to take the provided study structure and convert it into a detailed Mind Map JSON object.
 
 ━━━━━━━━━━━━━━━━━━
 GOAL
 ━━━━━━━━━━━━━━━━━━
-Convert the content into a visual, interactive mind map that:
-- Preserves the logical structure of topics
-- Uses notebook-style visuals (paper cards, hand-drawn connections)
-- Shows relationships between concepts
-- Allows collapsing and expanding nodes using embedded JavaScript
-- USES SINGLE QUOTES for all HTML attributes to avoid breaking JSON strings.
+Map the concepts into a hierarchical JSON structure that our frontend will render as a premium handwritten notebook.
+Each node represents a key concept from the study material.
 
 ━━━━━━━━━━━━━━━━━━
 NODE REQUIREMENTS
 ━━━━━━━━━━━━━━━━━━
-Each node MUST look like a "Paper Card" and include:
-- Title (Heading)
-- ONE short explanation (1 concise sentence only)
-- A visual element (icon/diagram/emoji)
-- DO NOT use long paragraphs.
+For EVERY node, provide:
+- title: (Clear heading)
+- desc: (ONE concise explanation sentence only)
+- icon: (A symbolic emoji: 🧠, 📚, 🔑, ⚡, 🎯, 🧪, 🔬, 💡, 📐, 🔄)
 
 ━━━━━━━━━━━━━━━━━━
-INTERACTIVITY
+RESPONSE SCHEMA
 ━━━━━━━━━━━━━━━━━━
-- Nodes must be collapsible/expandable via clicking.
-- Parent nodes remain visible; collapsed nodes hide descendants.
-- Use smooth CSS transitions and a "+" / "–" indicator on parent nodes.
-
-━━━━━━━━━━━━━━━━━━
-NOTEBOOK STYLE
-━━━━━━━━━━━━━━━━━━
-- Background: Off-white paper with subtle grid or ruled pattern.
-- Fonts: 'Patrick Hand' for text, 'Indie Flower' for special blocks.
-- Connectors: Hand-drawn style curved lines (SVG paths).
-- Cards: Box-shadow, slight rotate() transforms (random -1 to 1 deg), and paper-like borders.
-
 Return ONLY a valid JSON object with this exact shape:
-{"mindmap": "html_string_containing_everything_style_and_js"}
+{
+  "mindmap": {
+    "title": "Root Topic",
+    "icon": "🧠",
+    "desc": "One sentence overview",
+    "children": [
+      {
+        "title": "Chapter Title",
+        "icon": "📚",
+        "desc": "Summary",
+        "children": [
+          { "title": "Section Title", "icon": "🔑", "desc": "Key detail", "children": [] }
+        ]
+      }
+    ]
+  }
+}
 
-Content to Map: ${prepareContext(context, INPUT_CHAR_LIMITS.mindmap)}`;
-    return await callAI(prompt, 4, 12000);
+Guidelines:
+- Maintain the hierarchy from the provided structure.
+- Do NOT include long paragraphs.
+- Focus on technical and conceptual relationships.
+
+Content Structure:
+${prepareContext(structure, INPUT_CHAR_LIMITS.mindmap)}`;
+
+    return await callAI(prompt, 4, 6000);
 }
 
 async function generateFlashcards(text) {

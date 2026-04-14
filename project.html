@@ -243,15 +243,8 @@
             if (!content || content.length < 5) { showEmptyState(type); return; }
 
             if (type === 'notebook') renderNotebook(content);
-            else if (type === 'mindmap') {
-                const view = document.getElementById('mindmap-view');
-                // Check if it's new-style HTML (starts with <) or old-style JSON
-                if (content.trim().startsWith('<')) {
-                    view.innerHTML = content;
-                } else {
-                    const data = ensureJSON(content);
-                    if (window.initMindMap) initMindMap(data);
-                }
+            else if (type === 'mindmap' && window.initMindMap) {
+                initMindMap(ensureJSON(content));
             } else {
                 const data = ensureJSON(content);
                 if (type === 'flashcards' && window.initFlashcards) initFlashcards(data);

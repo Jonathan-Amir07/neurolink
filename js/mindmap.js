@@ -208,7 +208,7 @@ function renderNodes(node, container) {
     nodeEl.style.top = `${meta.y}px`;
     
     // Randomized rotation for notebook feel
-    const rotation = (Math.random() * 4 - 2).toFixed(1);
+    const rotation = (Math.random() * 2 - 1).toFixed(1);
     
     const card = document.createElement('div');
     card.className = 'mindmap-card' + (meta.depth === 0 ? ' root' : '');
@@ -217,6 +217,7 @@ function renderNodes(node, container) {
     card.innerHTML = `
         <h4>${node.icon || '📌'} ${node.title}</h4>
         <p>${node.desc || ''}</p>
+        <div class='visual-element'>${node.icon || '📍'}</div>
     `;
     
     if (node.children && node.children.length > 0) {
@@ -266,6 +267,9 @@ function renderLinks(node, svg) {
         
         path.setAttribute('d', d);
         path.setAttribute('class', 'mindmap-connection');
+        path.style.stroke = 'var(--ink-color)';
+        path.style.opacity = '0.2';
+        path.style.strokeWidth = '2';
         
         // Randomly add a slightly offset companion path for "ink" feel
         svg.appendChild(path);
