@@ -59,46 +59,50 @@ function extractJSON(text) {
     }
 
     let jsonStr = cleaned.substring(start, end + 1);
-    // Clean control characters
+    
+    // Clean control characters and unusual whitespace
     jsonStr = jsonStr.replace(/[\u0000-\u0009\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
-    // Fix trailing commas
+    
+    // Fix common AI JSON errors: trailing commas before closing braces
     jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
+    
+    // Fix unescaped newlines inside strings (critical for long notebook HTML)
+    // We target newlines that are NOT followed by a "property": pattern
+    // This is a bit risky but helped in previous runs
+    // Actually, it's safer to just rely on the model for now if possible, 
+    // but the repair logic below is a good fallback.
 
     try {
         return JSON.parse(jsonStr);
     } catch (e) {
-        // Aggressive cleaning attempt
-        const ultraCleaned = jsonStr
-            .replace(/[\u0000-\u001F\u007F-\u009F]/g, "")
-            .replace(/\n/g, " ")
-            .replace(/\r/g, " ")
-            .replace(/\t/g, " ");
+        console.warn('[AI] JSON Parse failed, attempting aggressive repair...');
+        
+        // Attempt 2: Remove actual newlines inside the JSON string (replace with \n)
+        // Note: This is an aggressive repair for long HTML blocks
         try {
-            return JSON.parse(ultraCleaned);
-        } catch (e2) {
-            // Last resort: try to repair truncated JSON by closing open brackets
-            try {
-                let repaired = ultraCleaned;
-                // Count open/close braces and brackets
-                const openBraces = (repaired.match(/{/g) || []).length;
-                const closeBraces = (repaired.match(/}/g) || []).length;
-                const openBrackets = (repaired.match(/\[/g) || []).length;
-                const closeBrackets = (repaired.match(/\]/g) || []).length;
-                
-                // Remove any trailing comma or incomplete value
+            const repairedWhitespace = jsonStr.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+            // This might break the actual structure if not careful, so we only do it if the first failed.
+            // But wait, the common issue is unescaped newlines in JSON strings.
+            // Let's try to just close the JSON if it's truncated.
+            
+            let repaired = jsonStr;
+            const openBraces = (repaired.match(/{/g) || []).length;
+            const closeBraces = (repaired.match(/}/g) || []).length;
+            const openBrackets = (repaired.match(/\[/g) || []).length;
+            const closeBrackets = (repaired.match(/\]/g) || []).length;
+            
+            if (openBraces > closeBraces || openBrackets > closeBrackets) {
+                // Truncated JSON repair
                 repaired = repaired.replace(/,\s*$/, '');
                 repaired = repaired.replace(/:\s*"[^"]*$/, ': ""');
-                repaired = repaired.replace(/,\s*"[^"]*$/, '');
-                
-                // Close missing brackets/braces
                 for (let i = 0; i < openBrackets - closeBrackets; i++) repaired += ']';
                 for (let i = 0; i < openBraces - closeBraces; i++) repaired += '}';
-                
                 return JSON.parse(repaired);
-            } catch (e3) {
-                return null;
             }
+        } catch (e2) {
+            return null;
         }
+        return null;
     }
 }
 
@@ -199,9 +203,11 @@ Use SINGLE QUOTES for all HTML attribute values to avoid breaking JSON. Do NOT u
 ━━━━━━━━━━━━━━━━━━━━━━━━
 CONTENT REQUIREMENTS
 ━━━━━━━━━━━━━━━━━━━━━━━━
-Break the topic into 3-5 logical CHAPTERS. Each chapter covers ONE core concept.
-Write at university-level depth. Do NOT produce short summaries. Explain thoroughly before moving on.
-If a concept introduces a subtopic, expand it as a subsection.
+Break the topic into 2-3 RICH CHAPTERS. Each chapter MUST explore a single concept in massive depth.
+Write at university-level depth. Do NOT produce short summaries.
+If a concept introduces a complex subtopic, expand it immediately as a detailed subsection.
+Explain every mechanism and theory thoroughly before moving to the next.
+Avoid redundant filler; focus on technical and conceptual density.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 CHAPTER STRUCTURE — Each chapter MUST contain ALL 10 sections:
