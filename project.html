@@ -22,6 +22,13 @@
         
         .workspace-tabs { display: flex !important; }
         .notebook-sidebar { background: var(--glass-bg) !important; }
+        
+        .toast-notif {
+            position: fixed; bottom: 20px; right: 20px; background: #1f2937; color: white;
+            padding: 1rem 1.5rem; border-radius: 8px; display: none; align-items: center; gap: 10px;
+            z-index: 9999; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        }
+        .toast-notif.show { display: flex; }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,6 +37,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
+    <div id="toast-notif" class="toast-notif">
+        <i class="fas fa-info-circle"></i>
+        <span>Notification message</span>
+    </div>
     <header>
         <div class="breadcrumb">
             <a href="dashboard.html" class="brand" style="font-weight: 800; font-size: 1.25rem; color: var(--accent-color); letter-spacing: -0.5px; text-decoration:none;">NeuroLink</a>
@@ -118,6 +129,14 @@
                                 <input type="text" placeholder="Find in notes..." onkeyup="filterTOC(this.value)">
                             </div>
                             <nav id="notebook-toc"></nav>
+                            <div class="sidebar-actions">
+                                <button class="secondary-action-btn" onclick="copyActiveContent()" title="Copy generated HTML to clipboard">
+                                    <i class="fas fa-copy"></i> Copy HTML
+                                </button>
+                                <button class="secondary-action-btn" onclick="window.print()" title="Print or save as PDF">
+                                    <i class="fas fa-print"></i> Export PDF
+                                </button>
+                            </div>
                         </aside>
                         <main id="notebook-content-area" class="notebook-main">
                             <!-- Content -->
@@ -242,9 +261,11 @@
             
             const headings = area.querySelectorAll('h2');
             if (headings.length === 0) {
-                toc.innerHTML = '<p style="opacity:0.3; font-size:0.8rem; text-align:center; padding-top:2rem;">No chapters found</p>';
+                toc.innerHTML = '<div style="opacity:0.3; font-size:0.85rem; text-align:center; padding:4rem 2rem; border:1px dashed rgba(255,255,255,0.1); border-radius:12px;">No chapters found in this archive</div>';
                 return;
             }
+
+            const scrollMap = [];
 
             headings.forEach((h2, i) => {
                 const id = `ch-${i}`; h2.id = id;
@@ -252,26 +273,48 @@
                 group.className = 'toc-group';
                 group.innerHTML = `<span class="toc-title">${h2.innerText}</span>`;
                 
+                scrollMap.push({ el: h2, link: null });
+
                 let next = h2.nextElementSibling;
                 while(next && next.tagName !== 'H2') {
                     if (next.tagName === 'H3') {
-                        const subId = `s-${Math.random().toString(36).substr(2,5)}`;
+                        const subId = `s-${Math.random().toString(36).substr(2,7)}`;
                         next.id = subId;
                         const link = document.createElement('a');
                         link.className = 'toc-link';
                         link.innerText = next.innerText;
+                        link.href = `#${subId}`;
                         link.onclick = (e) => {
                             e.preventDefault();
-                            document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
-                            link.classList.add('active');
-                            document.getElementById(subId).scrollIntoView({ behavior: 'smooth' });
+                            document.getElementById(subId).scrollIntoView({ behavior: 'smooth', block: 'start' });
                         };
                         group.appendChild(link);
+                        scrollMap.push({ el: next, link: link });
                     }
                     next = next.nextElementSibling;
                 }
                 toc.appendChild(group);
             });
+
+            // SCROLL SPY LOGIC
+            const mainArea = document.getElementById('notebook-content-area');
+            mainArea.onscroll = () => {
+                let current = null;
+                const offset = 150;
+                scrollMap.forEach(item => {
+                    const rect = item.el.getBoundingClientRect();
+                    const areaRect = mainArea.getBoundingClientRect();
+                    if (rect.top - areaRect.top <= offset) {
+                        current = item;
+                    }
+                });
+
+                if (current && current.link) {
+                    document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+                    current.link.classList.add('active');
+                    current.link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            };
         }
 
         function filterTOC(query) {
@@ -325,11 +368,47 @@
         function setTheme(theme) {
             if (theme === 'default') document.documentElement.removeAttribute('data-theme');
             else document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('neurolink-theme', theme);
-            document.querySelectorAll('.theme-pill-btn').forEach(btn => btn.classList.remove('active-parchment', 'active-library', 'active-lab', 'active-default'));
-            const themeMap = { 'parchment': 'parchment-btn', 'library': 'library-btn', 'lab': 'lab-btn', 'default': 'studio-btn' };
-            const activeBtn = document.querySelector(`.${themeMap[theme] || 'studio-btn'}`);
-            if (activeBtn) activeBtn.classList.add(`active-${theme}`);
+            
+            // Sync UI active states
+            document.querySelectorAll('.theme-pill-btn').forEach(btn => {
+                const isActiveClass = btn.classList.value.includes(theme + '-btn');
+                btn.style.opacity = isActiveClass ? '1' : '0.4';
+                btn.style.transform = isActiveClass ? 'scale(1.15)' : 'scale(1)';
+            });
+        }
+
+        async function copyActiveContent() {
+            let output = currentProject.outputs && currentProject.outputs.find(o => o.type === activeTab);
+            let content = (output && output.content) || currentProject[activeTab];
+            
+            if (!content) {
+                showToast("No content to copy", "fa-exclamation-triangle");
+                return;
+            }
+
+            try {
+                // If it's pure HTML (notebook), copy as is
+                // If it's JSON (others), stringify it or format it
+                let textToCopy = content;
+                if (typeof content === 'object') {
+                    textToCopy = JSON.stringify(content, null, 2);
+                }
+
+                await navigator.clipboard.writeText(textToCopy);
+                showToast("Copied to clipboard!", "fa-check-circle");
+            } catch (err) {
+                console.error('Copy failed:', err);
+                showToast("Failed to copy", "fa-times-circle");
+            }
+        }
+
+        function showToast(message, icon = "fa-info-circle") {
+            const toast = document.getElementById('toast-notif');
+            toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
 
         async function regenerateCurrentTab() {

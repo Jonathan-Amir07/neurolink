@@ -2625,6 +2625,68 @@ header {
     font-size: 1.15rem;
 }
 
+/* ── SIDEBAR ACTIONS ── */
+.sidebar-actions {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.secondary-action-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--sidebar-text);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.secondary-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+/* ── TOAST NOTIFICATION ── */
+.toast-notif {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(15px);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    border: 1px solid var(--accent-color);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    z-index: 10000;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+}
+
+.toast-notif.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
 /* ── Print overrides ── */
 @media print {
     .notebook-main { background: none !important; padding: 0 !important; }
